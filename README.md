@@ -2,7 +2,7 @@
 
 ¡Bienvenido a KunaPet! Este proyecto es un e-commerce moderno desarrollado desde cero, diseñado específicamente para ofrecer una experiencia de usuario fluida, rápida y completamente responsiva en la compra de productos para mascotas.
 
-## 🚀 El Factor Ingeniería: Migración Técnica
+## 🚀  Migración 
 Como parte de mi crecimiento profesional y buscando alineamiento con los estándares actuales de la industria, este proyecto pasó por un proceso de refactorización profunda:
 *   **De Legacy a Moderno:** Migrado exitosamente de *Create React App (CRA)* a **Vite**, reduciendo los tiempos de recarga en desarrollo a milisegundos y optimizando el bundle de producción.
 *   **Evolución de Estilos:** Reemplacé *Bootstrap* por **Tailwind CSS**, adoptando un enfoque de clases utilitarias que elimina el CSS redundante y permite un diseño *Mobile-First* 100% personalizado.

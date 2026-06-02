@@ -1,70 +1,27 @@
-# Getting Started with Create React App
+# KunaPet 🐾 | E-commerce para Mascotas
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+¡Bienvenido a KunaPet! Este proyecto es un e-commerce moderno desarrollado desde cero, diseñado específicamente para ofrecer una experiencia de usuario fluida, rápida y completamente responsiva en la compra de productos para mascotas.
 
-## Available Scripts
+## 🚀 El Factor Ingeniería: Migración Técnica
+Como parte de mi crecimiento profesional y buscando alineamiento con los estándares actuales de la industria, este proyecto pasó por un proceso de refactorización profunda:
+*   **De Legacy a Moderno:** Migrado exitosamente de *Create React App (CRA)* a **Vite**, reduciendo los tiempos de recarga en desarrollo a milisegundos y optimizando el bundle de producción.
+*   **Evolución de Estilos:** Reemplacé *Bootstrap* por **Tailwind CSS**, adoptando un enfoque de clases utilitarias que elimina el CSS redundante y permite un diseño *Mobile-First* 100% personalizado.
 
-In the project directory, you can run:
+## 🛠️ Stack Tecnológico
+*   **Frontend:** React (Hooks, Context/Zustand para estado global - *en desarrollo*)
+*   **Estilos:** Tailwind CSS (Diseño Responsivo & Custom UI)
+*   **Herramienta de Construcción:** Vite
+*   **Control de Versiones:** Git & GitHub (Siguiendo la convención de Git Commits)
 
-### `npm start`
+## ✨ Características Principales
+*   **Diseño Mobile-First:** Interfaz optimizada para una navegación perfecta en dispositivos móviles y de escritorio.
+*   **Catálogo Dinámico:** Visualización limpia de productos con maquetación moderna.
+*   **Arquitectura Limpia:** Separación estricta entre componentes de interfaz (UI) y lógica de negocio.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🔧 Instalación Local
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Si deseas ejecutar este proyecto en tu entorno local, sigue estos pasos:
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Clonar el repositorio:
+```bash
+   git clone [https://github.com/CatGolden98/Ecommerce-Kunapet.git](https://github.com/CatGolden98/Ecommerce-Kunapet.git)

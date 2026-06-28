@@ -9,7 +9,7 @@ export default function QuickSettingsCards({ paymentMethod }) {
         className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all group text-left"
       >
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-gray-50 rounded-xl text-xl text-gray-600 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
+          <div className="p-3 bg-gray-50 rounded-xl text-xl text-gray-600 group-hover:bg-red-50 group-hover:text-brand-primary transition-colors">
             👤
           </div>
           <div>
@@ -26,7 +26,7 @@ export default function QuickSettingsCards({ paymentMethod }) {
         className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all group text-left"
       >
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-gray-50 rounded-xl text-xl text-gray-600 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-colors">
+          <div className="p-3 bg-gray-50 rounded-xl text-xl text-gray-600 group-hover:bg-red-50 group-hover:text-brand-primary transition-colors">
             💳
           </div>
           <div>

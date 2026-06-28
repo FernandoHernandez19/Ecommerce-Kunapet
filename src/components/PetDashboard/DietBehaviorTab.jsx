@@ -6,7 +6,7 @@ export default function DietBehaviorTab({ data }) {
       {/* Nutrición y Dieta */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-emerald-700 mr-2">🍖</span> Pautas de Alimentación
+          <span className="text-brand-primary mr-2">🍖</span> Pautas de Alimentación
         </h3>
         <ul className="space-y-4 text-sm font-medium text-gray-600">
           <li className="flex justify-between border-b border-gray-50 pb-2">
@@ -29,7 +29,7 @@ export default function DietBehaviorTab({ data }) {
       {/* Temperamento y Conducta */}
       <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-emerald-700 mr-2">🦮</span> Comportamiento en Paseos
+          <span className="text-brand-primary mr-2">🦮</span> Comportamiento en Paseos
         </h3>
         <div className="flex flex-wrap gap-2 mb-4">
           {data.behavior.tags.map((tag, i) => (

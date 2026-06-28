@@ -4,14 +4,14 @@ export default function ClaimTimeline({ events }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
       <div className="flex items-center space-x-2 mb-6">
-        <span className="text-emerald-700 text-xl">⏱</span>
+        <span className="text-brand-primary text-xl">⏱</span>
         <h2 className="text-lg font-bold text-gray-900">Evidencia y Línea de Tiempo</h2>
       </div>
 
       <div className="relative pl-6 border-l-2 border-gray-100 space-y-8 pb-4">
         {events.map((evt, idx) => (
           <div key={idx} className="relative">
-            <div className="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-white border-2 border-emerald-600 flex items-center justify-center text-[10px]">
+            <div className="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-white border-2 border-brand-primary flex items-center justify-center text-[10px]">
               {evt.icon}
             </div>
             

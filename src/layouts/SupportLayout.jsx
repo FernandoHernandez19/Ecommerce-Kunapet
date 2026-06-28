@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ChatButton from '../components/Support/ChatButton';
 
 export default function SupportLayout({ children }) {
@@ -7,14 +8,14 @@ export default function SupportLayout({ children }) {
       {/* Cabecera de Soporte (Solución de Idioma) */}
       <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 lg:px-12 sticky top-0 z-30">
         <div className="flex items-center space-x-2">
-          <span className="text-2xl font-black text-[#006D44] tracking-tight">KunaPet Support</span>
+          <Link to="/" className="text-2xl font-black text-[#006D44] tracking-tight no-underline">KunaPet Support</Link>
         </div>
-        
+
         <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-gray-500">
-          <a href="/marketplace" className="hover:text-gray-900 transition-colors">Marketplace</a>
-          <a href="/mis-mascotas" className="hover:text-gray-900 transition-colors">Mis Mascotas</a>
-          <a href="/reclamos" className="hover:text-gray-900 transition-colors">Reclamos</a>
-          <a href="/ayuda" className="text-[#006D44] border-b-2 border-[#006D44] pb-1">Centro de Ayuda</a>
+          <Link to="/marketplace" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Marketplace</Link>
+          <Link to="/clientdashboard" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Mis Mascotas</Link>
+          <Link to="/claims-queue" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Reclamos</Link>
+          <Link to="/help-center" className="text-[#006D44] border-b-2 border-[#006D44] pb-1 no-underline">Centro de Ayuda</Link>
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -40,10 +41,10 @@ export default function SupportLayout({ children }) {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm font-semibold text-gray-500">© 2024 KunaPet Marketplace. Todos los derechos reservados.</p>
           <div className="flex space-x-6 text-sm font-semibold text-gray-500">
-            <a href="/privacidad" className="hover:text-gray-900 transition-colors">Política de Privacidad</a>
-            <a href="/terminos" className="hover:text-gray-900 transition-colors">Términos de Servicio</a>
-            <a href="/contacto" className="hover:text-gray-900 transition-colors">Contactar Soporte</a>
-            <a href="/seguridad" className="hover:text-gray-900 transition-colors">Confianza y Seguridad</a>
+            <Link to="#" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Política de Privacidad</Link>
+            <Link to="#" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Términos de Servicio</Link>
+            <Link to="/help-center" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Contactar Soporte</Link>
+            <Link to="#" className="hover:text-gray-900 transition-colors no-underline text-gray-500">Confianza y Seguridad</Link>
           </div>
         </div>
       </footer>

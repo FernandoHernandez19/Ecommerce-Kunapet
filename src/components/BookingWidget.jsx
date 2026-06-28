@@ -58,7 +58,7 @@ const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
             required
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none transition-all"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none transition-all"
           />
         </div>
 
@@ -82,7 +82,7 @@ const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
                     isFull 
                       ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed text-xs' 
                       : isSelected
-                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100'
+                        ? 'bg-brand-primary border-brand-primary text-white shadow-md shadow-red-100'
                         : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                   }`}
                 >
@@ -139,7 +139,7 @@ const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
         {/* CTA Principal */}
         <button
           type="submit"
-          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-700/10 hover:shadow-emerald-700/20 active:scale-[0.99] transition-all text-center block text-sm"
+          className="w-full bg-brand-primary hover:bg-[#c93623] text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-700/10 hover:shadow-emerald-700/20 active:scale-[0.99] transition-all text-center block text-sm"
         >
           Reservar Paseo
         </button>

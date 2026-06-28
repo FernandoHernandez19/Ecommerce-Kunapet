@@ -50,7 +50,7 @@ export default function ProviderRegistration() {
         {currentStep === 2 && (
           <div className="text-center p-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
             <h2 className="text-2xl font-bold text-gray-900">Paso 2: Servicios</h2>
-            <button onClick={() => setCurrentStep(1)} className="mt-4 text-[#006D44] font-bold">Volver</button>
+            <button onClick={() => setCurrentStep(1)} className="mt-4 text-[#e23d28] font-bold">Volver</button>
           </div>
         )}
       </div>

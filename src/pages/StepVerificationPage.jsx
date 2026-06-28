@@ -103,7 +103,7 @@ export default function StepVerificationPage() {
             disabled={!isNextEnabled}
             className={`text-sm font-bold py-3.5 px-8 rounded-xl transition-all flex items-center shadow-sm ${
               isNextEnabled 
-                ? 'bg-[#006D44] hover:bg-[#005233] text-white' 
+                ? 'bg-[#e23d28] hover:bg-[#c93623] text-white' 
                 : 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed'
             }`}
           >

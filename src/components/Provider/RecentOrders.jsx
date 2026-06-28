@@ -4,7 +4,7 @@ export default function RecentOrders({ orders }) {
   const getStatusPill = (status) => {
     switch(status) {
       case 'PENDIENTE': return 'bg-amber-100 text-amber-800';
-      case 'EN CAMINO': return 'bg-emerald-100 text-emerald-800';
+      case 'EN CAMINO': return 'bg-red-100 text-emerald-800';
       case 'ENTREGADO': return 'bg-gray-200 text-gray-600';
       default: return 'bg-gray-100 text-gray-600';
     }
@@ -47,7 +47,7 @@ export default function RecentOrders({ orders }) {
               </td>
               <td className="py-4 text-right">
                 {/* Solución a la Mejora UX: Si es PENDIENTE le damos una acción clara */}
-                <button className="text-emerald-700 hover:text-emerald-900 font-bold text-xs">
+                <button className="text-brand-primary hover:text-emerald-900 font-bold text-xs">
                   {order.status === 'PENDIENTE' ? 'Procesar' : order.action}
                 </button>
               </td>

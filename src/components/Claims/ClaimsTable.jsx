@@ -6,7 +6,7 @@ export default function ClaimsTable({ claims }) {
     switch(priority) {
       case 'Alta': return 'bg-red-500';
       case 'Media': return 'bg-amber-400';
-      case 'Baja': return 'bg-emerald-500';
+      case 'Baja': return 'bg-brand-primary';
       default: return 'bg-gray-300';
     }
   };
@@ -33,7 +33,7 @@ export default function ClaimsTable({ claims }) {
           <tbody className="text-sm text-gray-700 divide-y divide-gray-50">
             {claims.map((claim, idx) => (
               <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
-                <td className="px-6 py-4 font-bold text-[#006D44]">{claim.id}</td>
+                <td className="px-6 py-4 font-bold text-[#e23d28]">{claim.id}</td>
                 <td className="px-6 py-4 text-gray-500">{claim.date}</td>
                 <td className="px-6 py-4 flex items-center space-x-3">
                   <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${claim.avatarColor} text-white`}>
@@ -49,7 +49,7 @@ export default function ClaimsTable({ claims }) {
                    </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button className="text-[#006D44] hover:text-[#005233] font-bold text-xs uppercase tracking-wider">Revisar &rarr;</button>
+                  <button className="text-[#e23d28] hover:text-[#c93623] font-bold text-xs uppercase tracking-wider">Revisar &rarr;</button>
                 </td>
               </tr>
             ))}

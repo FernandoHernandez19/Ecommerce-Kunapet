@@ -23,9 +23,9 @@ export default function ResolutionPanel() {
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl border-2 border-[#E9F3EE] p-6 shadow-sm sticky top-6">
       <div className="flex items-start space-x-3 mb-4">
-        <span className="text-emerald-700 text-xl mt-1">⚖️</span>
+        <span className="text-brand-primary text-xl mt-1">⚖️</span>
         <div>
-          <h2 className="text-lg font-bold text-[#006D44]">Acción de Resolución</h2>
+          <h2 className="text-lg font-bold text-[#e23d28]">Acción de Resolución</h2>
           <p className="text-xs text-gray-500 font-medium mt-1">Determine el resultado final de este reclamo basándose en la evidencia.</p>
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function ResolutionPanel() {
             key={opt.id} 
             className={`flex items-start p-3 border rounded-xl cursor-pointer transition-all ${
               selectedOption === opt.id 
-                ? 'border-emerald-600 bg-emerald-50/50' 
+                ? 'border-brand-primary bg-red-50/50' 
                 : 'border-gray-200 hover:border-emerald-300'
             }`}
           >
@@ -46,7 +46,7 @@ export default function ResolutionPanel() {
                 name="resolution" 
                 value={opt.id}
                 onChange={() => setSelectedOption(opt.id)}
-                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300" 
+                className="w-4 h-4 text-brand-primary focus:ring-brand-primary border-gray-300" 
               />
             </div>
             <div>
@@ -66,7 +66,7 @@ export default function ResolutionPanel() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Escriba la justificación final aquí. Esto será visible para ambas partes."
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none resize-none transition-all"
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-primary focus:bg-white outline-none resize-none transition-all"
         ></textarea>
         {notes.length > 0 && notes.length < 10 && (
           <p className="text-[10px] text-red-500 mt-1">Mínimo 10 caracteres requeridos.</p>
@@ -78,7 +78,7 @@ export default function ResolutionPanel() {
         disabled={!isFormValid}
         className={`w-full py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center space-x-2 ${
           isFormValid 
-            ? 'bg-[#006D44] hover:bg-[#005233] text-white shadow-md' 
+            ? 'bg-[#e23d28] hover:bg-[#c93623] text-white shadow-md' 
             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
         }`}
       >

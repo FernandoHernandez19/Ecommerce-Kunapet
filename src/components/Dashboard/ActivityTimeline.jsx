@@ -3,7 +3,7 @@ import React from 'react';
 const getStatusStyles = (status) => {
   switch (status) {
     case 'EN CURSO':
-      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      return 'bg-red-100 text-emerald-800 border-emerald-200';
     case 'COMPLETADO':
       return 'bg-gray-100 text-gray-700 border-gray-200';
     case 'ENTREGADO':
@@ -23,7 +23,7 @@ export default function ActivityTimeline({ activities }) {
           <div key={act.id} className="relative group">
             {/* Nodo de la línea de tiempo */}
             <span className={`absolute -left-[25px] top-1.5 w-3 h-3 rounded-full border-2 border-white ring-4 ${
-              act.status === 'EN CURSO' ? 'bg-emerald-600 ring-emerald-100 animate-pulse' : 'bg-gray-300 ring-transparent'
+              act.status === 'EN CURSO' ? 'bg-brand-primary ring-red-100 animate-pulse' : 'bg-gray-300 ring-transparent'
             }`} />
 
             <div className="space-y-1">
@@ -35,7 +35,7 @@ export default function ActivityTimeline({ activities }) {
                   {act.status}
                 </span>
               </div>
-              <h4 className="font-bold text-sm text-gray-900 group-hover:text-emerald-800 transition-colors">
+              <h4 className="font-bold text-sm text-gray-900 group-hover:text-[#c93623] transition-colors">
                 {act.title}
               </h4>
               <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
@@ -46,7 +46,7 @@ export default function ActivityTimeline({ activities }) {
         ))}
       </div>
 
-      <button className="w-full text-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors pt-2 border-t border-gray-50 block">
+      <button className="w-full text-center text-xs font-bold text-brand-primary hover:text-[#c93623] transition-colors pt-2 border-t border-gray-50 block">
         Ver historial completo
       </button>
     </div>

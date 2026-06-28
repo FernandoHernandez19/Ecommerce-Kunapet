@@ -4,7 +4,7 @@ export default function ClaimSummary({ client, provider, motive, motiveDescripti
   return (
     <div className="bg-white rounded-2xl border-2 border-[#E9F3EE] p-6 shadow-sm mb-6">
       <div className="flex items-center space-x-2 mb-4">
-        <span className="text-emerald-700 text-xl">🧾</span>
+        <span className="text-brand-primary text-xl">🧾</span>
         <h2 className="text-lg font-bold text-gray-900">Resumen de la Disputa</h2>
       </div>
 

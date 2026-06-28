@@ -10,14 +10,14 @@ export default function WelcomeHeader({ clientName, scheduledServicesCount }) {
       return (
         <>
           Es un gran día para mimar a tus peludos. Tienes{" "}
-          <span className="text-emerald-700 font-bold">1 servicio</span> programado para hoy.
+          <span className="text-brand-primary font-bold">1 servicio</span> programado para hoy.
         </>
       );
     }
     return (
       <>
         Es un gran día para tus peludos. Tienes{" "}
-        <span className="text-emerald-700 font-bold">{scheduledServicesCount} servicios</span> programados para hoy.
+        <span className="text-brand-primary font-bold">{scheduledServicesCount} servicios</span> programados para hoy.
       </>
     );
   };

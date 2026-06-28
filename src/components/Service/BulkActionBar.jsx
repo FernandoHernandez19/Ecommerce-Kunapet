@@ -16,14 +16,14 @@ export default function BulkActionBar({ selectedCount, onUpdatePrices, onChangeA
         {/* Acciones */}
         <button 
           onClick={onUpdatePrices}
-          className="flex items-center space-x-2 text-[#006D44] hover:text-[#004D30] font-bold text-sm transition-colors"
+          className="flex items-center space-x-2 text-[#e23d28] hover:text-[#004D30] font-bold text-sm transition-colors"
         >
           <span>💵</span> <span>Actualizar Precios</span>
         </button>
 
         <button 
           onClick={onChangeAvailability}
-          className="flex items-center space-x-2 text-[#006D44] hover:text-[#004D30] font-bold text-sm transition-colors"
+          className="flex items-center space-x-2 text-[#e23d28] hover:text-[#004D30] font-bold text-sm transition-colors"
         >
           <span>👁️</span> <span>Cambiar Disponibilidad</span>
         </button>

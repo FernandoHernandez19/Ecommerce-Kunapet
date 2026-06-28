@@ -10,7 +10,7 @@ export default function AdminDashboard() {
     adminName: "Fernando H.",
     avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
     stats: [
-      { title: 'Usuarios Totales', value: '24,592', trend: '12%', icon: '👥', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-700' },
+      { title: 'Usuarios Totales', value: '24,592', trend: '12%', icon: '👥', iconBg: 'bg-red-100', iconColor: 'text-brand-primary' },
       { title: 'Proveedores Activos', value: '1,204', trend: '5%', icon: '🏪', iconBg: 'bg-amber-100', iconColor: 'text-amber-700' },
       { title: 'Ingresos Mensuales', value: '$84,320', trend: '18%', icon: '💵', iconBg: 'bg-emerald-800', iconColor: 'text-white' },
       { title: 'Aprobaciones Pendientes', value: '28', urgentCount: '3', icon: '📋', iconBg: 'bg-red-100', iconColor: 'text-red-600' },

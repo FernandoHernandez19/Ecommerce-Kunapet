@@ -14,7 +14,7 @@ export default function BehaviorTags({ selectedTraits, onToggleTrait }) {
   return (
     <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm mb-6">
       <h3 className="text-lg font-bold text-gray-900 flex items-center mb-2">
-        <span className="text-[#006D44] mr-2">🏷️</span> Rasgos Principales
+        <span className="text-[#e23d28] mr-2">🏷️</span> Rasgos Principales
       </h3>
       <p className="text-sm text-gray-500 mb-6">Selecciona las etiquetas que mejor describan su forma de ser (Máx. 5).</p>
       
@@ -28,9 +28,9 @@ export default function BehaviorTags({ selectedTraits, onToggleTrait }) {
               key={trait.id}
               onClick={() => onToggleTrait(trait.id)}
               disabled={isDisabled}
-              className={`flex items-center px-4 py-2 rounded-full border text-sm font-bold transition-all outline-none focus:ring-2 focus:ring-[#006D44]/30 ${
+              className={`flex items-center px-4 py-2 rounded-full border text-sm font-bold transition-all outline-none focus:ring-2 focus:ring-[#e23d28]/30 ${
                 isSelected 
-                  ? 'bg-emerald-100 border-[#006D44] text-[#006D44]' 
+                  ? 'bg-red-100 border-[#e23d28] text-[#e23d28]' 
                   : isDisabled
                     ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                     : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'

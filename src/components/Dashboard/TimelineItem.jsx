@@ -4,7 +4,7 @@ export default function TimelineItem({ activity }) {
   // Lógica de estilos aislada dentro de su propio componente
   const getStatusStyles = (status) => {
     switch (status) {
-      case 'EN CURSO': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'EN CURSO': return 'bg-red-100 text-emerald-800 border-emerald-200';
       case 'COMPLETADO': return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'ENTREGADO': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-600';
@@ -18,7 +18,7 @@ export default function TimelineItem({ activity }) {
       {/* Indicador de estado (Punto en la línea) */}
       <span className={`absolute -left-[25px] top-1.5 w-3 h-3 rounded-full border-2 border-white ring-4 transition-all ${
         isEnCurso 
-          ? 'bg-emerald-600 ring-emerald-100 animate-pulse' 
+          ? 'bg-brand-primary ring-red-100 animate-pulse' 
           : 'bg-gray-300 ring-transparent group-hover:bg-emerald-400'
       }`} />
 
@@ -32,7 +32,7 @@ export default function TimelineItem({ activity }) {
             {activity.status}
           </span>
         </div>
-        <h4 className="font-bold text-sm text-gray-900 group-hover:text-emerald-800 transition-colors">
+        <h4 className="font-bold text-sm text-gray-900 group-hover:text-[#c93623] transition-colors">
           {activity.title}
         </h4>
         <p className="text-xs text-gray-500 font-medium flex items-center gap-1">

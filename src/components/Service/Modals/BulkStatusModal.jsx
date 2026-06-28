@@ -19,9 +19,9 @@ export default function BulkStatusModal({ isOpen, onClose, selectedCount, onConf
         <div className="flex flex-col space-y-3 mb-6">
           <button 
             onClick={() => onConfirm(true)}
-            className="w-full py-3.5 rounded-xl font-bold text-[#006D44] bg-emerald-50 border border-[#006D44] hover:bg-emerald-100 transition-colors flex items-center justify-center"
+            className="w-full py-3.5 rounded-xl font-bold text-[#e23d28] bg-red-50 border border-[#e23d28] hover:bg-red-100 transition-colors flex items-center justify-center"
           >
-            <span className="w-2 h-2 rounded-full bg-[#006D44] mr-2"></span> Marcar como Activos
+            <span className="w-2 h-2 rounded-full bg-[#e23d28] mr-2"></span> Marcar como Activos
           </button>
           <button 
             onClick={() => onConfirm(false)}

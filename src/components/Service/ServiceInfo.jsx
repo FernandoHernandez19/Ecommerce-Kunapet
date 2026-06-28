@@ -6,7 +6,7 @@ const ServiceInfo = ({ title, rating, reviewsCount, location, targetDogs, isBest
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{title}</h1>
         {isBestRated && (
-          <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-200">
+          <span className="bg-red-50 text-brand-primary text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-200">
             Mejor Valorado
           </span>
         )}

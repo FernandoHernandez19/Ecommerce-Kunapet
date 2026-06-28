@@ -17,7 +17,7 @@ export default function GrowthChart() {
         <div className="flex items-end space-x-2 h-16 mb-4">
           <div className="w-3 h-8 bg-emerald-300 rounded-sm"></div>
           <div className="w-3 h-12 bg-emerald-400 rounded-sm"></div>
-          <div className="w-3 h-16 bg-emerald-600 rounded-sm"></div>
+          <div className="w-3 h-16 bg-brand-primary rounded-sm"></div>
         </div>
         <p className="text-sm font-semibold text-gray-500">Visualización de Crecimiento</p>
         <p className="text-xs text-gray-400 mt-1">Conecta Recharts o Chart.js aquí</p>

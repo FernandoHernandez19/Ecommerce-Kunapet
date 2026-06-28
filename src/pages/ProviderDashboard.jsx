@@ -1,15 +1,19 @@
 import React from 'react';
-import ProviderLayout from '../layouts/ProviderLayout';
+import ProviderDashboardLayout from '../layouts/ProviderDashboardLayout';
+import DashboardHeader from '../components/Provider/DashboardHeader';
 import MetricCards from '../components/Provider/MetricCards';
 import TodayAgenda from '../components/Provider/TodayAgenda';
 import BusinessWidgets from '../components/Provider/BusinessWidgets';
 import RecentOrders from '../components/Provider/RecentOrders';
+import { Button } from '../components/ui';
+import { Plus } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 
 export default function ProviderDashboard() {
+  const { user } = useAuthStore();
+  
   // Simulación de datos (Mock Data)
   const dashboardData = {
-    businessName: "PetShop Central",
-    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150",
     metrics: { sales: "$45.200", activeServices: 8, rating: 4.9, reviews: 124, messages: 12 },
     appointments: [
       { time: '10:00', meridian: 'AM', service: 'Paseo Premium', pet: 'Bruno (Golden Retriever)', client: 'Juan Pérez', status: 'READY', statusText: 'Iniciar' },
@@ -29,23 +33,21 @@ export default function ProviderDashboard() {
     ]
   };
 
+  const businessName = user?.name || "PetShop Central";
+
   return (
-    <ProviderLayout businessName={dashboardData.businessName} avatar={dashboardData.avatar}>
+    <ProviderDashboardLayout>
       
-      {/* Header Principal de la Página */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h2 className="text-3xl font-extrabold text-gray-900 flex items-center">
-            ¡Hola, {dashboardData.businessName}! <span className="ml-2 text-2xl">👋</span>
-          </h2>
-          <p className="text-gray-500 mt-2 font-medium">
-            Tienes un gran día por delante. Hoy hay 12 citas programadas y 4 pedidos pendientes de envío.
-          </p>
-        </div>
-        <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-colors flex items-center">
-          <span className="mr-2 text-lg">+</span> Nuevo Servicio
-        </button>
-      </div>
+      {/* Header Reutilizable */}
+      <DashboardHeader 
+        title={`¡Hola, ${businessName}! 👋`}
+        subtitle="Tienes un gran día por delante. Hoy hay 12 citas programadas y 4 pedidos pendientes de envío."
+        action={
+          <Button variant="primary" size="md" leftIcon={<Plus size={18} />}>
+            Nuevo Servicio
+          </Button>
+        }
+      />
 
       {/* Tarjetas de Métricas (KPIs) */}
       <MetricCards metrics={dashboardData.metrics} />
@@ -74,6 +76,6 @@ export default function ProviderDashboard() {
         +
       </button>
 
-    </ProviderLayout>
+    </ProviderDashboardLayout>
   );
 }

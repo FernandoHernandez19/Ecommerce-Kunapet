@@ -22,7 +22,7 @@ const ReviewsSection = () => {
     <div className="space-y-5 border-t border-gray-200 pt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">Reseñas y Calificaciones</h2>
-        <button className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 transition-colors">
+        <button className="text-sm font-semibold text-brand-primary hover:text-[#c93623] transition-colors">
           Ver todas
         </button>
       </div>

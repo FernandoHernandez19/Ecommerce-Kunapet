@@ -16,7 +16,7 @@ export default function MedicalTab({ medicalRecords }) {
       {/* Cartilla de Vacunación */}
       <div>
         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center">
-          <span className="text-emerald-700 mr-2">💉</span> Control de Vacunas Obligatorias
+          <span className="text-brand-primary mr-2">💉</span> Control de Vacunas Obligatorias
         </h3>
         <div className="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm">
           <table className="w-full text-left border-collapse">
@@ -36,7 +36,7 @@ export default function MedicalTab({ medicalRecords }) {
                   <td className="p-3 text-gray-500">{vax.nextDue}</td>
                   <td className="p-3 pr-4 text-right">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      vax.status === 'Vigente' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      vax.status === 'Vigente' ? 'bg-red-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                     }`}>
                       {vax.status === 'Próxima' && (
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-ping"></span>

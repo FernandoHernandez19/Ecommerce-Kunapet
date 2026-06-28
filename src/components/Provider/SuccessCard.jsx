@@ -25,7 +25,7 @@ export default function SuccessCard({ onGoToDashboard, onViewProfile }) {
       <div className="w-full flex flex-col space-y-4">
         <button 
           onClick={onGoToDashboard}
-          className="w-full bg-[#006D44] hover:bg-[#005233] text-white font-bold py-3.5 px-6 rounded-full shadow-md transition-colors"
+          className="w-full bg-[#e23d28] hover:bg-[#c93623] text-white font-bold py-3.5 px-6 rounded-full shadow-md transition-colors"
         >
           Ir al Panel del Proveedor
         </button>

@@ -23,7 +23,7 @@ export default function AdminSidebar() {
               key={i} 
               className={`w-full flex items-center space-x-3 px-6 py-3 text-sm font-semibold transition-all border-l-4 ${
                 item.active 
-                  ? 'bg-emerald-50 border-emerald-700 text-emerald-900' 
+                  ? 'bg-red-50 border-brand-primary text-emerald-900' 
                   : 'border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >

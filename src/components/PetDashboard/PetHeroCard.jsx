@@ -8,9 +8,9 @@ export default function PetHeroCard({ pet, onEdit }) {
           <img 
             src={pet.photo} 
             alt={pet.name} 
-            className="w-24 h-24 rounded-full object-cover border-4 border-emerald-50 shadow-inner"
+            className="w-24 h-24 rounded-full object-cover border-4 border-red-50 shadow-inner"
           />
-          <span className="absolute bottom-0 right-1 bg-emerald-600 text-white text-xs p-1 rounded-full shadow-sm">
+          <span className="absolute bottom-0 right-1 bg-brand-primary text-white text-xs p-1 rounded-full shadow-sm">
             🐾
           </span>
         </div>

@@ -69,7 +69,7 @@ export default function StepBehaviorPage({ formData, updateData, onPrev, onSubmi
           onClick={handleFinalSubmit}
           disabled={isSubmitting}
           className={`text-white text-sm font-bold py-3 px-8 rounded-full shadow-md transition-all flex items-center justify-center min-w-[200px] ${
-            isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#006D44] hover:bg-[#005233]'
+            isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#e23d28] hover:bg-[#c93623]'
           }`}
         >
           {isSubmitting ? (

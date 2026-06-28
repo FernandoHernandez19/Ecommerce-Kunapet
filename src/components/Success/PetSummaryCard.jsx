@@ -6,7 +6,7 @@ export default function PetSummaryCard({ pet }) {
       <div className="flex items-center space-x-5">
         
         {/* Avatar de la mascota */}
-        <div className="w-20 h-20 rounded-full border-2 border-emerald-50 overflow-hidden shadow-sm flex-shrink-0">
+        <div className="w-20 h-20 rounded-full border-2 border-red-50 overflow-hidden shadow-sm flex-shrink-0">
           <img 
             src={pet.photoUrl} 
             alt={pet.name} 
@@ -23,7 +23,7 @@ export default function PetSummaryCard({ pet }) {
           
           {/* Etiquetas / Chips mejorados para contraste */}
           <div className="flex flex-wrap gap-2">
-            <span className="bg-emerald-500 text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">
+            <span className="bg-brand-primary text-white text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">
               {pet.species}
             </span>
             <span className="bg-gray-100 text-gray-700 text-[11px] font-bold px-3 py-1 rounded-full tracking-wide">

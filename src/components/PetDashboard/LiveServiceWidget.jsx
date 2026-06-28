@@ -13,20 +13,20 @@ export default function LiveServiceWidget({ activeService, onOpenChat }) {
     <div className="bg-white rounded-2xl border-2 border-[#E9F3EE] p-6 shadow-sm mb-6 sticky top-24">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <span className="text-[10px] bg-emerald-100 text-[#006D44] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="text-[10px] bg-red-100 text-[#e23d28] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             Servicio en Vivo
           </span>
           <h2 className="text-lg font-black text-gray-900 mt-1.5">{activeService.title}</h2>
         </div>
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-brand-primary animate-pulse"></div>
       </div>
 
       {/* Barra de progreso de estados */}
-      <div className="my-6 relative pl-4 border-l-2 border-emerald-100 space-y-4">
+      <div className="my-6 relative pl-4 border-l-2 border-red-100 space-y-4">
         {activeService.steps.map((step, i) => (
           <div key={i} className="relative text-xs font-bold">
             <div className={`absolute -left-[21px] top-0.5 w-2 h-2 rounded-full border ${
-              step.completed ? 'bg-[#006D44] border-[#006D44]' : 'bg-white border-gray-300'
+              step.completed ? 'bg-[#e23d28] border-[#e23d28]' : 'bg-white border-gray-300'
             }`} />
             <span className={step.completed ? 'text-gray-950' : 'text-gray-400 font-medium'}>
               {step.label}
@@ -53,7 +53,7 @@ export default function LiveServiceWidget({ activeService, onOpenChat }) {
         </button>
       </div>
 
-      <button className="w-full py-3 bg-[#006D44] hover:bg-[#005233] text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center space-x-2">
+      <button className="w-full py-3 bg-[#e23d28] hover:bg-[#c93623] text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center space-x-2">
         <span>🗺️</span> <span>Ver Mapa en Tiempo Real</span>
       </button>
     </div>

@@ -17,7 +17,7 @@ export default function StepBasicInfo({ formData, updateData, onNext }) {
       <div className="space-y-6">
         {/* Subida de foto */}
         <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center bg-gray-50/50 hover:bg-gray-50 cursor-pointer transition-colors">
-          <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-3">
+          <div className="w-12 h-12 bg-red-100 text-brand-primary rounded-full flex items-center justify-center text-xl mb-3">
             📷
           </div>
           <p className="text-sm font-bold text-gray-700">Subir una foto (opcional)</p>
@@ -32,7 +32,7 @@ export default function StepBasicInfo({ formData, updateData, onNext }) {
             value={formData.name}
             onChange={(e) => updateData('name', e.target.value)}
             placeholder="Ej. Max, Luna..." 
-            className="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006D44]/20 focus:border-[#006D44]" 
+            className="w-full bg-gray-50 border border-gray-100 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28]" 
           />
         </div>
 
@@ -46,7 +46,7 @@ export default function StepBasicInfo({ formData, updateData, onNext }) {
                 onClick={() => updateData('species', opt.id)}
                 className={`flex flex-col items-center justify-center py-4 rounded-2xl border-2 transition-all ${
                   formData.species === opt.id 
-                    ? 'border-[#006D44] bg-emerald-50/50 text-[#006D44]' 
+                    ? 'border-[#e23d28] bg-red-50/50 text-[#e23d28]' 
                     : 'border-transparent bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -67,7 +67,7 @@ export default function StepBasicInfo({ formData, updateData, onNext }) {
               value={formData.breed}
               onChange={(e) => updateData('breed', e.target.value)}
               placeholder="Buscar raza..." 
-              className="w-full bg-gray-50 border border-gray-100 pl-10 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006D44]/20" 
+              className="w-full bg-gray-50 border border-gray-100 pl-10 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20" 
             />
           </div>
         </div>
@@ -85,10 +85,10 @@ export default function StepBasicInfo({ formData, updateData, onNext }) {
 
       {/* Footer del Step */}
       <div className="mt-10 pt-6 border-t border-gray-100 flex justify-end items-center space-x-4">
-        <button className="text-sm font-bold text-[#006D44] hover:text-[#005233]">Cancelar</button>
+        <button className="text-sm font-bold text-[#e23d28] hover:text-[#c93623]">Cancelar</button>
         <button 
           onClick={onNext}
-          className="bg-[#006D44] hover:bg-[#005233] text-white text-sm font-bold py-3 px-6 rounded-full shadow-md transition-colors flex items-center"
+          className="bg-[#e23d28] hover:bg-[#c93623] text-white text-sm font-bold py-3 px-6 rounded-full shadow-md transition-colors flex items-center"
         >
           Siguiente <span className="ml-2">→</span>
         </button>

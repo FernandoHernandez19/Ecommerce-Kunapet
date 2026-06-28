@@ -32,7 +32,7 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
               value={formData.businessName}
               onChange={(e) => updateData('businessName', e.target.value)}
               placeholder="Ej: Paseos Felices Lima"
-              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 pl-11 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#006D44]/20 focus:border-[#006D44] transition-all" 
+              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 pl-11 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] transition-all" 
             />
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
               value={formData.description}
               onChange={(e) => updateData('description', e.target.value.substring(0, MAX_DESC))}
               placeholder="Describe brevemente tu experiencia y lo que te hace especial cuidando mascotas..."
-              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 p-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#006D44]/20 focus:border-[#006D44] min-h-[120px] resize-none transition-all pb-8"
+              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 p-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] min-h-[120px] resize-none transition-all pb-8"
             />
             <span className={`absolute bottom-3 right-4 text-xs font-bold ${currentLength >= MAX_DESC ? 'text-red-500' : currentLength > 250 ? 'text-amber-500' : 'text-gray-400'}`}>
               {currentLength}/{MAX_DESC} caracteres
@@ -65,13 +65,13 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
         />
 
         <div className="mt-10 pt-6 border-t border-gray-100 flex justify-between items-center">
-          <button type="button" className="text-sm font-bold text-[#006D44] hover:text-[#005233] px-4 py-2">
+          <button type="button" className="text-sm font-bold text-[#e23d28] hover:text-[#c93623] px-4 py-2">
             Cancelar
           </button>
           <button 
             type="button"
             onClick={onNext}
-            className="bg-[#006D44] hover:bg-[#005233] text-white text-sm font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center"
+            className="bg-[#e23d28] hover:bg-[#c93623] text-white text-sm font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center"
           >
             Siguiente Paso <span className="ml-2 font-bold">→</span>
           </button>

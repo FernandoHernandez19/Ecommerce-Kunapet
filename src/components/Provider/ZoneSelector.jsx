@@ -25,7 +25,7 @@ export default function ZoneSelector({ selectedZones, onToggleZone }) {
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {zone} {isSelected && <span className="ml-2 text-emerald-700">×</span>}
+              {zone} {isSelected && <span className="ml-2 text-brand-primary">×</span>}
             </button>
           );
         })}
@@ -33,7 +33,7 @@ export default function ZoneSelector({ selectedZones, onToggleZone }) {
         {/* Botón para abrir modal/dropdown de más zonas */}
         <button 
           onClick={(e) => e.preventDefault()}
-          className="flex items-center px-4 py-2 rounded-full border border-dashed border-gray-400 text-gray-600 hover:text-[#006D44] hover:border-[#006D44] text-sm font-bold transition-colors"
+          className="flex items-center px-4 py-2 rounded-full border border-dashed border-gray-400 text-gray-600 hover:text-[#e23d28] hover:border-[#e23d28] text-sm font-bold transition-colors"
         >
           + Añadir otro
         </button>

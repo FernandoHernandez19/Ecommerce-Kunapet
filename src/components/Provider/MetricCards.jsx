@@ -4,8 +4,8 @@ export default function MetricCards({ metrics }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {[
-        { title: 'Ventas del mes', value: metrics.sales, icon: '💵', bg: 'bg-emerald-50', color: 'text-emerald-600' },
-        { title: 'Servicios activos', value: metrics.activeServices, icon: '🐾', bg: 'bg-emerald-500', color: 'text-white' },
+        { title: 'Ventas del mes', value: metrics.sales, icon: '💵', bg: 'bg-red-50', color: 'text-brand-primary' },
+        { title: 'Servicios activos', value: metrics.activeServices, icon: '🐾', bg: 'bg-brand-primary', color: 'text-white' },
         { title: 'Calificación', value: `${metrics.rating} (${metrics.reviews})`, icon: '⭐', bg: 'bg-amber-400', color: 'text-amber-900' },
         { title: 'Mensajes', value: metrics.messages, icon: '✉️', bg: 'bg-red-50', color: 'text-red-500' }
       ].map((card, idx) => (

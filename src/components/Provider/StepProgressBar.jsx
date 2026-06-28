@@ -25,13 +25,13 @@ export default function StepProgressBar({ currentStep }) {
               
               {/* Línea verde conectora (Completado) */}
               {index > 0 && (isActive || isCompleted) && (
-                <div className="absolute right-1/2 top-5 w-[50vw] sm:w-[150px] h-0.5 bg-[#006D44] -z-10 transition-all duration-500 ease-in-out"></div>
+                <div className="absolute right-1/2 top-5 w-[50vw] sm:w-[150px] h-0.5 bg-[#e23d28] -z-10 transition-all duration-500 ease-in-out"></div>
               )}
 
               {/* Círculo del Stepper */}
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-sm ${
-                isActive ? 'bg-[#006D44] text-white ring-4 ring-emerald-100' : 
-                isCompleted ? 'bg-[#006D44] text-white' : 
+                isActive ? 'bg-[#e23d28] text-white ring-4 ring-red-100' : 
+                isCompleted ? 'bg-[#e23d28] text-white' : 
                 'bg-white text-gray-400 border-2 border-gray-200'
               }`}>
                 {isCompleted ? (
@@ -43,7 +43,7 @@ export default function StepProgressBar({ currentStep }) {
               
               {/* Etiqueta de texto */}
               <span className={`text-xs font-bold mt-3 transition-colors duration-300 ${
-                isActive ? 'text-[#006D44]' : 
+                isActive ? 'text-[#e23d28]' : 
                 isCompleted ? 'text-gray-800' : 
                 'text-gray-400'
               }`}>

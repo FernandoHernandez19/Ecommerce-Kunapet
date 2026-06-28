@@ -61,7 +61,7 @@ export default function ServiceDetailPage(){
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-700"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
       </div>
     );
   }
@@ -78,11 +78,11 @@ export default function ServiceDetailPage(){
         <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
           <ol className="list-none p-0 inline-flex space-x-2">
             <li className="flex items-center">
-              <a href="/" className="hover:text-emerald-700 transition-colors">Inicio</a>
+              <a href="/" className="hover:text-brand-primary transition-colors">Inicio</a>
               <span className="mx-2">/</span>
             </li>
             <li className="flex items-center">
-              <a href="/servicios" className="hover:text-emerald-700 transition-colors">Servicios</a>
+              <a href="/servicios" className="hover:text-brand-primary transition-colors">Servicios</a>
               <span className="mx-2">/</span>
             </li>
             <li className="text-gray-800 font-medium" aria-current="page">{service.title}</li>

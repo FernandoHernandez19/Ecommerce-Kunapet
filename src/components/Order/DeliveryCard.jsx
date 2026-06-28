@@ -9,7 +9,7 @@ export default function DeliveryCard({ address, estimatedTime }) {
       </div>
 
       <h2 className="text-lg font-bold text-gray-900 flex items-center mb-4 relative z-10">
-        <span className="text-[#006D44] mr-2">🚚</span> Detalles de Entrega
+        <span className="text-[#e23d28] mr-2">🚚</span> Detalles de Entrega
       </h2>
 
       <div className="flex items-start space-x-3 mb-6 relative z-10">
@@ -21,8 +21,8 @@ export default function DeliveryCard({ address, estimatedTime }) {
         </div>
       </div>
 
-      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-center space-x-3 relative z-10">
-        <span className="text-emerald-600">⏱</span>
+      <div className="bg-red-50 border border-red-100 rounded-xl p-3 flex items-center space-x-3 relative z-10">
+        <span className="text-brand-primary">⏱</span>
         <div>
           <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Entrega Estimada</p>
           <p className="text-sm font-bold text-gray-900">{estimatedTime}</p>

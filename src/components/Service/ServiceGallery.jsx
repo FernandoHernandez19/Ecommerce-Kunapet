@@ -38,7 +38,7 @@ const ServiceGallery = () => {
           <button 
             type="button"
             onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="p-2.5 bg-white rounded-full shadow-md text-gray-700 hover:text-emerald-700 transition-colors focus:outline-none"
+            className="p-2.5 bg-white rounded-full shadow-md text-gray-700 hover:text-brand-primary transition-colors focus:outline-none"
             aria-label="Compartir servicio"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -55,7 +55,7 @@ const ServiceGallery = () => {
             key={index}
             onClick={() => setActiveImage(img)}
             className={`w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border-2 transition-all ${
-              activeImage === img ? 'border-emerald-600 scale-95 shadow-sm' : 'border-transparent opacity-80 hover:opacity-100'
+              activeImage === img ? 'border-brand-primary scale-95 shadow-sm' : 'border-transparent opacity-80 hover:opacity-100'
             }`}
           >
             <img src={img} alt={`Miniatura ${index + 1}`} className="w-full h-full object-cover" />

@@ -5,10 +5,10 @@ export default function ServiceCard({ provider, schedule }) {
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold text-gray-900 flex items-center">
-          <span className="text-[#006D44] mr-2">✣</span> Detalles del Servicio
+          <span className="text-[#e23d28] mr-2">✣</span> Detalles del Servicio
         </h2>
         {/* Mejora UX 2: Añadir al calendario */}
-        <button className="text-xs font-bold text-[#006D44] hover:text-[#005233] bg-emerald-50 px-3 py-1 rounded-full transition-colors flex items-center">
+        <button className="text-xs font-bold text-[#e23d28] hover:text-[#c93623] bg-red-50 px-3 py-1 rounded-full transition-colors flex items-center">
           📅 Añadir a Calendario
         </button>
       </div>

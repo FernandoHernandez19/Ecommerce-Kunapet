@@ -23,7 +23,7 @@ export default function PetCard({ pet }) {
         <div className="flex items-center space-x-2">
           <h3 className="font-bold text-gray-950 text-base truncate">{pet.name}</h3>
           <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-            isDog ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+            isDog ? 'bg-red-50 text-brand-primary' : 'bg-amber-50 text-amber-700'
           }`}>
             {pet.type}
           </span>
@@ -40,7 +40,7 @@ export default function PetCard({ pet }) {
           </div>
           <div className="text-right">
             <p className="text-gray-400 font-medium">Próxima Vacuna</p>
-            <p className={`font-bold ${pet.status === 'warning' ? 'text-amber-600' : 'text-emerald-600'}`}>
+            <p className={`font-bold ${pet.status === 'warning' ? 'text-amber-600' : 'text-brand-primary'}`}>
               {pet.status === 'warning' ? `📅 ${pet.nextVaccine}` : `✓ ${pet.nextVaccine}`}
             </p>
           </div>

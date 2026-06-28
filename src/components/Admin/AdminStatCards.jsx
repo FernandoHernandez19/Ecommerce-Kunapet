@@ -10,7 +10,7 @@ export default function AdminStatCards({ stats }) {
               {stat.icon}
             </div>
             {stat.trend && (
-              <span className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+              <span className="flex items-center text-xs font-bold text-brand-primary bg-red-50 px-2 py-1 rounded-full">
                 ↗ {stat.trend}
               </span>
             )}

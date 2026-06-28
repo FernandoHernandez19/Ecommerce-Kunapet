@@ -5,7 +5,7 @@ export default function ServiceCard({ service, onToggleActive, onDelete, isBatch
   // Estilos condicionales si la tarjeta está seleccionada
   const cardClasses = `bg-white rounded-3xl border p-6 transition-all flex flex-col h-full relative cursor-pointer ${
     isSelected 
-      ? 'border-[#006D44] ring-2 ring-[#006D44]/20 shadow-md' 
+      ? 'border-[#e23d28] ring-2 ring-[#e23d28]/20 shadow-md' 
       : 'border-gray-100 shadow-sm hover:shadow-md'
   }`;
 
@@ -21,7 +21,7 @@ export default function ServiceCard({ service, onToggleActive, onDelete, isBatch
             type="checkbox" 
             checked={isSelected}
             readOnly
-            className="w-6 h-6 text-[#006D44] bg-gray-100 border-gray-300 rounded focus:ring-[#006D44] cursor-pointer"
+            className="w-6 h-6 text-[#e23d28] bg-gray-100 border-gray-300 rounded focus:ring-[#e23d28] cursor-pointer"
           />
         </div>
       )}
@@ -54,7 +54,7 @@ export default function ServiceCard({ service, onToggleActive, onDelete, isBatch
       <div className="bg-[#F8F9FA] rounded-2xl p-4 flex justify-between items-center mb-6">
         <div>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Precio base</p>
-          <p className="text-xl font-black text-[#006D44]">{service.price}</p>
+          <p className="text-xl font-black text-[#e23d28]">{service.price}</p>
         </div>
         <div className="text-right">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Duración est.</p>
@@ -65,7 +65,7 @@ export default function ServiceCard({ service, onToggleActive, onDelete, isBatch
       </div>
 
       <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
-        <button disabled={isBatchMode} className="flex-1 border border-[#006D44] text-[#006D44] hover:bg-emerald-50 font-bold py-2.5 rounded-full text-sm transition-colors disabled:opacity-50">
+        <button disabled={isBatchMode} className="flex-1 border border-[#e23d28] text-[#e23d28] hover:bg-red-50 font-bold py-2.5 rounded-full text-sm transition-colors disabled:opacity-50">
           Editar
         </button>
         <button 

@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const PET_TYPES    = ['Perro', 'Gato', 'Ave', 'Exótico'];
-const CATEGORIES   = ['Alimentos', 'Medicina', 'Grooming', 'Veterinaria', 'Accesorios'];
-const DISTRICTS    = ['San Borja, Lima', 'Miraflores', 'Surco', 'La Molina', 'Barranco'];
+const PET_TYPES = ['Perro', 'Gato', 'Ave', 'Exótico'];
+const CATEGORIES = ['Alimentos', 'Medicina', 'Grooming', 'Veterinaria', 'Accesorios'];
+const DISTRICTS = ['San Borja, Lima', 'Miraflores', 'Surco', 'La Molina', 'Barranco'];
 
 const FilterSidebar = ({ onApply }) => {
-  const [selectedPets,       setSelectedPets]   = useState([]);
-  const [selectedCategories, setCategories]     = useState([]);
-  const [district,           setDistrict]       = useState('San Borja, Lima');
-  const [priceMin,           setPriceMin]       = useState('');
-  const [priceMax,           setPriceMax]       = useState('');
-  const [availableNow,       setAvailableNow]   = useState(false);
+  const [selectedPets, setSelectedPets] = useState([]);
+  const [selectedCategories, setCategories] = useState([]);
+  const [district, setDistrict] = useState('San Borja, Lima');
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [availableNow, setAvailableNow] = useState(false);
 
   const togglePet = (pet) =>
     setSelectedPets((prev) =>
@@ -44,7 +44,7 @@ const FilterSidebar = ({ onApply }) => {
         <h2 className="text-base font-bold text-gray-900">Filtros</h2>
         <button
           onClick={handleClear}
-          className="text-sm font-semibold text-red-500 hover:text-red-700 transition-colors"
+          className="text-sm font-semibold text-green-700 hover:text-green-800 transition-colors"
         >
           Limpiar
         </button>
@@ -60,11 +60,10 @@ const FilterSidebar = ({ onApply }) => {
               <button
                 key={pet}
                 onClick={() => togglePet(pet)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
-                  active
-                    ? 'bg-green-700 text-white border-green-700'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-green-500 hover:text-green-700'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${active
+                  ? 'bg-green-700 text-white border-green-700'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-green-500 hover:text-green-700'
+                  }`}
               >
                 {pet}
               </button>
@@ -155,14 +154,12 @@ const FilterSidebar = ({ onApply }) => {
         <h3 className="text-sm font-bold text-gray-800">Disponible Ahora</h3>
         <button
           onClick={() => setAvailableNow((v) => !v)}
-          className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 ${
-            availableNow ? 'bg-green-500' : 'bg-gray-300'
-          }`}
+          className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 ${availableNow ? 'bg-green-500' : 'bg-gray-300'
+            }`}
         >
           <span
-            className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-              availableNow ? 'translate-x-5' : 'translate-x-0'
-            }`}
+            className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${availableNow ? 'translate-x-5' : 'translate-x-0'
+              }`}
           />
         </button>
       </section>
@@ -170,7 +167,7 @@ const FilterSidebar = ({ onApply }) => {
       {/* ── Aplicar ── */}
       <button
         onClick={handleApply}
-        className="w-full py-2.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors mt-1"
+        className="w-full py-2.5 bg-green-700 hover:bg-green-800 active:bg-green-700 text-white text-sm font-bold rounded-xl transition-colors mt-1"
       >
         Aplicar Filtros
       </button>

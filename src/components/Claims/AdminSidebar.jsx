@@ -12,7 +12,7 @@ export default function AdminSidebar() {
     <aside className="w-64 bg-[#F8F9FA] border-r border-gray-200 h-screen fixed top-0 left-0 flex flex-col justify-between">
       <div className="py-8 space-y-8">
         <div className="px-8">
-          <h1 className="text-2xl font-bold text-[#006D44] tracking-tight">Portal Admin</h1>
+          <h1 className="text-2xl font-bold text-[#e23d28] tracking-tight">Portal Admin</h1>
           <p className="text-[11px] text-gray-500 font-semibold mt-1 uppercase tracking-wider">Gestión de Reclamos</p>
         </div>
         
@@ -22,7 +22,7 @@ export default function AdminSidebar() {
               key={i} 
               className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                 item.active 
-                  ? 'bg-emerald-200/50 text-[#006D44]' 
+                  ? 'bg-emerald-200/50 text-[#e23d28]' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
@@ -47,7 +47,7 @@ export default function AdminSidebar() {
               <p className="text-[11px] text-gray-500 font-medium">Perfil Admin</p>
             </div>
           </div>
-          <button className="w-full bg-[#006D44] hover:bg-[#005233] text-white font-bold py-2.5 px-4 rounded-full text-sm transition-all shadow-md">
+          <button className="w-full bg-[#e23d28] hover:bg-[#c93623] text-white font-bold py-2.5 px-4 rounded-full text-sm transition-all shadow-md">
             + Nuevo Reporte
           </button>
         </div>

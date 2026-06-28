@@ -3,7 +3,7 @@ import React from 'react';
 export default function ChatButton() {
   return (
     <button 
-      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-50 bg-[#006D44] hover:bg-[#005233] text-white px-6 py-3.5 rounded-full shadow-lg shadow-emerald-900/20 flex items-center space-x-2 transition-transform hover:scale-105 active:scale-95"
+      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-50 bg-[#e23d28] hover:bg-[#c93623] text-white px-6 py-3.5 rounded-full shadow-lg shadow-emerald-900/20 flex items-center space-x-2 transition-transform hover:scale-105 active:scale-95"
       aria-label="Iniciar chat de soporte"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">

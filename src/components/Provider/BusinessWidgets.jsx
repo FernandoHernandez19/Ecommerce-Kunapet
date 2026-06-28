@@ -20,20 +20,20 @@ export default function BusinessWidgets({ stockAlerts, growth }) {
             </div>
           ))}
         </div>
-        <button className="w-full py-2 border border-emerald-600 text-emerald-700 font-bold text-xs rounded-lg hover:bg-emerald-50">
+        <button className="w-full py-2 border border-brand-primary text-brand-primary font-bold text-xs rounded-lg hover:bg-red-50">
           Gestionar Inventario
         </button>
       </div>
 
       {/* Crecimiento Semanal */}
       <div className="bg-emerald-800 rounded-2xl p-5 text-white flex-1 relative overflow-hidden shadow-lg">
-        <h3 className="text-xs font-semibold text-emerald-100 mb-1">Crecimiento Semanal</h3>
+        <h3 className="text-xs font-semibold text-red-100 mb-1">Crecimiento Semanal</h3>
         <p className="text-3xl font-black mb-6">+{growth}%</p>
         
         {/* Simulación del gráfico de barras */}
         <div className="flex items-end space-x-1.5 h-12 mb-2">
           {[40, 50, 45, 60, 55, 80, 100].map((height, i) => (
-             <div key={i} className={`w-full rounded-t-sm ${i === 6 ? 'bg-white' : 'bg-emerald-500/50'}`} style={{ height: `${height}%` }}></div>
+             <div key={i} className={`w-full rounded-t-sm ${i === 6 ? 'bg-white' : 'bg-brand-primary/50'}`} style={{ height: `${height}%` }}></div>
           ))}
         </div>
         <p className="text-[9px] font-bold text-emerald-200 uppercase tracking-wider">Rendimiento vs semana pasada</p>

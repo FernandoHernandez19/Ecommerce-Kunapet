@@ -4,7 +4,7 @@ export default function OrderSummaryCard({ items, total }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-full flex flex-col">
       <h2 className="text-lg font-bold text-gray-900 flex items-center mb-6">
-        <span className="text-[#006D44] mr-2">🧾</span> Resumen de Pedido
+        <span className="text-[#e23d28] mr-2">🧾</span> Resumen de Pedido
       </h2>
 
       <div className="space-y-6 flex-1">
@@ -17,7 +17,7 @@ export default function OrderSummaryCard({ items, total }) {
               <div>
                 <h3 className="text-sm font-bold text-gray-900">{item.title}</h3>
                 <p className="text-xs text-gray-500 font-medium mb-1.5">{item.description}</p>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${item.type === 'Producto' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${item.type === 'Producto' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-emerald-800'}`}>
                   {item.type}
                 </span>
               </div>
@@ -29,7 +29,7 @@ export default function OrderSummaryCard({ items, total }) {
 
       <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-end">
         <span className="text-gray-600 font-medium">Total Pagado</span>
-        <span className="text-3xl font-black text-[#006D44]">{total}</span>
+        <span className="text-3xl font-black text-[#e23d28]">{total}</span>
       </div>
     </div>
   );

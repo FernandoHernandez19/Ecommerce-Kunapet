@@ -5,7 +5,7 @@ export default function TodayAgenda({ appointments }) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-bold text-gray-900">Agenda de hoy</h3>
-        <button className="text-sm font-semibold text-emerald-700 hover:text-emerald-800">Ver calendario completo</button>
+        <button className="text-sm font-semibold text-brand-primary hover:text-[#c93623]">Ver calendario completo</button>
       </div>
       
       <div className="space-y-6">
@@ -24,7 +24,7 @@ export default function TodayAgenda({ appointments }) {
             <div className="flex items-center space-x-3">
               <button className="p-2 text-gray-400 hover:text-gray-700 bg-gray-50 rounded-lg">💬</button>
               <button className={`px-4 py-2 rounded-lg text-xs font-bold transition-all w-24 text-center ${
-                apt.status === 'READY' ? 'bg-emerald-700 text-white shadow-md hover:bg-emerald-800' : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                apt.status === 'READY' ? 'bg-brand-primary text-white shadow-md hover:bg-[#c93623]' : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}>
                 {apt.statusText}
               </button>

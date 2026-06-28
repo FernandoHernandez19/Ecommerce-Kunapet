@@ -4,27 +4,8 @@ import CheckoutStepper from '../components/Checkout/CheckoutStepper';
 import PetSelector from '../components/Checkout/PetSelector';
 import PaymentMethods from '../components/Checkout/PaymentMethods';
 import OrderSummary from '../components/Checkout/OrderSummary';
+import AddressCard from '../components/Checkout/AddressCard';
 
-// Componente pequeño local para la dirección
-const AddressCard = () => (
-  <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mb-6">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-lg font-bold text-gray-900 flex items-center">
-        <span className="text-[#006D44] mr-2">🚚</span> Dirección de Envío y Servicio
-      </h2>
-      <button className="text-xs font-bold text-[#006D44] hover:text-[#005233]">Editar</button>
-    </div>
-    <div className="bg-[#FAF9F6] border border-gray-200 rounded-xl p-4 flex items-start space-x-3">
-      <span className="text-gray-400 mt-1">📍</span>
-      <div>
-        <p className="text-sm font-bold text-gray-900">Casa (Principal)</p>
-        <p className="text-sm text-gray-600 mt-1">Av. Javier Prado Este 456, Dpto 302</p>
-        <p className="text-sm text-gray-600">San Isidro, Lima, Perú</p>
-        <p className="text-xs text-gray-500 font-medium mt-2">Ref: Frente al parque El Olivar</p>
-      </div>
-    </div>
-  </div>
-);
 
 export default function CheckoutPage() {
   // Manejo de estado para controlar la validación de la compra

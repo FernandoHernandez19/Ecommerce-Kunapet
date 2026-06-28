@@ -13,7 +13,7 @@ export default function ServiceFilters({ activeCategory, setActiveCategory }) {
             onClick={() => setActiveCategory(cat)}
             className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
               activeCategory === cat
-                ? 'bg-emerald-300/40 text-[#006D44]'
+                ? 'bg-emerald-300/40 text-[#e23d28]'
                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             }`}
           >

@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { MapPin, Truck, Pencil } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function AddressCard({
   address = {
@@ -23,61 +23,40 @@ export default function AddressCard({
     country:    'Perú',
     reference:  'Frente al parque El Olivar',
   },
-  onEdit,
+  onEdit = () => {},
   isLoading = false,
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-surface-border p-6 shadow-card mb-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-          <span className="p-1.5 bg-brand-secondary-light rounded-lg">
-            <Truck size={16} className="text-brand-secondary" aria-hidden="true" />
-          </span>
-          Dirección de Envío y Servicio
-        </h2>
-
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-1.5 text-xs font-bold text-brand-secondary hover:text-brand-secondary-hover transition-colors"
-            aria-label="Editar dirección"
-          >
-            <Pencil size={12} />
-            Editar
-          </button>
-        )}
-      </div>
-
-      {/* Dirección */}
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6 flex items-center justify-between">
       {isLoading ? (
-        <div className="bg-surface-secondary rounded-xl p-4 animate-pulse">
+        <div className="flex-1 animate-pulse">
           <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
-          <div className="h-3 bg-gray-200 rounded w-2/3 mb-1" />
-          <div className="h-3 bg-gray-200 rounded w-1/2" />
+          <div className="h-3 bg-gray-200 rounded w-2/3" />
         </div>
       ) : (
-        <div className="bg-surface-secondary border border-surface-border rounded-xl p-4 flex items-start gap-3">
-          <MapPin
-            size={18}
-            className="text-gray-400 mt-0.5 shrink-0"
-            aria-hidden="true"
-          />
-          <address className="not-italic">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-brand-secondary-light/30 flex items-center justify-center shrink-0">
+            <MapPin size={20} className="text-brand-secondary" />
+          </div>
+          <div className="not-italic">
             <p className="text-sm font-bold text-gray-900 mb-0.5">
-              {address.label}
+              Dirección de Envío y Servicio
             </p>
-            <p className="text-sm text-gray-600">{address.street}</p>
-            <p className="text-sm text-gray-600">
-              {address.district}, {address.city}, {address.country}
+            <p className="text-xs text-gray-600">
+              {address.street}, {address.district}
             </p>
-            {address.reference && (
-              <p className="text-xs text-gray-400 font-medium mt-2">
-                Ref: {address.reference}
-              </p>
-            )}
-          </address>
+          </div>
         </div>
+      )}
+      
+      {!isLoading && (
+        <button
+          onClick={onEdit}
+          className="text-xs font-bold text-brand-secondary hover:text-brand-secondary-hover transition-colors underline-offset-2 hover:underline shrink-0 ml-4"
+          aria-label="Cambiar dirección"
+        >
+          Cambiar
+        </button>
       )}
     </div>
   );

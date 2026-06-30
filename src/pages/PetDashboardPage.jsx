@@ -4,9 +4,14 @@ import MedicalTab from '../components/PetDashboard/MedicalTab';
 import DietBehaviorTab from '../components/PetDashboard/DietBehaviorTab';
 import LiveServiceWidget from '../components/PetDashboard/LiveServiceWidget';
 import FastBookingCard from '../components/PetDashboard/FastBookingCard';
+import useAuthStore from '../store/useAuthStore'; // <-- Integración de Auth
+import Sidebar from '../components/Sidebar/Sidebar';
 
 export default function PetDashboardPage() {
   const [activeTab, setActiveTab] = useState('salud');
+  const { user } = useAuthStore(); // Usuario real
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Datos estructurados simulando la respuesta del backend para "Luna"
   const petData = {
@@ -57,59 +62,70 @@ export default function PetDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Layout en Grid Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Columna Izquierda (Datos Mascota) - Ocupa 8 de 12 subcolumnas */}
-          <div className="lg:col-span-8">
-            <PetHeroCard pet={petData} onEdit={handleEditProfile} />
+    <div className="flex min-h-screen bg-gray-50 text-gray-800">
+      {/* Panel Lateral de Navegación */}
+      <Sidebar user={user} />
+      <main className="flex-1 p-6 md:p-10 lg:ml-64">
+        <div className="min-h-screen bg-[#FDFDFD] py-8 px-4 sm:px-6 lg:px-8 font-sans">
+          <div className="max-w-6xl mx-auto">
 
-            {/* Selector de Pestañas (Mejora UX 2) */}
-            <div className="flex border-b border-gray-100 mb-6">
-              <button
-                onClick={() => setActiveTab('salud')}
-                className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${
-                  activeTab === 'salud' 
-                    ? 'border-[#006D44] text-[#006D44]' 
-                    : 'border-transparent text-gray-400 hover:text-gray-700'
-                }`}
-              >
-                🏥 Historial Médico
-              </button>
-              <button
-                onClick={() => setActiveTab('dieta')}
-                className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${
-                  activeTab === 'dieta' 
-                    ? 'border-[#006D44] text-[#006D44]' 
-                    : 'border-transparent text-gray-400 hover:text-gray-700'
-                }`}
-              >
-                🍖 Dieta & Conducta
-              </button>
+            {/* Layout en Grid Principal */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+              {/* Columna Izquierda (Datos Mascota) - Ocupa 8 de 12 subcolumnas */}
+              <div className="lg:col-span-8">
+                <PetHeroCard pet={petData} onEdit={handleEditProfile} />
+
+                {/* Selector de Pestañas (Mejora UX 2) */}
+                <div className="flex border-b border-gray-100 mb-6">
+                  <button
+                    onClick={() => setActiveTab('salud')}
+                    className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${activeTab === 'salud'
+                      ? 'border-[#006D44] text-[#006D44]'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                      }`}
+                  >
+                    🏥 Historial Médico
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('dieta')}
+                    className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${activeTab === 'dieta'
+                      ? 'border-[#006D44] text-[#006D44]'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                      }`}
+                  >
+                    🍖 Dieta & Conducta
+                  </button>
+                </div>
+
+                {/* Renderizado Condicional del Contenido de las Pestañas */}
+                <div className="bg-white p-2 rounded-2xl">
+                  {activeTab === 'salud' && <MedicalTab medicalRecords={petData.medical} />}
+                  {activeTab === 'dieta' && <DietBehaviorTab data={petData.dietBehavior} />}
+                </div>
+              </div>
+
+              {/* Columna Derecha (Tracking & Conversión) - Ocupa 4 de 12 subcolumnas */}
+              <div className="lg:col-span-4 space-y-2">
+                <LiveServiceWidget
+                  activeService={petData.currentService}
+                  onOpenChat={handleOpenChat}
+                />
+
+              </div>
+              <div className="lg:col-span-4">
+                <FastBookingCard />
+              </div>
+
             </div>
 
-            {/* Renderizado Condicional del Contenido de las Pestañas */}
-            <div className="bg-white p-2 rounded-2xl">
-              {activeTab === 'salud' && <MedicalTab medicalRecords={petData.medical} />}
-              {activeTab === 'dieta' && <DietBehaviorTab data={petData.dietBehavior} />}
-            </div>
           </div>
-
-          {/* Columna Derecha (Tracking & Conversión) - Ocupa 4 de 12 subcolumnas */}
-          <div className="lg:col-span-4 space-y-6">
-            <LiveServiceWidget 
-              activeService={petData.currentService} 
-              onOpenChat={handleOpenChat} 
-            />
-            <FastBookingCard />
-          </div>
-
         </div>
+      </main>
 
-      </div>
+
+
     </div>
+
   );
 }

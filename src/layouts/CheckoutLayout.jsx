@@ -5,8 +5,8 @@ export default function CheckoutLayout({ children }) {
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col">
       {/* Cabecera Minimalista */}
       <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 lg:px-12 sticky top-0 z-30">
-        <a href="/cart" className="flex items-center text-sm font-semibold text-gray-500 hover:text-brand-primary transition-colors">
-          <span className="mr-2">←</span> Volver al carrito
+        <a href="/marketplace" className="flex items-center text-sm font-semibold text-gray-500 hover:text-brand-secondary transition-colors">
+          <span className="mr-2">←</span> Seguir comprando
         </a>
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <span className="text-2xl font-black text-[#e23d28] tracking-tight">KunaPet</span>

@@ -78,7 +78,7 @@ export default function SelectRole() {
 
         {/* CLIENTE */}
         <RoleCard
-          to="/login"
+          to="/client-registration"
           icon={Users}
           iconColor="text-brand-primary"
           bgColor="bg-brand-primary-light"

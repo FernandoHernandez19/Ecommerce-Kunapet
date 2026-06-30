@@ -22,23 +22,23 @@ function validate(email, password) {
 
 // ─── Dashboard por rol ────────────────────────────────────────────────────────
 const DASHBOARD_BY_ROLE = {
-  [ROLES.CLIENT]:   '/clientdashboard',
+  [ROLES.CLIENT]: '/clientdashboard',
   [ROLES.PROVIDER]: '/providerdashboard',
-  [ROLES.ADMIN]:    '/admindashboard',
+  [ROLES.ADMIN]: '/admindashboard',
 };
 
 export default function Login() {
   // ── Formulario ────────────────────────────────────────────────────────────
-  const [email,         setEmail]         = useState('');
-  const [password,      setPassword]      = useState('');
-  const [showPassword,  setShowPassword]  = useState(false);
-  const [fieldErrors,   setFieldErrors]   = useState({});
-  const [touched,       setTouched]       = useState({ email: false, password: false });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({ email: false, password: false });
 
   // ── Store y navegación ────────────────────────────────────────────────────
   const { login, isLoading, error, clearError } = useAuthStore();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Si venía de una ruta protegida, volver a ella tras login
   const from = location.state?.from?.pathname;
@@ -64,18 +64,19 @@ export default function Login() {
     const result = await login({ email, password });
 
     if (result.success) {
-      // Redirigir: primero a la ruta de origen, luego al dashboard del rol
-      const destination =
-        from ?? DASHBOARD_BY_ROLE[result.user.role] ?? '/clientdashboard';
+      // Redirigir: primero a la ruta de origen (si venía de ProtectedRoute),
+      // si no, siempre al Home — el Hero adaptativo mostrará el panel personalizado.
+      const destination = from ?? '/';
       navigate(destination, { replace: true });
     }
+
   };
 
   // ── Credenciales de demo ──────────────────────────────────────────────────
   const DEMO_ACCOUNTS = [
-    { label: 'Cliente demo',   email: 'camila@kunapet.com',    role: 'client' },
+    { label: 'Cliente demo', email: 'camila@kunapet.com', role: 'client' },
     { label: 'Proveedor demo', email: 'proveedor@kunapet.com', role: 'provider' },
-    { label: 'Admin demo',     email: 'admin@kunapet.com',     role: 'admin' },
+    { label: 'Admin demo', email: 'admin@kunapet.com', role: 'admin' },
   ];
 
   const fillDemo = (demoEmail) => {
@@ -236,13 +237,14 @@ export default function Login() {
               {/* Botón Ingresar */}
               <Button
                 type="submit"
-                variant="primary"
+                variant="outline"
                 size="lg"
                 fullWidth
                 isLoading={isLoading}
                 rightIcon={!isLoading ? <ArrowRight size={18} /> : null}
               >
-                {isLoading ? 'Ingresando...' : 'Ingresar'}
+
+                {isLoading ? 'Ingresando...' : 'Iniciar Sesión'}
               </Button>
 
               {/* Divider */}

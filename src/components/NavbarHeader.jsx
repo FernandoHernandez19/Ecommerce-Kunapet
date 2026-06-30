@@ -9,6 +9,7 @@ import BrandImage from '../assets/Kunapet.png';
 import { Avatar, Badge } from './ui';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
+import CartDrawer from './CartDrawer';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const DASHBOARD_BY_ROLE = {
@@ -98,6 +99,7 @@ function CartButton() {
 function UserMenu({ user, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   // Cerrar al hacer click fuera
   useEffect(() => {
@@ -167,24 +169,22 @@ function UserMenu({ user, onLogout }) {
               <LayoutDashboard size={16} className="text-gray-400" aria-hidden="true" />
               Mi Dashboard
             </Link>
-            <Link
-              to="/order-confirmation"
+            <button
               role="menuitem"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors no-underline"
+              onClick={() => { setOpen(false); navigate('/clientdashboard', { state: { tab: 'orders' } }); }}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors w-full text-left"
             >
               <ShoppingBag size={16} className="text-gray-400" aria-hidden="true" />
               Mis Pedidos
-            </Link>
-            <Link
-              to="#"
+            </button>
+            <button
               role="menuitem"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors no-underline"
+              onClick={() => { setOpen(false); navigate('/clientdashboard', { state: { tab: 'settings' } }); }}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors w-full text-left"
             >
               <Settings size={16} className="text-gray-400" aria-hidden="true" />
               Configuración
-            </Link>
+            </button>
           </div>
 
           {/* Logout */}
@@ -349,6 +349,9 @@ export default function NavbarHeader() {
           </div>
         )}
       </div>
+
+      {/* Drawer del carrito, global a toda la app cuando el Navbar está visible */}
+      <CartDrawer />
     </header>
   );
 }

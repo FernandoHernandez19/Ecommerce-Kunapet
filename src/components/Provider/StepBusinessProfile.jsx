@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import ImageUploader from './ImageUploader';
 import ZoneSelector from './ZoneSelector';
 
 export default function StepBusinessProfile({ formData, updateData, onNext }) {
   const MAX_DESC = 300;
   const currentLength = formData.description.length;
+  const navigate = useNavigate();
 
   return (
     <div className="bg-white rounded-[2rem] p-8 md:p-10 shadow-sm border border-gray-100 relative overflow-hidden animate-fade-in-up">
@@ -27,12 +29,12 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
           </label>
           <div className="relative">
             <span className="absolute left-4 top-3.5 text-gray-400">🏪</span>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={formData.businessName}
               onChange={(e) => updateData('businessName', e.target.value)}
               placeholder="Ej: Paseos Felices Lima"
-              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 pl-11 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] transition-all" 
+              className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 pl-11 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] transition-all"
             />
           </div>
         </div>
@@ -42,7 +44,7 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
             Descripción Corta <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <textarea 
+            <textarea
               value={formData.description}
               onChange={(e) => updateData('description', e.target.value.substring(0, MAX_DESC))}
               placeholder="Describe brevemente tu experiencia y lo que te hace especial cuidando mascotas..."
@@ -54,21 +56,23 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
           </div>
         </div>
 
-        <ZoneSelector 
-          selectedZones={formData.zones} 
+        <ZoneSelector
+          selectedZones={formData.zones}
           onToggleZone={(zone) => {
-            const newZones = formData.zones.includes(zone) 
+            const newZones = formData.zones.includes(zone)
               ? formData.zones.filter(z => z !== zone)
               : [...formData.zones, zone];
             updateData('zones', newZones);
-          }} 
+          }}
         />
 
         <div className="mt-10 pt-6 border-t border-gray-100 flex justify-between items-center">
-          <button type="button" className="text-sm font-bold text-[#e23d28] hover:text-[#c93623] px-4 py-2">
+          <button type="button"
+            onClick={() => navigate('/select-role')}
+            className="text-sm font-bold text-[#e23d28] hover:text-[#c93623] px-4 py-2">
             Cancelar
           </button>
-          <button 
+          <button
             type="button"
             onClick={onNext}
             className="bg-[#e23d28] hover:bg-[#c93623] text-white text-sm font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center"

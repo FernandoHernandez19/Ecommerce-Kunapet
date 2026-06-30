@@ -1,17 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const PET_TYPES = ['Perro', 'Gato', 'Ave', 'Exótico'];
 const CATEGORIES = ['Alimentos', 'Medicina', 'Grooming', 'Veterinaria', 'Accesorios'];
 const DISTRICTS = ['San Borja, Lima', 'Miraflores', 'Surco', 'La Molina', 'Barranco'];
 
-const FilterSidebar = ({ onApply }) => {
+const FilterSidebar = ({ onApply, initialCategories = [] }) => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const categoryParam = searchParams.get('category');
+  const derivedInitialCategories = categoryParam ? categoryParam.split(',') : initialCategories;
+
   const [selectedPets, setSelectedPets] = useState([]);
-  const [selectedCategories, setCategories] = useState([]);
+  const [selectedCategories, setCategories] = useState(derivedInitialCategories);
   const [district, setDistrict] = useState('San Borja, Lima');
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');
   const [availableNow, setAvailableNow] = useState(false);
+  const [minRating, setMinRating] = useState(0);
+
+  useEffect(() => {
+    setCategories(derivedInitialCategories);
+  }, [categoryParam]);
 
   const togglePet = (pet) =>
     setSelectedPets((prev) =>
@@ -30,10 +41,11 @@ const FilterSidebar = ({ onApply }) => {
     setPriceMin('');
     setPriceMax('');
     setAvailableNow(false);
+    setMinRating(0);
   };
 
   const handleApply = () => {
-    onApply?.({ selectedPets, selectedCategories, district, priceMin, priceMax, availableNow });
+    onApply?.({ selectedPets, selectedCategories, district, priceMin, priceMax, availableNow, minRating });
   };
 
   return (
@@ -138,14 +150,25 @@ const FilterSidebar = ({ onApply }) => {
 
       {/* ── Calificación ── */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-bold text-gray-800">Calificación</h3>
-        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-          <div className="flex">
+        <h3 className="text-sm font-bold text-gray-800">Calificación Mínima</h3>
+        <div className="flex items-center justify-between gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
-              <span key={s} className="text-amber-400 text-base">★</span>
+              <button
+                key={s}
+                onClick={() => setMinRating(s === minRating ? 0 : s)}
+                className={`text-lg transition-colors hover:scale-110 active:scale-95 ${
+                  s <= minRating ? 'text-amber-400' : 'text-gray-300'
+                }`}
+                title={`${s} estrellas o más`}
+              >
+                ★
+              </button>
             ))}
           </div>
-          <span className="text-sm font-medium text-gray-700">4+ &amp; más</span>
+          <span className="text-sm font-medium text-gray-700">
+            {minRating > 0 ? `${minRating}+ & más` : 'Todas'}
+          </span>
         </div>
       </section>
 

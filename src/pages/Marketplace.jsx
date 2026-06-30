@@ -1,101 +1,10 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NavbarHeader from '../components/NavbarHeader';
 import FilterSidebar from '../components/FilterSidebar';
 import ProductCard from '../components/ProductCard';
-
-const MOCK_PRODUCTS = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=400&q=80',
-    title: 'NutriCan Pro Adultos Raza Grande - Sabor Pollo y Arroz 15kg',
-    provider: 'PetShop Central',
-    providerUrl: '#',
-    rating: 4.9,
-    reviewCount: 128,
-    price: 145.5,
-    originalPrice: 180.0,
-    priceLabel: 'S/',
-    category: 'Alimento Premium',
-    badge: 'bestseller',
-    distance: null,
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&q=80',
-    title: 'Bravecto Antipulgas Perros 10-20kg',
-    provider: 'VetExpress',
-    providerUrl: '#',
-    rating: 4.8,
-    reviewCount: 45,
-    price: 115.0,
-    originalPrice: null,
-    priceLabel: 'S/',
-    category: 'Medicina',
-    badge: null,
-    distance: null,
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&q=80',
-    title: 'Baño y Corte de Pelo Completo',
-    provider: "Spa Canino 'Pelusa'",
-    providerUrl: '#',
-    rating: 5.0,
-    reviewCount: 210,
-    price: 45.0,
-    originalPrice: null,
-    priceLabel: 'Desde',
-    category: 'Servicio • Grooming',
-    badge: 'available',
-    distance: '1.2 km',
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?w=400&q=80',
-    title: 'Juguete Kong Classic Masticable Rojo',
-    provider: 'PetMundo',
-    providerUrl: '#',
-    rating: 4.7,
-    reviewCount: 89,
-    price: 65.0,
-    originalPrice: null,
-    priceLabel: 'S/',
-    category: 'Accesorios',
-    badge: null,
-    distance: null,
-  },
-  {
-    id: 5,
-    image: 'https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=400&q=80',
-    title: 'Consulta Veterinaria General',
-    provider: 'Clinica Vet San Borja Sur',
-    providerUrl: '#',
-    rating: 4.9,
-    reviewCount: 156,
-    price: 60.0,
-    originalPrice: null,
-    priceLabel: 'Costo Fijo',
-    category: 'Servicio • Veterinaria',
-    badge: null,
-    distance: '0.8 km',
-  },
-  {
-    id: 6,
-    image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&q=80',
-    title: 'Collar Antipulgas y Garrapatas 8 meses',
-    provider: 'VetExpress',
-    providerUrl: '#',
-    rating: 4.6,
-    reviewCount: 34,
-    price: 89.9,
-    originalPrice: null,
-    priceLabel: 'S/',
-    category: 'Medicina',
-    badge: null,
-    distance: null,
-  },
-];
+import { mockMarketplaceItems } from '../data/mockData';
 
 const SORT_OPTIONS = [
   { value: 'recommended', label: 'Recomendados' },
@@ -105,14 +14,31 @@ const SORT_OPTIONS = [
 ];
 
 export default function Marketplace() {
-  const [products]              = useState(MOCK_PRODUCTS);
+  const [products]              = useState(mockMarketplaceItems);
   const [sortBy, setSortBy]     = useState('recommended');
   const [showSort, setShowSort] = useState(false);
-  const [filters, setFilters]   = useState({});
+  const navigate                = useNavigate();
+  const location                = useLocation();
 
-  const totalResults = 124;
-  const zone         = 'San Borja';
-  const petType      = 'Perros';
+  const searchParams = new URLSearchParams(location.search);
+  const categoryParam = searchParams.get('category');
+  const initialCategories = categoryParam ? categoryParam.split(',') : [];
+
+  const [filters, setFilters]   = useState({ selectedCategories: initialCategories });
+
+  const zone = filters.district || 'todo Lima';
+  
+  let petType = 'todas las mascotas';
+  if (filters.selectedPets?.length > 0) {
+    const plurals = filters.selectedPets.map(pet => pet + 's');
+    if (plurals.length === 1) {
+      petType = plurals[0];
+    } else if (plurals.length === 2) {
+      petType = plurals.join(' y ');
+    } else {
+      petType = plurals.slice(0, -1).join(', ') + ' y ' + plurals[plurals.length - 1];
+    }
+  }
 
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? 'Recomendados';
 
@@ -125,12 +51,64 @@ export default function Marketplace() {
     setShowSort(false);
   };
 
+  // 1. Filtrar productos
+  const filteredProducts = products.filter((product) => {
+    // Calificación mínima
+    if (filters.minRating && product.rating < filters.minRating) return false;
+    
+    // Rango de precio
+    if (filters.priceMin && product.price < Number(filters.priceMin)) return false;
+    if (filters.priceMax && product.price > Number(filters.priceMax)) return false;
+    
+    // Categorías (Macheo flexible usando includes)
+    if (filters.selectedCategories?.length > 0) {
+      const matchCat = filters.selectedCategories.some((cat) =>
+        product.category.toLowerCase().includes(cat.toLowerCase())
+      );
+      if (!matchCat) return false;
+    }
+    
+    // Tipo de Mascota (Macheo OR: mostrar si coincide con alguna de las seleccionadas)
+    if (filters.selectedPets?.length > 0) {
+      const matchPet = filters.selectedPets.some((pet) => 
+        product.targetPets?.includes(pet)
+      );
+      if (!matchPet) return false;
+    }
+
+    // Distrito (Mostrar si es Envío a todo Lima, o si coincide la ubicación)
+    if (filters.district) {
+      const distLower = filters.district.toLowerCase();
+      const locLower = product.location.toLowerCase();
+      const isGeneralDelivery = locLower.includes('envío');
+      const isDistrictMatch = distLower.includes(locLower) || locLower.includes(distLower);
+      if (!isGeneralDelivery && !isDistrictMatch) return false;
+    }
+
+    // Disponible Ahora
+    if (filters.availableNow && !product.availableNow) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // 2. Ordenar productos
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'price_asc') return a.price - b.price;
+    if (sortBy === 'price_desc') return b.price - a.price;
+    if (sortBy === 'rating') return b.rating - a.rating;
+    return 0; // 'recommended'
+  });
+
+  const totalResults = sortedProducts.length;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarHeader />
 
       <div className="flex max-w-screen-xl mx-auto">
-        <FilterSidebar onApply={handleApplyFilters} />
+        <FilterSidebar onApply={handleApplyFilters} initialCategories={initialCategories} />
 
         <main className="flex-1 px-6 py-6 min-w-0">
 
@@ -178,11 +156,12 @@ export default function Marketplace() {
 
           {/* Grid de productos */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {products.map((product) => (
+            {sortedProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 {...product}
-                onVerMas={() => console.log('Ver más:', product.id)}
+                provider={product.provider.name}
+                onVerMas={() => navigate('/item/' + product.id)}
               />
             ))}
           </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Heart, MapPin, ArrowRight, Award, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Heart, MapPin, ArrowRight, Award, Clock, ShoppingCart, Calendar } from 'lucide-react';
+import useCartStore, { ITEM_TYPES } from '../store/useCartStore';
 
 /**
  * ProductCard — muestra un producto o servicio del marketplace de KunaPet.
@@ -42,6 +44,7 @@ const StarRating = ({ rating }) => (
 );
 
 const ProductCard = ({
+  id,
   image,
   title,
   provider,
@@ -59,8 +62,33 @@ const ProductCard = ({
   const [favorited, setFavorited] = useState(false);
   const badgeMeta = badge ? BADGE_CONFIG[badge] : null;
 
+  const addItem = useCartStore((state) => state.addItem);
+  const navigate = useNavigate();
+
+  const isService = category && category.toLowerCase().includes('servicio');
+
+  const handleActionClick = (e) => {
+    e.stopPropagation();
+    if (isService) {
+      // Redirige al detalle para configuración obligatoria (fecha, mascota)
+      navigate(`/item/${id}`);
+    } else {
+      addItem({
+        id,
+        title,
+        price,
+        image,
+        provider,
+        type: ITEM_TYPES.PRODUCT
+      });
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+    <div 
+      onClick={onVerMas}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col cursor-pointer"
+    >
 
       {/* Image area */}
       <div className="relative w-full h-44 bg-gray-100 overflow-hidden">
@@ -93,7 +121,10 @@ const ProductCard = ({
 
         {/* Favorite button */}
         <button
-          onClick={() => setFavorited((v) => !v)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setFavorited((v) => !v);
+          }}
           aria-label={favorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:scale-110 transition-transform"
         >
@@ -125,6 +156,7 @@ const ProductCard = ({
           Proporcionado por{' '}
           <a
             href={providerUrl}
+            onClick={(e) => e.stopPropagation()}
             className="text-green-600 hover:underline font-medium"
           >
             {provider}
@@ -160,11 +192,15 @@ const ProductCard = ({
           </div>
 
           <button
-            onClick={onVerMas}
-            className="flex items-center gap-1.5 px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold rounded-xl transition-colors"
+            onClick={handleActionClick}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+              isService 
+                ? "bg-white border-2 border-green-700 text-green-700 hover:bg-green-50" 
+                : "bg-green-700 hover:bg-green-800 text-white"
+            }`}
           >
-            Ver más
-            <ArrowRight className="w-3.5 h-3.5" />
+            {isService ? <Calendar className="w-3.5 h-3.5" /> : <ShoppingCart className="w-3.5 h-3.5" />}
+            {isService ? "Agendar" : "Añadir"}
           </button>
         </div>
       </div>

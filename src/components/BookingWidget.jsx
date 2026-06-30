@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import useCartStore, { ITEM_TYPES } from '../store/useCartStore';
 
-const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
+const BookingWidget = ({ basePrice, serviceFee, serviceId, item }) => {
   const [date, setDate] = useState('');
   const [selectedTime, setSelectedTime] = useState(null);
   const [dogCount, setDogCount] = useState(1);
@@ -20,21 +21,23 @@ const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
   const handleIncrement = () => setDogCount(prev => prev + 1);
   const handleDecrement = () => setDogCount(prev => Math.max(1, prev - 1));
 
+  const addItem = useCartStore(state => state.addItem);
+
   const handleCheckout = (e) => {
     e.preventDefault();
-    if (!date) return alert("Por favor, selecciona una fecha para el paseo.");
+    if (!date) return alert("Por favor, selecciona una fecha para la reserva.");
     if (!selectedTime) return alert("Por favor, selecciona un horario disponible.");
 
-    const orderPayload = {
-      serviceId,
-      date,
-      time: selectedTime,
+    addItem({
+      ...item,
+      id: `${serviceId}-${date}-${selectedTime}`, 
+      originalId: serviceId,
+      provider: typeof item?.provider === 'string' ? item.provider : item?.provider?.name,
+      type: ITEM_TYPES.SERVICE,
       quantity: dogCount,
-      totalAmount: total
-    };
-    
-    console.log("Payload enviado al checkout/carrito:", orderPayload);
-    // Aquí puedes disparar tu acción de Redux, Context o redirección a la pasarela
+      bookingDate: date,
+      bookingTime: selectedTime,
+    });
   };
 
   return (
@@ -141,7 +144,7 @@ const BookingWidget = ({ basePrice, serviceFee, serviceId }) => {
           type="submit"
           className="w-full bg-brand-primary hover:bg-[#c93623] text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-700/10 hover:shadow-emerald-700/20 active:scale-[0.99] transition-all text-center block text-sm"
         >
-          Reservar Paseo
+          Añadir al Carrito
         </button>
         
         <p className="text-center text-xs text-gray-400 font-medium">No se te cobrará aún</p>

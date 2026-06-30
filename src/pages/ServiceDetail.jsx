@@ -1,53 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Navbar from '../components/NavbarHeader';
 import ServiceGallery from '../components/Service/ServiceGallery';
 import ServiceInfo from '../components/Service/ServiceInfo';
 import ServiceDescription from '../components/Service/ServiceDescription';
 import ProviderProfileCard from '../components/ProviderProfileCard';
 import BookingWidget from '../components/BookingWidget';
+import AddToCartWidget from '../components/AddToCartWidget';
 import ReviewsSection from '../components/Service/ReviewsSection';
 import RelatedServices from '../components/Service/RelatedServices';
+import { mockMarketplaceItems } from '../data/mockData';
 
 
 export default function ServiceDetailPage(){
-
+  const { id } = useParams();
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulación de fetch a la API para obtener el detalle del servicio
+    // Simulación de fetch a la API para obtener el detalle del servicio o producto
     const fetchServiceData = async () => {
       try {
-        // Aquí conectarías con tu endpoint de backend
-        const mockData = {
-          id: "serv_01",
-          title: "Paseo Premium en Manada (1 Hora)",
-          rating: 4.9,
-          reviewsCount: 1211,
-          location: "Palermo, Buenos Aires",
-          targetDogs: "Perros Medianos y Grandes",
-          isBestRated: true,
-          basePrice: 12500,
-          serviceFee: 500,
-          description: "Un paseo diseñado para que tu perro libere energía, socialice de forma segura y disfrute al máximo. Recogemos a tu mascota en la puerta de tu casa y lo llevamos a parques grandes donde conformamos grupos pequeños y equilibrados. Durante la hora de paseo, realizamos juegos, caminatas a buen ritmo y ejercicios básicos de obediencia.",
-          extraInfo: "Ideal para perros con alta energía que necesitan más que solo caminar. Todos nuestros paseadores cuentan con certificación en primeros auxilios caninos y llevan agua fresca y bolsas compostables.",
-          features: [
-            { id: 1, label: "60 Minutos", type: "duration" },
-            { id: 2, label: "Alta Actividad", type: "activity" },
-            { id: 3, label: "Seguro Incluido", type: "insurance" },
-            { id: 4, label: "Reporte Diario", type: "report" }
-          ],
-          provider: {
-            id: "prov_99",
-            name: "Carlos Mendoza",
-            title: "Paseador Canino Profesional & Adiestrador Básico",
-            experience: "3 Años exp.",
-            completedWalks: "450+ Paseos",
-            isVerified: true,
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" // Placeholder profesional
-          }
-        };
-        setService(mockData);
+        // Buscamos el ítem por id en los mock data
+        const foundItem = mockMarketplaceItems.find((item) => String(item.id) === String(id));
+        setService(foundItem || null);
       } catch (error) {
         console.error("Error cargando el servicio:", error);
       } finally {
@@ -66,7 +42,9 @@ export default function ServiceDetailPage(){
     );
   }
 
-  if (!service) return <div className="text-center py-12">Servicio no encontrado</div>;
+  if (!service) return <div className="text-center py-12">Ítem no encontrado</div>;
+
+  const isService = service.category && service.category.toLowerCase().includes('servicio');
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -82,7 +60,11 @@ export default function ServiceDetailPage(){
               <span className="mx-2">/</span>
             </li>
             <li className="flex items-center">
-              <a href="/servicios" className="hover:text-brand-primary transition-colors">Servicios</a>
+              <a href="/marketplace" className="hover:text-brand-primary transition-colors">Marketplace</a>
+              <span className="mx-2">/</span>
+            </li>
+            <li className="flex items-center">
+              <span className="text-gray-500">{service.category}</span>
               <span className="mx-2">/</span>
             </li>
             <li className="text-gray-800 font-medium" aria-current="page">{service.title}</li>
@@ -118,11 +100,21 @@ export default function ServiceDetailPage(){
 
           {/* COLUMNA DERECHA: Widget de Reserva (1/3 de ancho, se mantiene fijo al hacer scroll) */}
           <div className="lg:col-span-1 lg:sticky lg:top-24">
-            <BookingWidget 
-              basePrice={service.basePrice}
-              serviceFee={service.serviceFee}
-              serviceId={service.id}
-            />
+            {isService ? (
+              <BookingWidget 
+                basePrice={service.basePrice}
+                serviceFee={service.serviceFee}
+                serviceId={service.id}
+                item={service}
+              />
+            ) : (
+              <AddToCartWidget 
+                basePrice={service.basePrice}
+                serviceFee={service.serviceFee}
+                serviceId={service.id}
+                item={service}
+              />
+            )}
           </div>
         </div>
 

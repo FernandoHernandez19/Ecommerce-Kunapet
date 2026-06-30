@@ -86,33 +86,7 @@ const useCartStore = create(
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((s) => ({ isOpen: !s.isOpen })),
 
-      // ── SELECTORS (valores derivados) ─────────────────────────────────────────
-      // Cantidad total de items (suma de quantities)
-      get totalItems() {
-        return get().items.reduce((sum, i) => sum + i.quantity, 0);
-      },
-
-      // Subtotal (sin fees)
-      get subtotal() {
-        return get().items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      },
-
-      // ¿Hay productos físicos? → aplica shipping
-      get hasPhysicalProducts() {
-        return get().items.some((i) => i.type === ITEM_TYPES.PRODUCT);
-      },
-
-      // Totales finales
-      get totals() {
-        const sub = get().subtotal;
-        const shipping = get().hasPhysicalProducts ? SHIPPING_FEE : 0;
-        return {
-          subtotal:    sub,
-          shipping,
-          platformFee: sub > 0 ? PLATFORM_FEE : 0,
-          total:       sub + shipping + (sub > 0 ? PLATFORM_FEE : 0),
-        };
-      },
+      // Los totales se calculan a través del hook useCartTotals fuera del store
     }),
     {
       name:    'kunapet-cart',
@@ -121,5 +95,20 @@ const useCartStore = create(
     }
   )
 );
+
+export const useCartTotals = () => {
+  const items = useCartStore((state) => state.items);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const hasPhysicalProducts = items.some((i) => i.type === ITEM_TYPES.PRODUCT);
+  const shipping = hasPhysicalProducts ? SHIPPING_FEE : 0;
+  const platformFee = subtotal > 0 ? PLATFORM_FEE : 0;
+  
+  return {
+    subtotal,
+    shipping,
+    platformFee,
+    total: subtotal + shipping + platformFee
+  };
+};
 
 export default useCartStore;

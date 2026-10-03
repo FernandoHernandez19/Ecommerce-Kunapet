@@ -8,7 +8,8 @@ Como parte de mi crecimiento profesional y buscando alineamiento con los estánd
 *   **Evolución de Estilos:** Reemplacé *Bootstrap* por **Tailwind CSS**, adoptando un enfoque de clases utilitarias que elimina el CSS redundante y permite un diseño *Mobile-First* 100% personalizado.
 
 ## 🛠️ Stack Tecnológico
-*   **Frontend:** React (Hooks, Context/Zustand para estado global - *en desarrollo*)
+*   **Frontend:** React (Hooks, Zustand (auth, carrito, mascotas), Estado actual: frontend completo con datos mock en src/data y src/services)
+*   **Backend Node/Express** en construcción
 *   **Estilos:** Tailwind CSS (Diseño Responsivo & Custom UI)
 *   **Herramienta de Construcción:** Vite
 *   **Control de Versiones:** Git & GitHub (Siguiendo la convención de Git Commits)
@@ -24,4 +25,5 @@ Si deseas ejecutar este proyecto en tu entorno local, sigue estos pasos:
 
 1. Clonar el repositorio:
 ```bash
-   git clone [https://github.com/CatGolden98/Ecommerce-Kunapet.git](https://github.com/CatGolden98/Ecommerce-Kunapet.git)
+   git clone [https://github.com/FernandoHernandez19/Ecommerce-Kunapet.git](https://github.com/FernandoHernandez19/Ecommerce-Kunapet.git)
+   

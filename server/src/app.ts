@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import type { Config } from './config/env.js';
 import { createAuthController } from './controllers/authController.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { createAuthenticate } from './middleware/auth.js';
 import { LoginRateLimiter } from './middleware/loginRateLimiter.js';
 import { InMemoryUserRepository, type UserRepository } from './repositories/UserRepository.js';
 import { authRouter } from './routes/auth.js';
@@ -19,11 +20,9 @@ export interface AppDependencies {
 
 export function createApp(config: Config, deps: Partial<AppDependencies> = {}): Express {
   const userRepository = deps.userRepository ?? new InMemoryUserRepository();
-  const authService = new AuthService(
-    userRepository,
-    new TokenService(config.jwtSecret),
-    config.bcryptCost,
-  );
+  const tokenService = new TokenService(config.jwtSecret);
+  const authService = new AuthService(userRepository, tokenService, config.bcryptCost);
+  const authenticate = createAuthenticate(tokenService, userRepository);
 
   const app = express();
   app.disable('x-powered-by');
@@ -41,7 +40,7 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
 
   const api = express.Router();
   api.use(healthRouter());
-  api.use('/auth', authRouter(createAuthController(authService, new LoginRateLimiter())));
+  api.use('/auth', authRouter(createAuthController(authService, new LoginRateLimiter()), authenticate));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

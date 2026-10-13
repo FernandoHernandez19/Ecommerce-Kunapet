@@ -26,7 +26,7 @@ export class ValidationError extends AppError {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = 'No autenticado.') {
+  constructor(message = 'No autenticado o token inválido.') {
     super(401, 'unauthorized', message);
   }
 }

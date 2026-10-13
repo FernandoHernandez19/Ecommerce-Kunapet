@@ -47,7 +47,7 @@ export const loginSchema = z.object({
 export function createAuthController(
   auth: AuthService,
   loginLimiter: LoginRateLimiter,
-): { register: RequestHandler; login: RequestHandler } {
+): { register: RequestHandler; login: RequestHandler; me: RequestHandler } {
   return {
     register: async (req, res) => {
       const input = parseOrThrow(registerSchema, req.body);
@@ -58,6 +58,9 @@ export function createAuthController(
       const { email, password } = parseOrThrow(loginSchema, req.body);
       loginLimiter.hit(`${req.ip ?? 'desconocida'}|${email}`);
       res.json(await auth.login(email, password));
+    },
+    me: (req, res) => {
+      res.json({ user: req.user });
     },
   };
 }

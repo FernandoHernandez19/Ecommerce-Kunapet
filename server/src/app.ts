@@ -2,12 +2,23 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import type { Config } from './config/env.js';
+import { createAuthController } from './controllers/authController.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { InMemoryUserRepository, type UserRepository } from './repositories/UserRepository.js';
+import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
+import { AuthService } from './services/AuthService.js';
 
 export const API_PREFIX = '/api/v1';
 
-export function createApp(config: Config): Express {
+export interface AppDependencies {
+  userRepository: UserRepository;
+}
+
+export function createApp(config: Config, deps: Partial<AppDependencies> = {}): Express {
+  const userRepository = deps.userRepository ?? new InMemoryUserRepository();
+  const authService = new AuthService(userRepository, config.bcryptCost);
+
   const app = express();
   app.disable('x-powered-by');
 
@@ -24,6 +35,7 @@ export function createApp(config: Config): Express {
 
   const api = express.Router();
   api.use(healthRouter());
+  api.use('/auth', authRouter(createAuthController(authService)));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

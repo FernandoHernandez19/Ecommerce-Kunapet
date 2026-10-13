@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 import { z } from 'zod';
 import { parseOrThrow } from '../errors/validate.js';
+import type { LoginRateLimiter } from '../middleware/loginRateLimiter.js';
 import type { AuthService } from '../services/AuthService.js';
 import { REGISTRABLE_ROLES } from '../types/user.js';
 
@@ -35,12 +36,28 @@ export const registerSchema = z.object({
     .transform((v) => (v ? v : null)),
 });
 
-export function createAuthController(auth: AuthService): { register: RequestHandler } {
+export const loginSchema = z.object({
+  email,
+  password: z
+    .string({ error: 'La contraseña es obligatoria.' })
+    .min(1, 'La contraseña es obligatoria.')
+    .max(200, 'Contraseña demasiado larga.'),
+});
+
+export function createAuthController(
+  auth: AuthService,
+  loginLimiter: LoginRateLimiter,
+): { register: RequestHandler; login: RequestHandler } {
   return {
     register: async (req, res) => {
       const input = parseOrThrow(registerSchema, req.body);
       const user = await auth.register(input);
       res.status(201).json({ user });
+    },
+    login: async (req, res) => {
+      const { email, password } = parseOrThrow(loginSchema, req.body);
+      loginLimiter.hit(`${req.ip ?? 'desconocida'}|${email}`);
+      res.json(await auth.login(email, password));
     },
   };
 }

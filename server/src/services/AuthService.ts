@@ -1,6 +1,8 @@
+import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { ConflictError } from '../errors/AppError.js';
+import { ConflictError, UnauthorizedError } from '../errors/AppError.js';
 import type { UserRepository } from '../repositories/UserRepository.js';
+import { TOKEN_TTL_SECONDS, type TokenService } from './TokenService.js';
 import { toPublicUser, type RegistrableRole, type User } from '../types/user.js';
 
 export interface RegisterInput {
@@ -11,11 +13,39 @@ export interface RegisterInput {
   phone: string | null;
 }
 
+export interface LoginResult {
+  user: User;
+  token: string;
+  expiresIn: number;
+}
+
+export const INVALID_CREDENTIALS_MESSAGE = 'Correo o contraseña incorrectos.';
+
 export class AuthService {
+  // Hash ficticio con el mismo costo: se compara cuando el email no existe
+  // para que el tiempo de respuesta no revele qué correos están registrados.
+  private readonly dummyHash: string;
+
   constructor(
     private readonly users: UserRepository,
+    private readonly tokens: TokenService,
     private readonly bcryptCost: number,
-  ) {}
+  ) {
+    this.dummyHash = bcrypt.hashSync(randomUUID(), bcryptCost);
+  }
+
+  async login(email: string, password: string): Promise<LoginResult> {
+    const record = await this.users.findByEmail(email);
+    const valid = await bcrypt.compare(password, record?.passwordHash ?? this.dummyHash);
+    if (!record || !valid) {
+      throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE);
+    }
+    return {
+      user: toPublicUser(record),
+      token: this.tokens.sign(record.id, record.role),
+      expiresIn: TOKEN_TTL_SECONDS,
+    };
+  }
 
   async register(input: RegisterInput): Promise<User> {
     // El email llega normalizado desde la validación (minúsculas).

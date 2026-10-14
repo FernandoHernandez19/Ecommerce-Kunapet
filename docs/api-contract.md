@@ -41,6 +41,7 @@ Todos los errores usan la misma forma. Nunca incluyen stack traces ni mensajes i
 | 403 | `forbidden` | Autenticado pero sin el rol requerido. |
 | 404 | `not_found` | Ruta o recurso inexistente (o ajeno, ver §2.3). |
 | 409 | `conflict` | Conflicto de unicidad (p. ej. email ya registrado). |
+| 422 | `unprocessable_entity` | La petición es válida pero no se puede procesar (p. ej. pedir un item inactivo). |
 | 429 | `rate_limited` | Demasiados intentos (login). |
 | 500 | `internal_error` | Error inesperado; mensaje genérico. |
 
@@ -134,9 +135,9 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
   ```json
   { "items": [ { "itemId": "b7e1c8a2-…", "quantity": 2 } ], "paymentMethod": "yape" }
   ```
-  - `items`: 1 o más; `quantity` entero 1–20; `paymentMethod`: `card` | `yape` | `transfer`.
-  - **El servidor ignora cualquier precio enviado** y lo toma del catálogo. Calcula: `subtotalCents` = Σ precio × cantidad; `shippingCents` = 1500 solo si hay al menos un ítem `type=product`, si no 0; `platformFeeCents` = 250; `totalCents` = suma de los tres.
-- `201`: `{ "data": Order }`. Errores: `400` (incluye ítems inexistentes/inactivos o sin stock), `401`, `403`.
+  - `items`: de 1 a 20 líneas, sin repetir `itemId`; `quantity` entero 1–20; `paymentMethod`: `card` | `yape` | `transfer`.
+  - **El servidor no acepta precios ni totales**: el body es estricto y cualquier campo desconocido (`price`, `total`, `shippingCents`…) responde 400. El precio unitario y el título se toman del catálogo en ese instante y se guardan como copia en el pedido. Calcula: `subtotalCents` = Σ precio × cantidad; `shippingCents` = 1500 solo si hay al menos un ítem `type=product`, si no 0; `platformFeeCents` = 250 si el subtotal es > 0; `totalCents` = suma de los tres.
+- `201`: `{ "data": Order }`. Errores: `400` (body inválido, cantidad fuera de 1–20, campos desconocidos), `401`, `403` (provider/admin), `404` (item inexistente), `422` (item inactivo).
 
 ### GET /orders · GET /orders/:id
 - Rol: `client`, solo propios. `GET /orders` paginada, más recientes primero. Errores: `401`, `403`, `404` (ajeno o inexistente).
@@ -197,7 +198,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | Campo | Tipo | Notas |
 |---|---|---|
 | `id`, `clientId` | string (UUID) | |
-| `status` | `pending`\|`confirmed`\|`preparing`\|`shipping`\|`delivered`\|`cancelled` | nace `pending` |
+| `status` | `pending_payment`\|`confirmed`\|`preparing`\|`shipping`\|`delivered`\|`cancelled` | nace `pending_payment`; en esta fase no hay transiciones ni pago real |
 | `paymentMethod` | `card`\|`yape`\|`transfer` | |
 | `items[]` | `{ itemId, title, type, unitPriceCents, quantity, lineTotalCents }` | instantánea del precio al comprar |
 | `subtotalCents`, `shippingCents`, `platformFeeCents`, `totalCents` | entero | |
@@ -205,7 +206,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `createdAt`, `updatedAt` | string (ISO) | |
 
 ```json
-{ "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d", "clientId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "status": "pending", "paymentMethod": "yape", "items": [ { "itemId": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "title": "Alimento NutriCan 15kg", "type": "product", "unitPriceCents": 14550, "quantity": 2, "lineTotalCents": 29100 } ], "subtotalCents": 29100, "shippingCents": 1500, "platformFeeCents": 250, "totalCents": 30850, "currency": "PEN", "createdAt": "2025-06-29T14:00:00.000Z", "updatedAt": "2025-06-29T14:00:00.000Z" }
+{ "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d", "clientId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "status": "pending_payment", "paymentMethod": "yape", "items": [ { "itemId": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "title": "Alimento NutriCan 15kg", "type": "product", "unitPriceCents": 14550, "quantity": 2, "lineTotalCents": 29100 } ], "subtotalCents": 29100, "shippingCents": 1500, "platformFeeCents": 250, "totalCents": 30850, "currency": "PEN", "createdAt": "2025-06-29T14:00:00.000Z", "updatedAt": "2025-06-29T14:00:00.000Z" }
 ```
 
 ## 6. Mapa del frontend → API
@@ -255,3 +256,7 @@ Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica d
 | 1 | Los items inactivos son visibles para su proveedor en `GET /items` y `GET /items/:id` (antes: nunca). | El proveedor necesita ver y reactivar lo que desactivó (`DELETE` desactiva). |
 | 2 | `priceCents` es un entero ≥ 1 (antes ≥ 0). | Un item gratis no tiene sentido y evita comisión sobre subtotal 0. |
 | 3 | `DELETE /items/:id` desactiva en vez de borrar; `PATCH` no permite cambiar `type`. | Los pedidos conservan una copia del título y precio, pero el historial del proveedor no debe perder el item. |
+| 4 | Nuevo código `unprocessable_entity` (422). | Distingue "item inexistente" (404) de "item inactivo" (422) al crear un pedido. |
+| 5 | `Order.status` inicial es `pending_payment` (antes `pending`). | Deja claro que falta el pago, que no existe todavía. |
+| 6 | `POST /orders` rechaza (400) campos desconocidos en vez de ignorarlos, admite máximo 20 líneas y no repite `itemId`. | Un precio enviado es una señal de cliente manipulado o desactualizado; mejor fallar que ignorar en silencio. |
+| 7 | El stock no se valida ni se descuenta en esta fase (antes: "sin stock → 400"). | Sin pago ni transiciones de estado no hay forma correcta de reservar stock. Queda para la fase de pagos. |

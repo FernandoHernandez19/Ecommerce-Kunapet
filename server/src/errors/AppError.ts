@@ -4,6 +4,7 @@ export type ErrorCode =
   | 'forbidden'
   | 'not_found'
   | 'conflict'
+  | 'unprocessable_entity'
   | 'rate_limited'
   | 'internal_error';
 
@@ -46,6 +47,12 @@ export class NotFoundError extends AppError {
 export class ConflictError extends AppError {
   constructor(message = 'El recurso ya existe.') {
     super(409, 'conflict', message);
+  }
+}
+
+export class UnprocessableError extends AppError {
+  constructor(message = 'No se puede procesar la solicitud.', details?: unknown) {
+    super(422, 'unprocessable_entity', message, details);
   }
 }
 

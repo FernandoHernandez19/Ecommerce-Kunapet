@@ -18,7 +18,10 @@ Copia `.env.example` a `.env` y complétalo. `.env` está ignorado por git; nunc
 | `JWT_SECRET` | Sí | Mínimo 32 caracteres. Si falta o es corto, el servidor **no arranca**. |
 | `BCRYPT_COST` | No | Costo de bcrypt (4–15). Por defecto 10. |
 | `CORS_ORIGINS` | No | Orígenes permitidos separados por comas (p. ej. el de Vite). Vacío = ninguno. |
+| `TRUST_PROXY` | No | Saltos de proxy de confianza (0 por defecto). Pon `1` detrás de Render, Vercel o nginx; con `0` se ignora `X-Forwarded-For`. |
 | `PORT` | No | Puerto HTTP. Por defecto 3000. |
+
+`npm run dev` carga `.env` solo en desarrollo (`--env-file-if-exists`); con `npm start` (producción) las variables deben venir del entorno.
 
 Para generar un secreto localmente:
 
@@ -63,8 +66,7 @@ Capas: `routes → controllers → services → repositories`. Los repositorios 
 cd server
 npm ci
 cp .env.example .env      # edita JWT_SECRET (32+ caracteres) y CORS_ORIGINS
-set -a; . ./.env; set +a  # carga las variables en la sesión
-npm run dev
+npm run dev               # en desarrollo Node carga .env automáticamente
 ```
 
 En otra terminal:
@@ -96,7 +98,7 @@ curl -s http://localhost:3000/api/v1/auth/me -H "Authorization: Bearer <token>"
 - **Registros**: no se escriben contraseñas, tokens ni el header `Authorization`.
 - Las respuestas de usuario nunca incluyen el hash.
 
-Límites conocidos: el limitador y los datos están en memoria (no sirven con varias instancias); el token no se puede revocar antes de expirar; no hay refresh tokens ni logout en servidor; detrás de un proxy hay que configurar `trust proxy` para que la IP sea la real.
+Límites conocidos: el limitador y los datos están en memoria (no sirven con varias instancias); el token no se puede revocar antes de expirar; no hay refresh tokens ni logout en servidor; detrás de un proxy hay que poner `TRUST_PROXY=1` (o los saltos que correspondan); si no, `req.ip` es la IP del proxy y el límite de login se comparte entre todos los usuarios.
 
 ## Compatibilidad de dependencias
 

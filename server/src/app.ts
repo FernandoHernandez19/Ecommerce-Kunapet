@@ -26,6 +26,8 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
 
   const app = express();
   app.disable('x-powered-by');
+  // Sin esto, detrás de un proxy req.ip es la IP del proxy y el límite de login se comparte entre todos.
+  app.set('trust proxy', config.trustProxy);
 
   app.use(helmet());
   app.use(

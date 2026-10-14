@@ -18,6 +18,15 @@ const envSchema = z.object({
       .default(10),
   ),
   CORS_ORIGINS: z.preprocess(emptyToUndefined, z.string().default('')),
+  TRUST_PROXY: z.preprocess(
+    emptyToUndefined,
+    z.coerce
+      .number()
+      .int('TRUST_PROXY debe ser un entero.')
+      .min(0, 'TRUST_PROXY mínimo 0.')
+      .max(10, 'TRUST_PROXY máximo 10.')
+      .default(0),
+  ),
   PORT: z.preprocess(
     emptyToUndefined,
     z.coerce.number().int().min(1).max(65535).default(3000),
@@ -28,6 +37,8 @@ export interface Config {
   jwtSecret: string;
   bcryptCost: number;
   corsOrigins: string[];
+  /** Saltos de proxy de confianza para obtener req.ip (0 = no confiar en X-Forwarded-For). */
+  trustProxy: number;
   port: number;
 }
 
@@ -51,6 +62,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     corsOrigins: data.CORS_ORIGINS.split(',')
       .map((o) => o.trim())
       .filter((o) => o.length > 0),
+    trustProxy: data.TRUST_PROXY,
     port: data.PORT,
   };
 }

@@ -4,13 +4,16 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createApp } from '../src/app.js';
 import { ConfigError, loadConfig } from '../src/config/env.js';
+import { InMemoryUserRepository } from '../src/repositories/UserRepository.js';
 import { createAuthenticate, requireRole } from '../src/middleware/auth.js';
 import { TokenService } from '../src/services/TokenService.js';
 import {
   TEST_JWT_SECRET,
   buildApp,
   registerAndLogin,
+  testConfig,
   validUser,
   withProtectedRoutes,
 } from './helpers.js';
@@ -305,5 +308,29 @@ describe('configuración', () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('JWT_SECRET');
     expect(result.stderr).not.toContain('corto\n');
+  });
+});
+
+describe('TRUST_PROXY', () => {
+  async function exhaustWithSpoofedIps(trustProxy: number): Promise<number> {
+    const config = testConfig({ trustProxy });
+    const app = createApp(config, { userRepository: new InMemoryUserRepository() });
+    let last = 0;
+    for (let i = 0; i < 12; i++) {
+      const res = await request(app)
+        .post(LOGIN)
+        .set('X-Forwarded-For', `203.0.113.${i + 1}`)
+        .send({ email: validUser.email, password: 'incorrecta123' });
+      last = res.status;
+    }
+    return last;
+  }
+
+  it('con TRUST_PROXY=0 ignora X-Forwarded-For: el límite se aplica igual', async () => {
+    expect(await exhaustWithSpoofedIps(0)).toBe(429);
+  });
+
+  it('con TRUST_PROXY=1 usa la IP reenviada: cada IP tiene su propio límite', async () => {
+    expect(await exhaustWithSpoofedIps(1)).toBe(401);
   });
 });

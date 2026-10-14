@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import express, { type Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
@@ -35,6 +36,61 @@ export function buildApp(): TestContext {
   const config = testConfig();
   const users = new InMemoryUserRepository();
   return { app: createApp(config, { userRepository: users }), users, config };
+}
+
+export const API = '/api/v1';
+
+export interface Session {
+  token: string;
+  id: string;
+  auth: { Authorization: string };
+}
+
+export async function session(app: Express, role: 'client' | 'provider', email: string): Promise<Session> {
+  const { token, id } = await registerAndLogin(app, { email, role });
+  return { token, id, auth: { Authorization: `Bearer ${token}` } };
+}
+
+/** Crea un admin directo en el repositorio (el registro público no lo permite) y abre sesión. */
+export async function adminSession(app: Express, users: InMemoryUserRepository): Promise<Session> {
+  const password = 'ClaveAdminDePrueba1';
+  await users.create({
+    name: 'Admin de prueba',
+    email: 'admin@prueba.test',
+    passwordHash: await bcrypt.hash(password, 4),
+    role: 'admin',
+    phone: null,
+  });
+  const res = await request(app).post(`${API}/auth/login`).send({ email: 'admin@prueba.test', password }).expect(200);
+  const { token, user } = res.body as { token: string; user: { id: string } };
+  return { token, id: user.id, auth: { Authorization: `Bearer ${token}` } };
+}
+
+export const serviceBody = {
+  type: 'service',
+  title: 'Baño y Corte de Pelo',
+  description: 'Grooming completo con shampoo hipoalergénico',
+  category: 'grooming',
+  priceCents: 4500,
+  durationMinutes: 90,
+};
+
+export const productBody = {
+  type: 'product',
+  title: 'Alimento NutriCan 15kg',
+  description: 'Alimento seco para perros adultos',
+  category: 'alimentos',
+  priceCents: 14550,
+  stock: 10,
+};
+
+export async function createItem(
+  app: Express,
+  provider: Session,
+  body: Record<string, unknown> = serviceBody,
+): Promise<{ id: string; priceCents: number; title: string }> {
+  const res = await request(app).post(`${API}/items`).set(provider.auth).send(body).expect(201);
+  return (res.body as { data: { id: string; priceCents: number; title: string } }).data;
 }
 
 export async function registerAndLogin(

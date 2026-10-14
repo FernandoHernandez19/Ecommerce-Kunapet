@@ -51,7 +51,7 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
   const api = express.Router();
   api.use(healthRouter());
   api.use('/auth', authRouter(createAuthController(authService, new LoginRateLimiter()), authenticate));
-  api.use('/items', optionalAuthenticate, itemsRouter(createItemController(catalogService)));
+  api.use('/items', optionalAuthenticate, itemsRouter(createItemController(catalogService), authenticate));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

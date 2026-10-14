@@ -114,14 +114,14 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 - Rol: público. `200`: `{ "data": Item }`. Errores: `404` (inexistente, o inactivo y de otro proveedor).
 
 ### POST /items
-- Rol: `provider`. Body: `{ type, title, description, category, priceCents, durationMinutes?, stock?, imageUrl?, location?, targetPets? }`. `durationMinutes` es obligatorio si `type=service`; `stock` si `type=product`.
+- Rol: `provider`. Body: `{ type, title, description, category, priceCents, durationMinutes?, stock?, imageUrl?, location?, targetPets? }`. `durationMinutes` es obligatorio si `type=service` (y `stock` no se admite); `stock` es obligatorio si `type=product` (y `durationMinutes` no se admite). `priceCents` entero ≥ 1. Los campos desconocidos se rechazan (400).
 - `201`: `{ "data": Item }` con `providerId` = usuario autenticado. Errores: `400`, `401`, `403`.
 
 ### PATCH /items/:id
-- Rol: `provider` dueño. Body: cualquier subconjunto de los campos de creación más `isActive`. `200`: `{ "data": Item }`. Errores: `400`, `401`, `403`, `404` (inexistente o ajeno).
+- Rol: `provider` dueño. Body: cualquier subconjunto (al menos un campo) de los campos de creación, excepto `type`, más `isActive`. Los campos desconocidos se rechazan (400). `200`: `{ "data": Item }`. Errores: `400`, `401`, `403`, `404` (inexistente o ajeno).
 
 ### DELETE /items/:id
-- Rol: `provider` dueño. `204` sin cuerpo. Errores: `401`, `403`, `404`.
+- Rol: `provider` dueño. **Desactiva** el item (`isActive: false`), no lo borra; es idempotente. `204` sin cuerpo. Errores: `401`, `403`, `404`.
 
 ### GET /pets · POST /pets
 - Rol: `client`. `GET` lista solo las mascotas propias (paginada). `POST` body: `{ name, species, breed?, gender?, birthDate?, weightGrams?, notes?, photoUrl? }` → `201 { "data": Pet }`. Errores: `400`, `401`, `403`.
@@ -164,7 +164,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `id`, `providerId` | string (UUID) | |
 | `type` | `product`\|`service` | |
 | `title`, `description`, `category` | string | |
-| `priceCents` | entero ≥ 0 | |
+| `priceCents` | entero ≥ 1 | céntimos; no se aceptan decimales ni 0 |
 | `currency` | `"PEN"` | |
 | `stock` | entero \| null | solo productos |
 | `durationMinutes` | entero \| null | solo servicios |
@@ -253,3 +253,5 @@ Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica d
 | # | Cambio | Motivo |
 |---|---|---|
 | 1 | Los items inactivos son visibles para su proveedor en `GET /items` y `GET /items/:id` (antes: nunca). | El proveedor necesita ver y reactivar lo que desactivó (`DELETE` desactiva). |
+| 2 | `priceCents` es un entero ≥ 1 (antes ≥ 0). | Un item gratis no tiene sentido y evita comisión sobre subtotal 0. |
+| 3 | `DELETE /items/:id` desactiva en vez de borrar; `PATCH` no permite cambiar `type`. | Los pedidos conservan una copia del título y precio, pero el historial del proveedor no debe perder el item. |

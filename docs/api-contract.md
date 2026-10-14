@@ -106,10 +106,12 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 
 ### GET /items
 - Rol: público. Query: `type` (`product`|`service`), `category`, `q` (texto en título/descripción), `minPriceCents`, `maxPriceCents`, `page`, `limit`.
-- `200`: lista paginada de `Item` (solo `isActive: true`). Errores: `400`.
+- `q` busca en `title` y `description`, sin distinguir mayúsculas ni tildes. `category` compara sin mayúsculas ni tildes. Orden: más recientes primero.
+- `200`: lista paginada de `Item`. Solo se listan los `isActive: true`; **si la petición trae el token de un `provider`, además se incluyen sus propios items inactivos** (ver cambios en §8). Un token inválido en este endpoint público se trata como anónimo.
+- Errores: `400` (incluye `minPriceCents > maxPriceCents`).
 
 ### GET /items/:id
-- Rol: público. `200`: `{ "data": Item }`. Errores: `404`.
+- Rol: público. `200`: `{ "data": Item }`. Errores: `404` (inexistente, o inactivo y de otro proveedor).
 
 ### POST /items
 - Rol: `provider`. Body: `{ type, title, description, category, priceCents, durationMinutes?, stock?, imageUrl?, location?, targetPets? }`. `durationMinutes` es obligatorio si `type=service`; `stock` si `type=product`.
@@ -243,3 +245,11 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 10. Las fechas y los estados son texto de presentación (`'Hoy, 14:00'`, `'COMPLETADO'`), mezclando idiomas y mayúsculas.
 11. `usePetsStore` inicializa con `mockPets` y calcula la edad restando años (sin considerar mes/día).
 12. Las rutas de `admin` (`/claims-queue`, `/claims/:id`) no tienen modelo de datos en el frontend ni en esta API.
+
+## 8. Cambios respecto a la primera versión del contrato
+
+Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica dónde se reflejó arriba.
+
+| # | Cambio | Motivo |
+|---|---|---|
+| 1 | Los items inactivos son visibles para su proveedor en `GET /items` y `GET /items/:id` (antes: nunca). | El proveedor necesita ver y reactivar lo que desactivó (`DELETE` desactiva). |

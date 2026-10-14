@@ -25,6 +25,26 @@ export function createAuthenticate(tokens: TokenService, users: UserRepository):
   };
 }
 
+/**
+ * Para endpoints públicos que muestran más al usuario autenticado: si hay un token válido
+ * carga `req.user`; si falta o es inválido, la petición sigue como anónima.
+ */
+export function createOptionalAuthenticate(tokens: TokenService, users: UserRepository): RequestHandler {
+  const strict = createAuthenticate(tokens, users);
+  return async (req, res, next) => {
+    if (!req.headers.authorization) {
+      next();
+      return;
+    }
+    try {
+      await strict(req, res, () => undefined);
+    } catch {
+      // Token inválido en un endpoint público: se trata como anónimo.
+    }
+    next();
+  };
+}
+
 /** Permite el paso solo si el usuario autenticado tiene alguno de los roles. */
 export function requireRole(...roles: Role[]): RequestHandler {
   return (req, _res, next) => {

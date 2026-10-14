@@ -4,11 +4,15 @@ import helmet from 'helmet';
 import type { Config } from './config/env.js';
 import { createAuthController } from './controllers/authController.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { createAuthenticate } from './middleware/auth.js';
+import { createItemController } from './controllers/itemController.js';
+import { createAuthenticate, createOptionalAuthenticate } from './middleware/auth.js';
 import { LoginRateLimiter } from './middleware/loginRateLimiter.js';
+import { InMemoryItemRepository, type ItemRepository } from './repositories/ItemRepository.js';
 import { InMemoryUserRepository, type UserRepository } from './repositories/UserRepository.js';
 import { authRouter } from './routes/auth.js';
+import { itemsRouter } from './routes/items.js';
 import { healthRouter } from './routes/health.js';
+import { CatalogService } from './services/CatalogService.js';
 import { AuthService } from './services/AuthService.js';
 import { TokenService } from './services/TokenService.js';
 
@@ -16,13 +20,17 @@ export const API_PREFIX = '/api/v1';
 
 export interface AppDependencies {
   userRepository: UserRepository;
+  itemRepository: ItemRepository;
 }
 
 export function createApp(config: Config, deps: Partial<AppDependencies> = {}): Express {
   const userRepository = deps.userRepository ?? new InMemoryUserRepository();
+  const itemRepository = deps.itemRepository ?? new InMemoryItemRepository();
   const tokenService = new TokenService(config.jwtSecret);
   const authService = new AuthService(userRepository, tokenService, config.bcryptCost);
   const authenticate = createAuthenticate(tokenService, userRepository);
+  const optionalAuthenticate = createOptionalAuthenticate(tokenService, userRepository);
+  const catalogService = new CatalogService(itemRepository);
 
   const app = express();
   app.disable('x-powered-by');
@@ -43,6 +51,7 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
   const api = express.Router();
   api.use(healthRouter());
   api.use('/auth', authRouter(createAuthController(authService, new LoginRateLimiter()), authenticate));
+  api.use('/items', optionalAuthenticate, itemsRouter(createItemController(catalogService)));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

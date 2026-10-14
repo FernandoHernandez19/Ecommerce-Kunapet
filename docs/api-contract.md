@@ -41,6 +41,7 @@ Todos los errores usan la misma forma. Nunca incluyen stack traces ni mensajes i
 | 403 | `forbidden` | Autenticado pero sin el rol requerido. |
 | 404 | `not_found` | Ruta o recurso inexistente (o ajeno, ver §2.3). |
 | 409 | `conflict` | Conflicto de unicidad (p. ej. email ya registrado). |
+| 422 | `unprocessable_entity` | La petición es válida pero no se puede procesar (p. ej. pedir un item inactivo). |
 | 429 | `rate_limited` | Demasiados intentos (login). |
 | 500 | `internal_error` | Error inesperado; mensaje genérico. |
 
@@ -106,23 +107,25 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 
 ### GET /items
 - Rol: público. Query: `type` (`product`|`service`), `category`, `q` (texto en título/descripción), `minPriceCents`, `maxPriceCents`, `page`, `limit`.
-- `200`: lista paginada de `Item` (solo `isActive: true`). Errores: `400`.
+- `q` busca en `title` y `description`, sin distinguir mayúsculas ni tildes. `category` compara sin mayúsculas ni tildes. Orden: más recientes primero.
+- `200`: lista paginada de `Item`. Solo se listan los `isActive: true`; **si la petición trae el token de un `provider`, además se incluyen sus propios items inactivos** (ver cambios en §8). Un token inválido en este endpoint público se trata como anónimo.
+- Errores: `400` (incluye `minPriceCents > maxPriceCents`).
 
 ### GET /items/:id
-- Rol: público. `200`: `{ "data": Item }`. Errores: `404`.
+- Rol: público. `200`: `{ "data": Item }`. Errores: `404` (inexistente, o inactivo y de otro proveedor).
 
 ### POST /items
-- Rol: `provider`. Body: `{ type, title, description, category, priceCents, durationMinutes?, stock?, imageUrl?, location?, targetPets? }`. `durationMinutes` es obligatorio si `type=service`; `stock` si `type=product`.
+- Rol: `provider`. Body: `{ type, title, description, category, priceCents, durationMinutes?, stock?, imageUrl?, location?, targetPets? }`. `durationMinutes` es obligatorio si `type=service` (y `stock` no se admite); `stock` es obligatorio si `type=product` (y `durationMinutes` no se admite). `priceCents` entero ≥ 1. Los campos desconocidos se rechazan (400).
 - `201`: `{ "data": Item }` con `providerId` = usuario autenticado. Errores: `400`, `401`, `403`.
 
 ### PATCH /items/:id
-- Rol: `provider` dueño. Body: cualquier subconjunto de los campos de creación más `isActive`. `200`: `{ "data": Item }`. Errores: `400`, `401`, `403`, `404` (inexistente o ajeno).
+- Rol: `provider` dueño. Body: cualquier subconjunto (al menos un campo) de los campos de creación, excepto `type`, más `isActive`. Los campos desconocidos se rechazan (400). `200`: `{ "data": Item }`. Errores: `400`, `401`, `403`, `404` (inexistente o ajeno).
 
 ### DELETE /items/:id
-- Rol: `provider` dueño. `204` sin cuerpo. Errores: `401`, `403`, `404`.
+- Rol: `provider` dueño. **Desactiva** el item (`isActive: false`), no lo borra; es idempotente. `204` sin cuerpo. Errores: `401`, `403`, `404`.
 
 ### GET /pets · POST /pets
-- Rol: `client`. `GET` lista solo las mascotas propias (paginada). `POST` body: `{ name, species, breed?, gender?, birthDate?, weightGrams?, notes?, photoUrl? }` → `201 { "data": Pet }`. Errores: `400`, `401`, `403`.
+- Rol: `client`. `GET` lista solo las mascotas propias (paginada). `POST` body: `{ name, species, breed?, gender?, birthDate?, weightGrams?, notes?, photoUrl? }` → `201 { "data": Pet }`. Límites: `name` 1–60, `breed` ≤ 60, `notes` ≤ 500, `weightGrams` 1–200000, `birthDate` fecha real `YYYY-MM-DD` no futura. Campos desconocidos → 400. Errores: `400`, `401`, `403`.
 
 ### GET /pets/:id · PATCH /pets/:id · DELETE /pets/:id
 - Rol: `client` dueño. `PATCH` acepta un subconjunto de los campos de creación. `200 { "data": Pet }` / `204`. Errores: `400`, `401`, `403`, `404` (inexistente o ajena).
@@ -132,9 +135,9 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
   ```json
   { "items": [ { "itemId": "b7e1c8a2-…", "quantity": 2 } ], "paymentMethod": "yape" }
   ```
-  - `items`: 1 o más; `quantity` entero 1–20; `paymentMethod`: `card` | `yape` | `transfer`.
-  - **El servidor ignora cualquier precio enviado** y lo toma del catálogo. Calcula: `subtotalCents` = Σ precio × cantidad; `shippingCents` = 1500 solo si hay al menos un ítem `type=product`, si no 0; `platformFeeCents` = 250; `totalCents` = suma de los tres.
-- `201`: `{ "data": Order }`. Errores: `400` (incluye ítems inexistentes/inactivos o sin stock), `401`, `403`.
+  - `items`: de 1 a 20 líneas, sin repetir `itemId`; `quantity` entero 1–20; `paymentMethod`: `card` | `yape` | `transfer`.
+  - **El servidor no acepta precios ni totales**: el body es estricto y cualquier campo desconocido (`price`, `total`, `shippingCents`…) responde 400. El precio unitario y el título se toman del catálogo en ese instante y se guardan como copia en el pedido. Calcula: `subtotalCents` = Σ precio × cantidad; `shippingCents` = 1500 solo si hay al menos un ítem `type=product`, si no 0; `platformFeeCents` = 250 si el subtotal es > 0; `totalCents` = suma de los tres.
+- `201`: `{ "data": Order }`. Errores: `400` (body inválido, cantidad fuera de 1–20, campos desconocidos), `401`, `403` (provider/admin), `404` (item inexistente), `422` (item inactivo).
 
 ### GET /orders · GET /orders/:id
 - Rol: `client`, solo propios. `GET /orders` paginada, más recientes primero. Errores: `401`, `403`, `404` (ajeno o inexistente).
@@ -162,7 +165,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `id`, `providerId` | string (UUID) | |
 | `type` | `product`\|`service` | |
 | `title`, `description`, `category` | string | |
-| `priceCents` | entero ≥ 0 | |
+| `priceCents` | entero ≥ 1 | céntimos; no se aceptan decimales ni 0 |
 | `currency` | `"PEN"` | |
 | `stock` | entero \| null | solo productos |
 | `durationMinutes` | entero \| null | solo servicios |
@@ -195,7 +198,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | Campo | Tipo | Notas |
 |---|---|---|
 | `id`, `clientId` | string (UUID) | |
-| `status` | `pending`\|`confirmed`\|`preparing`\|`shipping`\|`delivered`\|`cancelled` | nace `pending` |
+| `status` | `pending_payment`\|`confirmed`\|`preparing`\|`shipping`\|`delivered`\|`cancelled` | nace `pending_payment`; en esta fase no hay transiciones ni pago real |
 | `paymentMethod` | `card`\|`yape`\|`transfer` | |
 | `items[]` | `{ itemId, title, type, unitPriceCents, quantity, lineTotalCents }` | instantánea del precio al comprar |
 | `subtotalCents`, `shippingCents`, `platformFeeCents`, `totalCents` | entero | |
@@ -203,7 +206,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `createdAt`, `updatedAt` | string (ISO) | |
 
 ```json
-{ "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d", "clientId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "status": "pending", "paymentMethod": "yape", "items": [ { "itemId": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "title": "Alimento NutriCan 15kg", "type": "product", "unitPriceCents": 14550, "quantity": 2, "lineTotalCents": 29100 } ], "subtotalCents": 29100, "shippingCents": 1500, "platformFeeCents": 250, "totalCents": 30850, "currency": "PEN", "createdAt": "2025-06-29T14:00:00.000Z", "updatedAt": "2025-06-29T14:00:00.000Z" }
+{ "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d", "clientId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "status": "pending_payment", "paymentMethod": "yape", "items": [ { "itemId": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "title": "Alimento NutriCan 15kg", "type": "product", "unitPriceCents": 14550, "quantity": 2, "lineTotalCents": 29100 } ], "subtotalCents": 29100, "shippingCents": 1500, "platformFeeCents": 250, "totalCents": 30850, "currency": "PEN", "createdAt": "2025-06-29T14:00:00.000Z", "updatedAt": "2025-06-29T14:00:00.000Z" }
 ```
 
 ## 6. Mapa del frontend → API
@@ -243,3 +246,17 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 10. Las fechas y los estados son texto de presentación (`'Hoy, 14:00'`, `'COMPLETADO'`), mezclando idiomas y mayúsculas.
 11. `usePetsStore` inicializa con `mockPets` y calcula la edad restando años (sin considerar mes/día).
 12. Las rutas de `admin` (`/claims-queue`, `/claims/:id`) no tienen modelo de datos en el frontend ni en esta API.
+
+## 8. Cambios respecto a la primera versión del contrato
+
+Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica dónde se reflejó arriba.
+
+| # | Cambio | Motivo |
+|---|---|---|
+| 1 | Los items inactivos son visibles para su proveedor en `GET /items` y `GET /items/:id` (antes: nunca). | El proveedor necesita ver y reactivar lo que desactivó (`DELETE` desactiva). |
+| 2 | `priceCents` es un entero ≥ 1 (antes ≥ 0). | Un item gratis no tiene sentido y evita comisión sobre subtotal 0. |
+| 3 | `DELETE /items/:id` desactiva en vez de borrar; `PATCH` no permite cambiar `type`. | Los pedidos conservan una copia del título y precio, pero el historial del proveedor no debe perder el item. |
+| 4 | Nuevo código `unprocessable_entity` (422). | Distingue "item inexistente" (404) de "item inactivo" (422) al crear un pedido. |
+| 5 | `Order.status` inicial es `pending_payment` (antes `pending`). | Deja claro que falta el pago, que no existe todavía. |
+| 6 | `POST /orders` rechaza (400) campos desconocidos en vez de ignorarlos, admite máximo 20 líneas y no repite `itemId`. | Un precio enviado es una señal de cliente manipulado o desactualizado; mejor fallar que ignorar en silencio. |
+| 7 | El stock no se valida ni se descuenta en esta fase (antes: "sin stock → 400"). | Sin pago ni transiciones de estado no hay forma correcta de reservar stock. Queda para la fase de pagos. |

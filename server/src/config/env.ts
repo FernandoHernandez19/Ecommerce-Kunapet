@@ -18,6 +18,18 @@ const envSchema = z.object({
       .default(10),
   ),
   CORS_ORIGINS: z.preprocess(emptyToUndefined, z.string().default('')),
+  NODE_ENV: z.preprocess(emptyToUndefined, z.string().default('development')),
+  // Solo el texto exacto "true" activa los datos de ejemplo.
+  SEED_DEMO_DATA: z.preprocess(emptyToUndefined, z.string().default('false')),
+  TRUST_PROXY: z.preprocess(
+    emptyToUndefined,
+    z.coerce
+      .number()
+      .int('TRUST_PROXY debe ser un entero.')
+      .min(0, 'TRUST_PROXY mínimo 0.')
+      .max(10, 'TRUST_PROXY máximo 10.')
+      .default(0),
+  ),
   PORT: z.preprocess(
     emptyToUndefined,
     z.coerce.number().int().min(1).max(65535).default(3000),
@@ -28,7 +40,12 @@ export interface Config {
   jwtSecret: string;
   bcryptCost: number;
   corsOrigins: string[];
+  /** Saltos de proxy de confianza para obtener req.ip (0 = no confiar en X-Forwarded-For). */
+  trustProxy: number;
   port: number;
+  nodeEnv: string;
+  /** Pedido explícito de cargar datos de ejemplo (el seed además se bloquea en producción). */
+  seedDemoData: boolean;
 }
 
 export class ConfigError extends Error {
@@ -51,6 +68,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     corsOrigins: data.CORS_ORIGINS.split(',')
       .map((o) => o.trim())
       .filter((o) => o.length > 0),
+    trustProxy: data.TRUST_PROXY,
     port: data.PORT,
+    nodeEnv: data.NODE_ENV,
+    seedDemoData: data.SEED_DEMO_DATA.trim().toLowerCase() === 'true',
   };
 }

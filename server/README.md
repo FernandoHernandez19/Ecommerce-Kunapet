@@ -18,6 +18,8 @@ Copia `.env.example` a `.env` y complétalo. `.env` está ignorado por git; nunc
 | `JWT_SECRET` | Sí | Mínimo 32 caracteres. Si falta o es corto, el servidor **no arranca**. |
 | `BCRYPT_COST` | No | Costo de bcrypt (4–15). Por defecto 10. |
 | `CORS_ORIGINS` | No | Orígenes permitidos separados por comas (p. ej. el de Vite). Vacío = ninguno. |
+| `SEED_DEMO_DATA` | No | `true` carga datos de ejemplo al arrancar (ver abajo). Por defecto no. |
+| `NODE_ENV` | No | `development` por defecto. Con `production` el seed no se ejecuta aunque `SEED_DEMO_DATA=true`. |
 | `TRUST_PROXY` | No | Saltos de proxy de confianza (0 por defecto). Pon `1` detrás de Render, Vercel o nginx; con `0` se ignora `X-Forwarded-For`. |
 | `PORT` | No | Puerto HTTP. Por defecto 3000. |
 
@@ -84,6 +86,28 @@ curl -s -X POST http://localhost:3000/api/v1/auth/login \
 
 # Perfil, con el token recibido
 curl -s http://localhost:3000/api/v1/auth/me -H "Authorization: Bearer <token>"
+```
+
+## Datos de ejemplo (opcional)
+
+Con `SEED_DEMO_DATA=true` (y `NODE_ENV` distinto de `production`) el arranque crea un admin, dos proveedores y un cliente, 12 items (productos y servicios en soles) y 2 mascotas del cliente. Las **contraseñas son aleatorias, distintas en cada arranque y se imprimen una sola vez** en la consola; no hay contraseñas fijas en el código. Como los datos están en memoria, desaparecen al reiniciar.
+
+```bash
+SEED_DEMO_DATA=true npm run dev
+```
+
+## Probar el catálogo, mascotas y pedidos
+
+```bash
+API=http://localhost:3000/api/v1
+# Login del cliente con la contraseña impresa por el seed
+TOKEN=$(curl -s -X POST $API/auth/login -H 'Content-Type: application/json' \
+  -d '{"email":"cliente@demo.kunapet.test","password":"<la-impresa>"}' | node -pe 'JSON.parse(require("fs").readFileSync(0)).token')
+
+curl -s "$API/items?type=service&q=bano&limit=5"                      # público, sin tildes
+curl -s -X POST $API/orders -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"items":[{"itemId":"<id-de-un-item>","quantity":2}],"paymentMethod":"yape"}'
+curl -s $API/pets -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Decisiones de seguridad

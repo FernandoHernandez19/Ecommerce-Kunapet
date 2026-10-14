@@ -4,15 +4,19 @@ import helmet from 'helmet';
 import type { Config } from './config/env.js';
 import { createAuthController } from './controllers/authController.js';
 import { createErrorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { createPetController } from './controllers/petController.js';
 import { createItemController } from './controllers/itemController.js';
 import { createAuthenticate, createOptionalAuthenticate } from './middleware/auth.js';
 import { LoginRateLimiter } from './middleware/loginRateLimiter.js';
 import { InMemoryItemRepository, type ItemRepository } from './repositories/ItemRepository.js';
+import { InMemoryPetRepository, type PetRepository } from './repositories/PetRepository.js';
 import { InMemoryUserRepository, type UserRepository } from './repositories/UserRepository.js';
 import { authRouter } from './routes/auth.js';
 import { itemsRouter } from './routes/items.js';
+import { petsRouter } from './routes/pets.js';
 import { healthRouter } from './routes/health.js';
 import { CatalogService } from './services/CatalogService.js';
+import { PetService } from './services/PetService.js';
 import { AuthService } from './services/AuthService.js';
 import { TokenService } from './services/TokenService.js';
 
@@ -21,11 +25,13 @@ export const API_PREFIX = '/api/v1';
 export interface AppDependencies {
   userRepository: UserRepository;
   itemRepository: ItemRepository;
+  petRepository: PetRepository;
 }
 
 export function createApp(config: Config, deps: Partial<AppDependencies> = {}): Express {
   const userRepository = deps.userRepository ?? new InMemoryUserRepository();
   const itemRepository = deps.itemRepository ?? new InMemoryItemRepository();
+  const petRepository = deps.petRepository ?? new InMemoryPetRepository();
   const tokenService = new TokenService(config.jwtSecret);
   const authService = new AuthService(userRepository, tokenService, config.bcryptCost);
   const authenticate = createAuthenticate(tokenService, userRepository);
@@ -52,6 +58,7 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
   api.use(healthRouter());
   api.use('/auth', authRouter(createAuthController(authService, new LoginRateLimiter()), authenticate));
   api.use('/items', optionalAuthenticate, itemsRouter(createItemController(catalogService), authenticate));
+  api.use('/pets', petsRouter(createPetController(new PetService(petRepository)), authenticate));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

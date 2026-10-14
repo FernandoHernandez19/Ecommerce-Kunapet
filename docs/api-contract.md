@@ -124,7 +124,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 - Rol: `provider` dueño. **Desactiva** el item (`isActive: false`), no lo borra; es idempotente. `204` sin cuerpo. Errores: `401`, `403`, `404`.
 
 ### GET /pets · POST /pets
-- Rol: `client`. `GET` lista solo las mascotas propias (paginada). `POST` body: `{ name, species, breed?, gender?, birthDate?, weightGrams?, notes?, photoUrl? }` → `201 { "data": Pet }`. Errores: `400`, `401`, `403`.
+- Rol: `client`. `GET` lista solo las mascotas propias (paginada). `POST` body: `{ name, species, breed?, gender?, birthDate?, weightGrams?, notes?, photoUrl? }` → `201 { "data": Pet }`. Límites: `name` 1–60, `breed` ≤ 60, `notes` ≤ 500, `weightGrams` 1–200000, `birthDate` fecha real `YYYY-MM-DD` no futura. Campos desconocidos → 400. Errores: `400`, `401`, `403`.
 
 ### GET /pets/:id · PATCH /pets/:id · DELETE /pets/:id
 - Rol: `client` dueño. `PATCH` acepta un subconjunto de los campos de creación. `200 { "data": Pet }` / `204`. Errores: `400`, `401`, `403`, `404` (inexistente o ajena).

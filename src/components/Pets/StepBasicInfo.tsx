@@ -1,7 +1,13 @@
-import React from 'react';
+import type { PetWizardForm, UpdatePetField } from './types';
 
-export default function StepBasicInfo({ formData, updateData, onNext }) {
-  const speciesOptions = [
+interface StepBasicInfoProps {
+  formData: PetWizardForm;
+  updateData: UpdatePetField;
+  onNext: () => void;
+}
+
+export default function StepBasicInfo({ formData, updateData, onNext }: StepBasicInfoProps) {
+  const speciesOptions: { id: 'perro' | 'gato' | 'otro'; label: string; icon: string }[] = [
     { id: 'perro', label: 'Perro', icon: '🐾' },
     { id: 'gato', label: 'Gato', icon: '🐱' },
     { id: 'otro', label: 'Otro', icon: '🦜' }

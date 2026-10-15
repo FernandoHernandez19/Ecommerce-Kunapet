@@ -1,7 +1,6 @@
-import React from 'react';
 
 /** Notas de la mascota (alergias, necesidades especiales y conducta): es el único campo libre de la API. */
-export default function DietBehaviorTab({ notes }) {
+export default function DietBehaviorTab({ notes }: { notes: string }) {
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm animate-fade-in">
       <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center">

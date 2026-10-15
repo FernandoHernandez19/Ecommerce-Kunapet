@@ -1,6 +1,5 @@
-import React from 'react';
-
-export default function PetHeroCard({ pet, onEdit }) {
+import type { UiPet } from '../../api/adapters';
+export default function PetHeroCard({ pet, onEdit }: { pet: UiPet; onEdit: () => void }) {
   const weight = pet.weightGrams ? `${(pet.weightGrams / 1000).toFixed(1)} kg` : 'Peso no registrado';
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">

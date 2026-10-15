@@ -1,8 +1,7 @@
-import React from 'react';
-
-export default function TimelineItem({ activity }) {
+import type { DashboardActivity } from './types';
+export default function TimelineItem({ activity }: { activity: DashboardActivity }) {
   // Lógica de estilos aislada dentro de su propio componente
-  const getStatusStyles = (status) => {
+  const getStatusStyles = (status: string): string => {
     switch (status) {
       case 'EN CURSO': return 'bg-red-100 text-emerald-800 border-emerald-200';
       case 'COMPLETADO': return 'bg-gray-100 text-gray-700 border-gray-200';

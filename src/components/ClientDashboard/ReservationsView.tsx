@@ -1,24 +1,24 @@
-import React from 'react';
 import ExampleDataBadge from '../ExampleDataBadge';
+import type { MockReservation, ReservationStatus } from '../../data/mockData';
 import { MessageSquare, FileText, XCircle, CalendarCheck, User } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
 
-const TYPE_CONFIG = {
+const TYPE_CONFIG: Record<string, { bg: string; text: string; icon: string }> = {
   'Paseo':       { bg: 'bg-blue-50',    text: 'text-blue-700',   icon: '🦮' },
   'Veterinaria': { bg: 'bg-red-50',     text: 'text-red-700',    icon: '🩺' },
   'Peluquería':  { bg: 'bg-purple-50',  text: 'text-purple-700', icon: '✂️' },
   'Guardería':   { bg: 'bg-amber-50',   text: 'text-amber-700',  icon: '🏠' },
 };
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<ReservationStatus, { label: string; bg: string; text: string }> = {
   in_progress: { label: 'En Curso',    bg: 'bg-blue-500',   text: 'text-white'   },
   scheduled:   { label: 'Programado',  bg: 'bg-amber-400',  text: 'text-white'   },
   completed:   { label: 'Completado',  bg: 'bg-green-500',  text: 'text-white'   },
   cancelled:   { label: 'Cancelado',   bg: 'bg-gray-300',   text: 'text-gray-700'},
 };
 
-function ReservationCard({ res }) {
+function ReservationCard({ res }: { res: MockReservation }) {
   const type = TYPE_CONFIG[res.type] ?? { bg: 'bg-gray-50', text: 'text-gray-600', icon: '📋' };
   const status = STATUS_CONFIG[res.status] ?? STATUS_CONFIG.scheduled;
 
@@ -73,7 +73,7 @@ function ReservationCard({ res }) {
   );
 }
 
-export default function ReservationsView({ reservations }) {
+export default function ReservationsView({ reservations }: { reservations: MockReservation[] }) {
   const active = reservations.filter((r) => r.status === 'in_progress');
   const upcoming = reservations.filter((r) => r.status === 'scheduled');
   const past = reservations.filter((r) => r.status === 'completed' || r.status === 'cancelled');

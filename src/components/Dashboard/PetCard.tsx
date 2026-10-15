@@ -1,6 +1,5 @@
-import React from 'react';
-
-export default function PetCard({ pet }) {
+import type { DashboardPet } from './types';
+export default function PetCard({ pet }: { pet: DashboardPet }) {
   // Función para determinar estilos según el tipo de animal
   const isDog = pet.type === 'Perro';
   const defaultImage = isDog 

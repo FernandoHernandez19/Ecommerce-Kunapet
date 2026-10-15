@@ -1,6 +1,5 @@
-import React from 'react';
 
-export default function AddPetCard({ onClick }) {
+export default function AddPetCard({ onClick }: { onClick?: () => void }) {
   return (
     <button 
       onClick={onClick}

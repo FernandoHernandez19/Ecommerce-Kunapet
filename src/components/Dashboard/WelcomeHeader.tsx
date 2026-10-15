@@ -1,6 +1,5 @@
-import React from 'react';
 
-export default function WelcomeHeader({ clientName, scheduledServicesCount }) {
+export default function WelcomeHeader({ clientName, scheduledServicesCount }: { clientName: string; scheduledServicesCount: number }) {
   // Lógica UX: Cambiar el mensaje según la cantidad de servicios activos
   const getSubtext = () => {
     if (scheduledServicesCount === 0) {

@@ -1,6 +1,10 @@
-import React from 'react';
 
-export default function BehaviorTags({ selectedTraits, onToggleTrait }) {
+interface BehaviorTagsProps {
+  selectedTraits: string[];
+  onToggleTrait: (id: string) => void;
+}
+
+export default function BehaviorTags({ selectedTraits, onToggleTrait }: BehaviorTagsProps) {
   const availableTraits = [
     { id: 'kids', label: 'Amigable con niños', icon: '👶' },
     { id: 'dogs', label: 'Sociable con otros perros', icon: '🐕' },

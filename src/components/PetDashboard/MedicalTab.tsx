@@ -1,6 +1,17 @@
-import React from 'react';
 
-export default function MedicalTab({ medicalRecords }) {
+export interface MedicalVaccine {
+  name: string;
+  dateApplied: string;
+  nextDue: string;
+  status: 'Vigente' | 'Próxima';
+}
+
+export interface MedicalRecords {
+  allergies: string;
+  vaccines: MedicalVaccine[];
+}
+
+export default function MedicalTab({ medicalRecords }: { medicalRecords: MedicalRecords }) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Alergias Críticas */}

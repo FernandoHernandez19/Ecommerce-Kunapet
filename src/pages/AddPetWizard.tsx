@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WizardLayout from '../layouts/WizardLayout';
 import WizardStepper from '../components/Pets/WizardStepper';
@@ -6,16 +6,17 @@ import StepBasicInfo from '../components/Pets/StepBasicInfo';
 import StepHealthCare from '../components/Pets/StepHealthCare';
 import usePetsStore from '../store/usePetsStore';
 import { friendlyMessage } from '../api/errorMessages';
+import type { PetWizardForm, UpdatePetField } from '../components/Pets/types';
 
 export default function AddPetWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
   const addPet = usePetsStore((state) => state.addPet);
-  const [submitError, setSubmitError] = useState(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Estado centralizado de todo el formulario
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<PetWizardForm>({
     name: '',
     species: '',
     breed: '',
@@ -27,7 +28,7 @@ export default function AddPetWizard() {
     specialNeeds: ''
   });
 
-  const updateFormData = (field, value) => {
+  const updateFormData: UpdatePetField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

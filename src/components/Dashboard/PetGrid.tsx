@@ -1,6 +1,5 @@
-import React from 'react';
-
-export default function PetGrid({ pets }) {
+import type { DashboardPet } from './types';
+export default function PetGrid({ pets }: { pets: DashboardPet[] }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

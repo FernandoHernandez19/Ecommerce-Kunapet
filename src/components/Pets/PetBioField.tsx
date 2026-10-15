@@ -1,6 +1,5 @@
-import React from 'react';
 
-export default function PetBioField({ bio, onBioChange }) {
+export default function PetBioField({ bio, onBioChange }: { bio: string; onBioChange: (bio: string) => void }) {
   const MAX_LENGTH = 500;
   const currentLength = bio.length;
   

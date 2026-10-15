@@ -1,6 +1,12 @@
-import React from 'react';
 
-export default function WizardSummaryCard({ petData }) {
+export interface WizardSummaryPet {
+  name?: string;
+  breed?: string;
+  age?: string;
+  photo?: string | null;
+}
+
+export default function WizardSummaryCard({ petData }: { petData: WizardSummaryPet }) {
   // En un entorno real, estos vendrían del estado global del Wizard (formData)
   const previewName = petData.name || 'Tu mascota';
   const previewBreed = petData.breed || 'Raza no especificada';

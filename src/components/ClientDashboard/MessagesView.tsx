@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ExampleDataBadge from '../ExampleDataBadge';
+import type { MockChat, MockMessage } from '../../data/mockData';
 import { Search, Send, Paperclip, Image, Phone, MoreVertical } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
 
-const SERVICE_COLORS = {
+const SERVICE_COLORS: Record<string, { bg: string; text: string }> = {
   'Paseos':      { bg: 'bg-blue-50',   text: 'text-blue-700'   },
   'Veterinaria': { bg: 'bg-red-50',    text: 'text-red-700'    },
   'Peluquería':  { bg: 'bg-purple-50', text: 'text-purple-700' },
@@ -12,7 +13,7 @@ const SERVICE_COLORS = {
 };
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
-function Avatar({ name, size = 10 }) {
+function Avatar({ name, size = 10 }: { name?: string; size?: number }) {
   return (
     <div
       className={`w-${size} h-${size} rounded-full flex items-center justify-center text-white font-bold shrink-0`}
@@ -24,7 +25,13 @@ function Avatar({ name, size = 10 }) {
 }
 
 // ─── Item de bandeja ──────────────────────────────────────────────────────────
-function InboxItem({ chat, isActive, onClick }) {
+interface InboxItemProps {
+  chat: MockChat;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function InboxItem({ chat, isActive, onClick }: InboxItemProps) {
   const sc = SERVICE_COLORS[chat.serviceType] ?? { bg: 'bg-gray-100', text: 'text-gray-600' };
   return (
     <button
@@ -55,7 +62,7 @@ function InboxItem({ chat, isActive, onClick }) {
 }
 
 // ─── Burbuja de mensaje ───────────────────────────────────────────────────────
-function Bubble({ msg }) {
+function Bubble({ msg }: { msg: MockMessage }) {
   const isClient = msg.sender === 'client';
   return (
     <div className={`flex ${isClient ? 'justify-end' : 'justify-start'}`}>
@@ -77,12 +84,12 @@ function Bubble({ msg }) {
 }
 
 // ─── MessagesView Principal ───────────────────────────────────────────────────
-export default function MessagesView({ chats: initialChats }) {
-  const [chats, setChats] = useState(initialChats);
-  const [activeChat, setActiveChat] = useState(chats[0]);
+export default function MessagesView({ chats: initialChats }: { chats: MockChat[] }) {
+  const [chats, setChats] = useState<MockChat[]>(initialChats);
+  const [activeChat, setActiveChat] = useState<MockChat | undefined>(chats[0]);
   const [search, setSearch] = useState('');
   const [input, setInput] = useState('');
-  const scrollRef = useRef();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll al abrir / enviar mensaje
   useEffect(() => {
@@ -97,7 +104,7 @@ export default function MessagesView({ chats: initialChats }) {
 
   const handleSend = () => {
     if (!input.trim() || !activeChat) return;
-    const newMsg = { id: `m${Date.now()}`, text: input.trim(), sender: 'client', time: 'Ahora' };
+    const newMsg: MockMessage = { id: `m${Date.now()}`, text: input.trim(), sender: 'client', time: 'Ahora' };
     const updatedChats = chats.map((c) =>
       c.id === activeChat.id
         ? { ...c, messages: [...c.messages, newMsg], lastMessage: newMsg.text, lastTime: 'Ahora', isUnread: false }
@@ -108,7 +115,7 @@ export default function MessagesView({ chats: initialChats }) {
     setInput('');
   };
 
-  const selectChat = (chat) => {
+  const selectChat = (chat: MockChat) => {
     setActiveChat(chat);
     setChats((prev) => prev.map((c) => c.id === chat.id ? { ...c, isUnread: false } : c));
   };

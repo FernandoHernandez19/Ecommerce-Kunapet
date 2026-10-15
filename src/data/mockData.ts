@@ -50,7 +50,7 @@ export interface MockActivity {
   petId: string | null;
 }
 
-export type ReservationStatus = 'in_progress' | 'scheduled' | 'completed';
+export type ReservationStatus = 'in_progress' | 'scheduled' | 'completed' | 'cancelled';
 
 export interface MockReservation {
   id: string;

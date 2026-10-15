@@ -1,12 +1,53 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import ExampleDataBadge from '../ExampleDataBadge';
 import { User, MapPin, CreditCard, Bell, Plus, Trash2, CheckCircle2, X } from 'lucide-react';
 import { Input } from '../ui';
+import type { MockAddress, MockPaymentMethod, MockUser } from '../../data/mockData';
 
 const ACCENT = '#2D6A4F';
 
+type SettingsSection = 'profile' | 'addresses' | 'payments' | 'notifs';
+
+interface SettingsAddress extends MockAddress {
+  district?: string;
+  reference?: string;
+}
+
+interface NewAddressForm {
+  label: string;
+  address: string;
+  district: string;
+  reference: string;
+}
+
+interface NewPaymentForm {
+  type: string;
+  number: string;
+  expiry: string;
+  cvv: string;
+}
+
+/** Usuario real (campos opcionales o nulos) combinado con el de ejemplo. */
+export interface SettingsUser {
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  city?: string | null;
+  addresses?: MockAddress[];
+  paymentMethods?: MockPaymentMethod[];
+  notifications?: MockUser['notifications'];
+}
+
 // ─── Toggle iOS ───────────────────────────────────────────────────────────────
-function Toggle({ id, checked, onChange, label, desc }) {
+interface ToggleProps {
+  id: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  desc?: string;
+}
+
+function Toggle({ id, checked, onChange, label, desc }: ToggleProps) {
   return (
     <label htmlFor={id} className="flex items-center justify-between gap-4 py-4 cursor-pointer group">
       <div>
@@ -22,7 +63,13 @@ function Toggle({ id, checked, onChange, label, desc }) {
   );
 }
 
-function PaymentCard({ card, onSetDefault, onDelete }) {
+interface PaymentCardProps {
+  card: MockPaymentMethod;
+  onSetDefault: () => void;
+  onDelete: () => void;
+}
+
+function PaymentCard({ card, onSetDefault, onDelete }: PaymentCardProps) {
   return (
     <div className={`relative p-5 rounded-2xl text-white overflow-hidden ${card.isDefault ? '' : 'opacity-80'}`}
       style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, #054a2e 100%)` }}>
@@ -58,10 +105,10 @@ const SECTIONS = [
   { id: 'addresses', label: 'Mis Direcciones',           Icon: MapPin     },
   { id: 'payments',  label: 'Métodos de Pago',           Icon: CreditCard },
   { id: 'notifs',    label: 'Notificaciones',            Icon: Bell       },
-];
+] as const;
 
-export default function SettingsView({ user }) {
-  const [activeSection, setActiveSection] = useState('profile');
+export default function SettingsView({ user }: { user?: SettingsUser | null }) {
+  const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
 
   // Estado local del formulario de perfil
   const [profile, setProfile] = useState({
@@ -72,15 +119,15 @@ export default function SettingsView({ user }) {
   });
 
   // Direcciones
-  const [addresses, setAddresses] = useState(user?.addresses ?? []);
+  const [addresses, setAddresses] = useState<SettingsAddress[]>(user?.addresses ?? []);
   const [showAddressModal, setShowAddressModal] = useState(false);
-  const [newAddress, setNewAddress] = useState({ label: '', address: '', district: '', reference: '' });
+  const [newAddress, setNewAddress] = useState<NewAddressForm>({ label: '', address: '', district: '', reference: '' });
 
-  const handleSetDefaultAddress = (id) => {
+  const handleSetDefaultAddress = (id: string) => {
     setAddresses(addresses.map((a) => ({ ...a, isDefault: a.id === id })));
   };
 
-  const handleAddAddress = (e) => {
+  const handleAddAddress = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newAddress.label || !newAddress.address) return;
     const id = Date.now().toString();
@@ -90,15 +137,15 @@ export default function SettingsView({ user }) {
   };
 
   // Pagos
-  const [payments, setPayments] = useState(user?.paymentMethods ?? []);
+  const [payments, setPayments] = useState<MockPaymentMethod[]>(user?.paymentMethods ?? []);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [newPayment, setNewPayment] = useState({ type: 'Visa', number: '', expiry: '', cvv: '' });
+  const [newPayment, setNewPayment] = useState<NewPaymentForm>({ type: 'Visa', number: '', expiry: '', cvv: '' });
 
-  const handleSetDefaultPayment = (id) => {
+  const handleSetDefaultPayment = (id: string) => {
     setPayments(payments.map((p) => ({ ...p, isDefault: p.id === id })));
   };
 
-  const handleAddPayment = (e) => {
+  const handleAddPayment = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newPayment.number || !newPayment.expiry) return;
     const id = Date.now().toString();
@@ -313,10 +360,10 @@ export default function SettingsView({ user }) {
                   <option value="American Express">American Express</option>
                 </select>
               </div>
-              <Input label="Número de Tarjeta" value={newPayment.number} onChange={(e) => setNewPayment({ ...newPayment, number: e.target.value })} maxLength="19" placeholder="0000 0000 0000 0000" required />
+              <Input label="Número de Tarjeta" value={newPayment.number} onChange={(e) => setNewPayment({ ...newPayment, number: e.target.value })} maxLength={19} placeholder="0000 0000 0000 0000" required />
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Vencimiento" value={newPayment.expiry} onChange={(e) => setNewPayment({ ...newPayment, expiry: e.target.value })} placeholder="MM/AA" maxLength="5" required />
-                <Input label="CVV" type="password" value={newPayment.cvv} onChange={(e) => setNewPayment({ ...newPayment, cvv: e.target.value })} maxLength="4" placeholder="***" required />
+                <Input label="Vencimiento" value={newPayment.expiry} onChange={(e) => setNewPayment({ ...newPayment, expiry: e.target.value })} placeholder="MM/AA" maxLength={5} required />
+                <Input label="CVV" type="password" value={newPayment.cvv} onChange={(e) => setNewPayment({ ...newPayment, cvv: e.target.value })} maxLength={4} placeholder="***" required />
               </div>
               <button type="submit" className="mt-2 w-full py-3.5 bg-brand-primary text-white font-bold rounded-xl hover:bg-[#c93623] transition-colors">
                 Guardar Tarjeta

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PetHeroCard from '../components/PetDashboard/PetHeroCard';
 import MedicalTab from '../components/PetDashboard/MedicalTab';
@@ -9,7 +9,7 @@ import usePetsStore from '../store/usePetsStore';
 import Sidebar from '../components/Sidebar/Sidebar';
 
 // Las alergias viven dentro de `notes` (línea «Alergias: …»), tal como las guarda el wizard.
-const allergiesFrom = (notes) =>
+const allergiesFrom = (notes: string): string =>
   (notes || '').split('\n').find((l) => l.startsWith('Alergias:'))?.replace('Alergias:', '').trim() ?? '';
 
 export default function PetDashboardPage() {
@@ -76,7 +76,7 @@ export default function PetDashboardPage() {
           </div>
 
           <div className="bg-white p-2 rounded-2xl">
-            {activeTab === 'salud' && <MedicalTab medicalRecords={{ allergies: allergiesFrom(pet.notes), vaccines: pet.vaccines }} />}
+            {activeTab === 'salud' && <MedicalTab medicalRecords={{ allergies: allergiesFrom(pet.notes), vaccines: pet.vaccines.map((v) => ({ name: v.name, dateApplied: v.date, nextDue: v.nextDue, status: v.status === 'ok' ? 'Vigente' : 'Próxima' })) }} />}
             {activeTab === 'dieta' && <DietBehaviorTab notes={pet.notes} />}
           </div>
         </div>

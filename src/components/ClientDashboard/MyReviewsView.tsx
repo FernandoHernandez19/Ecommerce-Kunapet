@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import ExampleDataBadge from '../ExampleDataBadge';
 import { Star, Edit3, Trash2, X } from 'lucide-react';
-import { mockMyReviews } from '../../data/mockData';
+import { mockMyReviews, type MockReview } from '../../data/mockData';
 import { Link } from 'react-router-dom';
 
 export default function MyReviewsView() {
-  const [reviews, setReviews] = useState(mockMyReviews);
-  const [editingReview, setEditingReview] = useState(null);
+  const [reviews, setReviews] = useState<MockReview[]>(mockMyReviews);
+  const [editingReview, setEditingReview] = useState<MockReview | null>(null);
   const [hoverRating, setHoverRating] = useState(0);
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta reseña?')) {
       setReviews(reviews.filter((r) => r.id !== id));
     }
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!editingReview) return;
     setReviews(
       reviews.map((r) => (r.id === editingReview.id ? editingReview : r))
     );

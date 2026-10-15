@@ -1,8 +1,15 @@
-import React from 'react';
+import type { PetWizardForm, UpdatePetField } from './types';
+interface StepHealthCareProps {
+  formData: PetWizardForm;
+  updateData: UpdatePetField;
+  onNext: () => void;
+  onPrev: () => void;
+  isSubmitting?: boolean;
+}
 
-export default function StepHealthCare({ formData, updateData, onNext, onPrev, isSubmitting = false }) {
+export default function StepHealthCare({ formData, updateData, onNext, onPrev, isSubmitting = false }: StepHealthCareProps) {
   // Lógica de Mejora UX: Chips de alergias
-  const handleAllergyChip = (tag) => {
+  const handleAllergyChip = (tag: string) => {
     if (tag === 'Sin alergias') {
       updateData('allergies', 'Ninguna');
     } else {
@@ -71,7 +78,7 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
                     onChange={(e) => {
                       const newVax = e.target.checked 
                         ? [...formData.vaccines, vax]
-                        : formData.vaccines.filter(v => v !== vax);
+                        : formData.vaccines.filter((v) => v !== vax);
                       updateData('vaccines', newVax);
                     }}
                     className="w-4 h-4 text-[#e23d28] rounded border-gray-300 focus:ring-[#e23d28] mr-3"
@@ -90,7 +97,7 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
           </h3>
           <label className="block text-xs font-bold text-gray-700 mb-2">Alergias conocidas (Opcional)</label>
           <textarea 
-            rows="2"
+            rows={2}
             maxLength={200}
             value={formData.allergies}
             onChange={(e) => updateData('allergies', e.target.value)}
@@ -111,7 +118,7 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
           </h3>
           <label className="block text-xs font-bold text-gray-700 mb-2">Notas adicionales para cuidadores (Opcional)</label>
           <textarea 
-            rows="3"
+            rows={3}
             maxLength={240}
             value={formData.specialNeeds}
             onChange={(e) => updateData('specialNeeds', e.target.value)}

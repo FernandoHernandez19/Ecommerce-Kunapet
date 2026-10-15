@@ -1,6 +1,5 @@
-import React from 'react';
-
-const getStatusStyles = (status) => {
+import type { DashboardActivity } from './types';
+const getStatusStyles = (status: string): string => {
   switch (status) {
     case 'EN CURSO':
       return 'bg-red-100 text-emerald-800 border-emerald-200';
@@ -13,7 +12,7 @@ const getStatusStyles = (status) => {
   }
 };
 
-export default function ActivityTimeline({ activities }) {
+export default function ActivityTimeline({ activities }: { activities: DashboardActivity[] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
       <h3 className="text-lg font-bold text-gray-900 tracking-tight">Actividad</h3>

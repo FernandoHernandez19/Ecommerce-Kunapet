@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import usePetsStore from '../store/usePetsStore';
 import { useLocation } from 'react-router-dom';
-import ClientDashboardLayout from '../layouts/ClientDashboardLayout';
+import ClientDashboardLayout, { type ClientView } from '../layouts/ClientDashboardLayout';
 
 // Vistas del Dashboard
 import DashboardHome     from '../components/ClientDashboard/DashboardHome';
@@ -21,11 +21,13 @@ import {
   mockChats,
 } from '../data/mockData';
 
-const VIEWS = ['home', 'pets', 'reservations', 'orders', 'messages', 'reviews', 'settings'];
+const VIEWS: readonly ClientView[] = ['home', 'pets', 'reservations', 'orders', 'messages', 'reviews', 'settings'];
+
+const isClientView = (value: unknown): value is ClientView => VIEWS.some((v) => v === value);
 
 export default function ClientDashboard() {
   const { user: authUser } = useAuthStore();
-  const [activeView, setActiveView] = useState('home');
+  const [activeView, setActiveView] = useState<ClientView>('home');
   const location = useLocation();
   // Mascotas desde la API (store global: se actualiza al crear, editar o borrar)
   const pets = usePetsStore((state) => state.pets);
@@ -33,7 +35,7 @@ export default function ClientDashboard() {
   const petsError = usePetsStore((state) => state.error);
   const fetchPets = usePetsStore((state) => state.fetchPets);
 
-  const loadPets = useCallback((signal) => fetchPets(signal), [fetchPets]);
+  const loadPets = useCallback((signal?: AbortSignal) => fetchPets(signal), [fetchPets]);
   useEffect(() => {
     const controller = new AbortController();
     loadPets(controller.signal);
@@ -42,8 +44,8 @@ export default function ClientDashboard() {
 
   // Si el navbar navegó con { state: { tab } }, activar esa pestaña al montar
   useEffect(() => {
-    const tab = location.state?.tab ?? new URLSearchParams(location.search).get('tab');
-    if (VIEWS.includes(tab)) setActiveView(tab);
+    const tab: unknown = location.state?.tab ?? new URLSearchParams(location.search).get('tab');
+    if (isClientView(tab)) setActiveView(tab);
   }, [location.state, location.search]);
 
   // Usar datos de auth si existen, si no usar mockUser como fallback

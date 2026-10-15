@@ -1,6 +1,16 @@
-import React from 'react';
 
-export default function LiveServiceWidget({ activeService, onOpenChat }) {
+export interface ActiveService {
+  title: string;
+  steps: { label: string; completed: boolean }[];
+  provider: { name: string; avatar: string };
+}
+
+interface LiveServiceWidgetProps {
+  activeService: ActiveService | null;
+  onOpenChat?: () => void;
+}
+
+export default function LiveServiceWidget({ activeService, onOpenChat }: LiveServiceWidgetProps) {
   if (!activeService) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center shadow-sm mb-6">

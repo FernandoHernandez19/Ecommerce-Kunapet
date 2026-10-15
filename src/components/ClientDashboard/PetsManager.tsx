@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Syringe, UtensilsCrossed, ChevronRight, Edit3, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import usePetsStore from '../../store/usePetsStore';
 import { Modal, Input } from '../ui';
 import { friendlyMessage } from '../../api/errorMessages';
-import { PET_NOTES_MAX } from '../../api/adapters';
+import { PET_NOTES_MAX, type PetEditForm, type UiPet, type UiSpecies } from '../../api/adapters';
+import { genderSchema, speciesSchema } from '../../api/schemas';
+import type { PetsStatus } from '../../store/usePetsStore';
+import type { MockReservation } from '../../data/mockData';
 
 const ACCENT = '#2D6A4F';
-const SPECIES_EMOJI = { dog: '🐶', cat: '🐱', other: '🐾' };
+const SPECIES_EMOJI: Record<UiSpecies, string> = { dog: '🐶', cat: '🐱', other: '🐾' };
 
 const VACCINE_STATUS = {
   ok:       { label: 'Vigente',  bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
@@ -15,14 +18,23 @@ const VACCINE_STATUS = {
   expired:  { label: 'Vencida',  bg: 'bg-red-50',     text: 'text-red-600',    dot: 'bg-red-500'    },
 };
 
+type VaccineBadgeKey = 'ok' | 'pending';
+
 const VACCINE_BADGE = {
   ok:      { label: 'Al día',        bg: 'bg-emerald-50', text: 'text-emerald-700' },
   pending: { label: 'Vacuna próxima', bg: 'bg-amber-50',  text: 'text-amber-700'  },
 };
 
+const TABS = [
+  { id: 'health', label: 'Historial Médico', Icon: Syringe },
+  { id: 'diet', label: 'Notas', Icon: UtensilsCrossed },
+] as const;
+
 // ─── Tarjeta de mascota (vista lista) ─────────────────────────────────────────
-function PetCard({ pet, onSelect }) {
-  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? null; // la API aún no tiene vacunas
+const badgeFor = (status: VaccineBadgeKey | null) => (status ? VACCINE_BADGE[status] : null);
+
+function PetCard({ pet, onSelect }: { pet: UiPet; onSelect: (pet: UiPet) => void }) {
+  const badge = badgeFor(pet.vaccineStatus); // la API aún no tiene vacunas
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
       {/* Avatar */}
@@ -60,7 +72,7 @@ function PetCard({ pet, onSelect }) {
 }
 
 // ─── Widget Mapa en Vivo ───────────────────────────────────────────────────────
-function LiveMapWidget({ reservation }) {
+function LiveMapWidget({ reservation }: { reservation: MockReservation }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -96,18 +108,24 @@ function LiveMapWidget({ reservation }) {
 }
 
 // ─── Vista Detalle de Mascota ─────────────────────────────────────────────────
-function PetDetail({ pet, onBack, activeReservation }) {
-  const [tab, setTab] = useState('health');
-  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? null;
+interface PetDetailProps {
+  pet: UiPet;
+  onBack: () => void;
+  activeReservation: MockReservation | null;
+}
+
+function PetDetail({ pet, onBack, activeReservation }: PetDetailProps) {
+  const [tab, setTab] = useState<'health' | 'diet'>('health');
+  const badge = badgeFor(pet.vaccineStatus);
 
   const { updatePet, removePet } = usePetsStore();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [actionError, setActionError] = useState(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Edit form state (valores de la API: species dog|cat|bird|exotic|other, gender female|male|unknown)
-  const buildForm = () => ({
+  const buildForm = (): PetEditForm => ({
     name: pet.name,
     species: pet.speciesApi,
     breed: pet.breed === 'Raza no especificada' ? '' : pet.breed,
@@ -115,7 +133,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
     birthdate: pet.birthdate,
     notes: pet.notes,
   });
-  const [editForm, setEditForm] = useState(buildForm);
+  const [editForm, setEditForm] = useState<PetEditForm>(buildForm);
 
   const openEdit = () => {
     setEditForm(buildForm());
@@ -135,7 +153,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
     }
   };
 
-  const handleEditSubmit = async (e) => {
+  const handleEditSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusy(true);
     setActionError(null);
@@ -208,10 +226,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
           {/* Tabs internos */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="flex border-b border-gray-100">
-              {[
-                { id: 'health', label: 'Historial Médico', Icon: Syringe },
-                { id: 'diet',   label: 'Notas',  Icon: UtensilsCrossed },
-              ].map(({ id, label, Icon }) => (
+              {TABS.map(({ id, label, Icon }) => (
                 <button
                   key={id}
                   onClick={() => setTab(id)}
@@ -243,7 +258,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {pet.vaccines.map((v) => {
-                          const st = VACCINE_STATUS[v.status] ?? VACCINE_STATUS.ok;
+                          const st = VACCINE_STATUS[v.status];
                           return (
                             <tr key={v.id} className="hover:bg-gray-50 transition-colors">
                               <td className="py-3 font-semibold text-gray-800">{v.name}</td>
@@ -343,7 +358,10 @@ function PetDetail({ pet, onBack, activeReservation }) {
               <select 
                 className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
                 value={editForm.species}
-                onChange={(e) => setEditForm({...editForm, species: e.target.value})}
+                onChange={(e) => {
+                  const species = speciesSchema.safeParse(e.target.value);
+                  if (species.success) setEditForm({ ...editForm, species: species.data });
+                }}
               >
                 <option value="dog">Perro</option>
                 <option value="cat">Gato</option>
@@ -362,7 +380,10 @@ function PetDetail({ pet, onBack, activeReservation }) {
               <select 
                 className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
                 value={editForm.gender}
-                onChange={(e) => setEditForm({...editForm, gender: e.target.value})}
+                onChange={(e) => {
+                  const gender = genderSchema.safeParse(e.target.value);
+                  if (gender.success) setEditForm({ ...editForm, gender: gender.data });
+                }}
               >
                 <option value="male">Macho</option>
                 <option value="female">Hembra</option>
@@ -383,7 +404,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
             <textarea
               id="pet-notes"
               className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all resize-none"
-              rows="4"
+              rows={4}
               maxLength={PET_NOTES_MAX}
               value={editForm.notes}
               onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
@@ -417,15 +438,23 @@ function PetDetail({ pet, onBack, activeReservation }) {
 }
 
 // ─── PetsManager Principal ────────────────────────────────────────────────────
-export default function PetsManager({ pets, status = 'ready', error = null, onRetry, reservations }) {
-  const [selectedId, setSelectedId] = useState(null);
+interface PetsManagerProps {
+  pets: UiPet[];
+  status?: PetsStatus;
+  error?: string | null;
+  onRetry?: () => void;
+  reservations: MockReservation[];
+}
+
+export default function PetsManager({ pets, status = 'ready', error = null, onRetry, reservations }: PetsManagerProps) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // La mascota seleccionada se toma de la lista del store: así refleja las ediciones.
   const selectedPet = selectedId ? pets.find((p) => p.id === selectedId) ?? null : null;
 
   const activeReservation = selectedPet
-    ? reservations.find((r) => r.petId === selectedPet.id && r.status === 'in_progress')
+    ? reservations.find((r) => r.petId === selectedPet.id && r.status === 'in_progress') ?? null
     : null;
 
   if (selectedPet) {

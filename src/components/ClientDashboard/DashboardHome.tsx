@@ -1,6 +1,10 @@
-import React from 'react';
+import type { MouseEvent } from 'react';
 import ExampleDataBadge from '../ExampleDataBadge';
 import { useNavigate } from 'react-router-dom';
+import type { UiPet, UiSpecies } from '../../api/adapters';
+import type { PetsStatus } from '../../store/usePetsStore';
+import type { MockActivity } from '../../data/mockData';
+import type { ClientView, DashboardUser } from '../../layouts/ClientDashboardLayout';
 import { PawPrint, CalendarCheck, ShoppingBag, Zap, Star, MapPin } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
@@ -26,11 +30,15 @@ const QUICK_ACTIONS = [
   { id: 'reviews', label: 'Mis Reseñas',         Icon: Star,          color: '#d97706' },
 ];
 
-const SPECIES_EMOJI = { dog: '🐶', cat: '🐱', other: '🐾' };
+type VaccineStatus = keyof typeof VACCINE_CONFIG;
+
+const vaccineStyle = (status: VaccineStatus | null) => (status ? VACCINE_CONFIG[status] : null);
+
+const SPECIES_EMOJI: Record<UiSpecies, string> = { dog: '🐶', cat: '🐱', other: '🐾' };
 
 // ─── Pet Card Compacta ────────────────────────────────────────────────────────
-function PetCardCompact({ pet }) {
-  const vaccine = VACCINE_CONFIG[pet.vaccineStatus] ?? null; // la API aún no tiene vacunas
+function PetCardCompact({ pet }: { pet: UiPet }) {
+  const vaccine = vaccineStyle(pet.vaccineStatus); // la API aún no tiene vacunas
   return (
     <div className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md transition-all">
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0"
@@ -54,7 +62,7 @@ function PetCardCompact({ pet }) {
 }
 
 // ─── Timeline Item ────────────────────────────────────────────────────────────
-function TimelineItem({ item, isLast }) {
+function TimelineItem({ item, isLast }: { item: MockActivity; isLast: boolean }) {
   const cfg = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.completed;
   return (
     <div className="flex gap-3">
@@ -75,12 +83,22 @@ function TimelineItem({ item, isLast }) {
 }
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
-export default function DashboardHome({ user, pets, petsStatus = 'ready', petsError = null, onRetryPets, activity, setActiveView }) {
+interface DashboardHomeProps {
+  user?: DashboardUser | null;
+  pets: UiPet[];
+  petsStatus?: PetsStatus;
+  petsError?: string | null;
+  onRetryPets?: () => void;
+  activity: MockActivity[];
+  setActiveView: (view: ClientView) => void;
+}
+
+export default function DashboardHome({ user, pets, petsStatus = 'ready', petsError = null, onRetryPets, activity, setActiveView }: DashboardHomeProps) {
   const navigate = useNavigate();
   const firstName = user?.name?.split(' ')[0] ?? 'Cliente';
   const activeCount = activity.filter((a) => a.status === 'in_progress').length;
 
-  const handleActionClick = (e, actionId) => {
+  const handleActionClick = (e: MouseEvent<HTMLButtonElement> | null, actionId: string) => {
     if (e) e.preventDefault();
     switch (actionId) {
       case 'book':

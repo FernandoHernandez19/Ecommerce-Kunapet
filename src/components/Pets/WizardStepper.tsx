@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function WizardStepper({ currentStep }) {
+export default function WizardStepper({ currentStep }: { currentStep: number }) {
   const steps = [
     { id: 1, label: 'Perfil' },
     { id: 2, label: 'Salud' },

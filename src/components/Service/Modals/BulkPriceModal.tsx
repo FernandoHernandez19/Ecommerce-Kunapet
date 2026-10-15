@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import type { BulkPriceConfig } from '../../../api/adapters';
 
-export default function BulkPriceModal({ isOpen, onClose, selectedCount, onConfirm }) {
-  const [updateType, setUpdateType] = useState('percentage'); // 'percentage' | 'fixed'
-  const [action, setAction] = useState('increase'); // 'increase' | 'decrease'
+interface BulkPriceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedCount: number;
+  onConfirm: (config: BulkPriceConfig) => void;
+}
+
+export default function BulkPriceModal({ isOpen, onClose, selectedCount, onConfirm }: BulkPriceModalProps) {
+  const [updateType, setUpdateType] = useState<BulkPriceConfig['type']>('percentage');
+  const [action, setAction] = useState<BulkPriceConfig['action']>('increase');
   const [value, setValue] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!value || isNaN(value)) return;
+    if (!value || Number.isNaN(Number(value))) return;
     onConfirm({ type: updateType, action, amount: parseFloat(value) });
   };
 
@@ -53,7 +61,7 @@ export default function BulkPriceModal({ isOpen, onClose, selectedCount, onConfi
             <div className="w-1/3">
               <select 
                 value={action} 
-                onChange={(e) => setAction(e.target.value)}
+                onChange={(e) => setAction(e.target.value === 'decrease' ? 'decrease' : 'increase')}
                 className="w-full bg-gray-50 border border-gray-200 p-3.5 rounded-xl text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#e23d28]/20"
               >
                 <option value="increase">Aumentar</option>

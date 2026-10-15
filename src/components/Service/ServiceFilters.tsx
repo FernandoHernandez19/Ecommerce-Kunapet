@@ -1,6 +1,16 @@
-import React from 'react';
 
-export default function ServiceFilters({ activeCategory, setActiveCategory, sortBy = 'recent', setSortBy }) {
+export type ServiceSort = 'recent' | 'price_asc' | 'price_desc';
+
+const isServiceSort = (value: string): value is ServiceSort => value === 'recent' || value === 'price_asc' || value === 'price_desc';
+
+interface ServiceFiltersProps {
+  activeCategory: string;
+  setActiveCategory: (category: string) => void;
+  sortBy?: ServiceSort;
+  setSortBy?: (sort: ServiceSort) => void;
+}
+
+export default function ServiceFilters({ activeCategory, setActiveCategory, sortBy = 'recent', setSortBy }: ServiceFiltersProps) {
   const categories = ['Todos', 'Paseos', 'Grooming', 'Veterinaria'];
 
   return (
@@ -29,7 +39,9 @@ export default function ServiceFilters({ activeCategory, setActiveCategory, sort
           <select
             aria-label="Ordenar servicios"
             value={sortBy}
-            onChange={(e) => setSortBy?.(e.target.value)}
+            onChange={(e) => {
+              if (isServiceSort(e.target.value)) setSortBy?.(e.target.value);
+            }}
             className="bg-transparent text-gray-900 font-bold pr-6 outline-none cursor-pointer appearance-none"
           >
             <option value="recent">Más recientes</option>

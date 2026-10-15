@@ -1,6 +1,7 @@
-import React from 'react';
 
-export default function MetricCards({ metrics }) {
+import type { ProviderMetrics } from './types';
+
+export default function MetricCards({ metrics }: { metrics: ProviderMetrics }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {[

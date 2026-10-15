@@ -1,6 +1,12 @@
-import React from 'react';
 
-export default function BulkStatusModal({ isOpen, onClose, selectedCount, onConfirm }) {
+interface BulkStatusModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedCount: number;
+  onConfirm: (isActive: boolean) => void;
+}
+
+export default function BulkStatusModal({ isOpen, onClose, selectedCount, onConfirm }: BulkStatusModalProps) {
   if (!isOpen) return null;
 
   return (

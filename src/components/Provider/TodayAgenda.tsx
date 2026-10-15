@@ -1,6 +1,7 @@
-import React from 'react';
 
-export default function TodayAgenda({ appointments }) {
+import type { Appointment } from './types';
+
+export default function TodayAgenda({ appointments }: { appointments: Appointment[] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full">
       <div className="flex justify-between items-center mb-6">

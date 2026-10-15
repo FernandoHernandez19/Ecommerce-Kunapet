@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CheckSquare, Plus } from 'lucide-react';
 import ProviderDashboardLayout from '../layouts/ProviderDashboardLayout';
-import ServiceFilters from '../components/Service/ServiceFilters';
+import ServiceFilters, { type ServiceSort } from '../components/Service/ServiceFilters';
 import ServiceCard from '../components/Service/ServiceCard';
 import AddServiceCard from '../components/Service/AddServiceCard';
 import BulkActionBar from '../components/Service/BulkActionBar';
@@ -13,7 +13,7 @@ import { useConfirmDialog } from '../components/ConfirmDialog';
 import useAuthStore from '../store/useAuthStore';
 import useApiResource from '../hooks/useApiResource';
 import { createItem, deactivateItem, listMyItems, patchItem, updateItem } from '../api/items';
-import { BULK_LIMIT, bulkPriceCents } from '../api/adapters';
+import { BULK_LIMIT, bulkPriceCents, type BulkPriceConfig, type ItemFormInput, type UiItem } from '../api/adapters';
 import { runSequentially } from '../api/bulk';
 import { ApiError } from '../api/ApiError';
 import { friendlyMessage } from '../api/errorMessages';
@@ -23,7 +23,7 @@ export default function ServiceManagementPage() {
 
   // ── Datos (GET /items filtrado a los del proveedor) ─────────────────────────
   const { data, loading, error, reload, setData } = useApiResource(
-    (signal) => listMyItems(user.id, { signal }),
+    (signal) => listMyItems(user?.id ?? '', { signal }),
     [user?.id],
     { enabled: Boolean(user?.id) },
   );
@@ -32,20 +32,20 @@ export default function ServiceManagementPage() {
 
   // ── Estado de UI ────────────────────────────────────────────────────────────
   const [activeCategory,     setActiveCategory]     = useState('Todos');
-  const [sortBy,             setSortBy]             = useState('recent');
+  const [sortBy,             setSortBy]             = useState<ServiceSort>('recent');
   const [isBatchMode,        setIsBatchMode]        = useState(false);
-  const [selectedServiceIds, setSelectedServiceIds] = useState([]);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [isPriceModalOpen,  setIsPriceModalOpen]  = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [formState, setFormState] = useState({ open: false, service: null });
-  const [busyIds, setBusyIds] = useState([]);
-  const [banner, setBanner] = useState(null); // { kind: 'error' | 'ok', text }
+  const [formState, setFormState] = useState<{ open: boolean; service: UiItem | null }>({ open: false, service: null });
+  const [busyIds, setBusyIds] = useState<string[]>([]);
+  const [banner, setBanner] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const { confirm, ConfirmDialogRenderer } = useConfirmDialog();
 
   // Reemplaza un item en la lista local con la versión que devolvió la API.
-  const replaceLocal = (updated) =>
+  const replaceLocal = (updated: UiItem) =>
     setData((list) => (list ?? []).map((i) => (i.id === updated.id ? updated : i)));
 
   const toggleBatchMode = () => {
@@ -54,11 +54,11 @@ export default function ServiceManagementPage() {
     setBanner(null);
   };
 
-  const handleToggleSelection = (id) => {
+  const handleToggleSelection = (id: string) => {
     setSelectedServiceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const withBusy = async (id, action) => {
+  const withBusy = async (id: string, action: () => Promise<void>) => {
     setBusyIds((b) => [...b, id]);
     setBanner(null);
     try {
@@ -71,7 +71,7 @@ export default function ServiceManagementPage() {
   };
 
   // ── Crear / editar ──────────────────────────────────────────────────────────
-  const handleSubmitForm = async (form) => {
+  const handleSubmitForm = async (form: ItemFormInput) => {
     if (formState.service) {
       replaceLocal(await updateItem(formState.service.id, form));
     } else {
@@ -82,18 +82,19 @@ export default function ServiceManagementPage() {
   };
 
   // ── Activar / desactivar individual ─────────────────────────────────────────
-  const handleToggleActive = (id) => {
+  const handleToggleActive = (id: string) => {
     const service = services.find((s) => s.id === id);
     if (!service) return;
     return withBusy(id, async () => replaceLocal(await patchItem(id, { isActive: !service.isActive })));
   };
 
   // ── "Eliminar" individual: la API desactiva el item, no lo borra ────────────
-  const handleDeleteSingle = async (id) => {
+  const handleDeleteSingle = async (id: string) => {
     const service = services.find((s) => s.id === id);
+    if (!service) return;
     const ok = await confirm({
       title: '¿Desactivar servicio?',
-      message: `«${service?.title}» dejará de mostrarse en el catálogo. Podrás reactivarlo cuando quieras.`,
+      message: `«${service.title}» dejará de mostrarse en el catálogo. Podrás reactivarlo cuando quieras.`,
       confirmLabel: 'Sí, desactivar',
       cancelLabel: 'Cancelar',
       variant: 'danger',
@@ -106,7 +107,7 @@ export default function ServiceManagementPage() {
   };
 
   // ── ACCIONES EN LOTE: PATCH individuales y secuenciales (máx. 20) ───────────
-  const runBulk = async (ids, worker, verb) => {
+  const runBulk = async (ids: string[], worker: (id: string) => Promise<UiItem>, verb: string) => {
     if (ids.length > BULK_LIMIT) {
       setBanner({ kind: 'error', text: `Selecciona como máximo ${BULK_LIMIT} servicios por acción masiva.` });
       return false;
@@ -123,7 +124,7 @@ export default function ServiceManagementPage() {
       setBanner({ kind: 'ok', text: `${verb}: ${ok.length} de ${ids.length}.` });
       return true;
     }
-    const title = (id) => services.find((s) => s.id === id)?.title ?? id;
+    const title = (id: string) => services.find((s) => s.id === id)?.title ?? id;
     const detail = failed.slice(0, 3).map((f) => `«${title(f.id)}» (${friendlyMessage(f.error)})`).join('; ');
     setBanner({
       kind: 'error',
@@ -133,12 +134,13 @@ export default function ServiceManagementPage() {
     return false;
   };
 
-  const executeBulkPriceUpdate = async (config) => {
+  const executeBulkPriceUpdate = async (config: BulkPriceConfig) => {
     setIsPriceModalOpen(false);
     const allOk = await runBulk(
       selectedServiceIds,
       async (id) => {
         const service = services.find((s) => s.id === id);
+        if (!service) throw new ApiError({ status: 404, code: 'not_found', message: 'El servicio ya no está en la lista.' });
         const next = bulkPriceCents(service.priceCents, config);
         if (next === null) {
           throw new ApiError({ status: 422, code: 'unprocessable_entity', message: 'El precio resultante no es válido.' });
@@ -150,7 +152,7 @@ export default function ServiceManagementPage() {
     if (allOk) toggleBatchMode();
   };
 
-  const executeBulkStatusUpdate = async (newStatus) => {
+  const executeBulkStatusUpdate = async (newStatus: boolean) => {
     setIsStatusModalOpen(false);
     const allOk = await runBulk(
       selectedServiceIds,
@@ -174,7 +176,9 @@ export default function ServiceManagementPage() {
       selectedServiceIds,
       async (id) => {
         await deactivateItem(id);
-        return { ...services.find((s) => s.id === id), isActive: false };
+        const service = services.find((s) => s.id === id);
+        if (!service) throw new ApiError({ status: 404, code: 'not_found', message: 'El servicio ya no está en la lista.' });
+        return { ...service, isActive: false };
       },
       'Servicios desactivados',
     );

@@ -1,7 +1,8 @@
-import React from 'react';
 
-export default function RecentOrders({ orders }) {
-  const getStatusPill = (status) => {
+import type { ReceivedOrder } from './types';
+
+export default function RecentOrders({ orders }: { orders: ReceivedOrder[] }) {
+  const getStatusPill = (status: string) => {
     switch(status) {
       case 'PENDIENTE': return 'bg-amber-100 text-amber-800';
       case 'EN CAMINO': return 'bg-red-100 text-emerald-800';
@@ -34,7 +35,7 @@ export default function RecentOrders({ orders }) {
               <td className="py-4 text-gray-900 font-bold">{order.id}</td>
               <td className="py-4 flex items-center space-x-2">
                 <span className="w-7 h-7 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center text-xs font-bold">
-                  {order.client.split(' ').map(n => n[0]).join('')}
+                  {order.client.split(' ').map((n) => n[0]).join('')}
                 </span>
                 <span>{order.client}</span>
               </td>

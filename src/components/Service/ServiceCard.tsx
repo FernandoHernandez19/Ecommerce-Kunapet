@@ -1,6 +1,18 @@
-import React from 'react';
 
-export default function ServiceCard({ service, onToggleActive, onEdit, onDelete, isBatchMode, isSelected, onToggleSelection, busy = false }) {
+import type { UiItem } from '../../api/adapters';
+
+interface ServiceCardProps {
+  service: UiItem;
+  onToggleActive: (id: string) => void;
+  onEdit: (service: UiItem) => void;
+  onDelete: (id: string) => void;
+  isBatchMode: boolean;
+  isSelected: boolean;
+  onToggleSelection: (id: string) => void;
+  busy?: boolean;
+}
+
+export default function ServiceCard({ service, onToggleActive, onEdit, onDelete, isBatchMode, isSelected, onToggleSelection, busy = false }: ServiceCardProps) {
   
   // Estilos condicionales si la tarjeta está seleccionada
   const cardClasses = `bg-white rounded-3xl border p-6 transition-all flex flex-col h-full relative cursor-pointer ${

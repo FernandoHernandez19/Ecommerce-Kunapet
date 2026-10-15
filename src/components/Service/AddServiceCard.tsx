@@ -1,6 +1,5 @@
-import React from 'react';
 
-export default function AddServiceCard({ onClick }) {
+export default function AddServiceCard({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="bg-transparent border-2 border-dashed border-gray-300 hover:border-[#e23d28] hover:bg-red-50/30 rounded-3xl p-8 flex flex-col items-center justify-center text-center transition-all h-full min-h-[350px] group outline-none focus:ring-4 focus:ring-[#e23d28]/20">
       <div className="w-14 h-14 bg-gray-200 group-hover:bg-[#e23d28] text-gray-500 group-hover:text-white rounded-full flex items-center justify-center text-2xl mb-6 transition-colors shadow-sm">

@@ -1,6 +1,7 @@
-import React from 'react';
 
-export default function BusinessWidgets({ stockAlerts, growth }) {
+import type { StockAlert } from './types';
+
+export default function BusinessWidgets({ stockAlerts, growth }: { stockAlerts: StockAlert[]; growth: number }) {
   return (
     <div className="space-y-6 flex flex-col h-full">
       {/* Alertas de Stock */}

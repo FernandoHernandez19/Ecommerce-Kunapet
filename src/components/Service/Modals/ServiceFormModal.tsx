@@ -1,18 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { SERVICE_CATEGORIES, validateServiceForm } from '../../../api/adapters';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { SERVICE_CATEGORIES, validateServiceForm, type ItemFormInput, type UiItem } from '../../../api/adapters';
 import { friendlyMessage } from '../../../api/errorMessages';
 
-const EMPTY = { title: '', description: '', category: SERVICE_CATEGORIES[0], price: '', durationMinutes: '60' };
+interface ServiceFormState {
+  title: string;
+  description: string;
+  category: string;
+  price: string;
+  durationMinutes: string;
+}
+
+const EMPTY: ServiceFormState = { title: '', description: '', category: SERVICE_CATEGORIES[0], price: '', durationMinutes: '60' };
 
 /**
  * Crear o editar un servicio. `onSubmit(form)` debe devolver una promesa; si rechaza,
  * el error de la API se muestra dentro del modal.
  */
-export default function ServiceFormModal({ isOpen, service, onClose, onSubmit }) {
+interface ServiceFormModalProps {
+  isOpen: boolean;
+  service: UiItem | null;
+  onClose: () => void;
+  onSubmit: (form: ItemFormInput) => Promise<void>;
+}
+
+export default function ServiceFormModal({ isOpen, service, onClose, onSubmit }: ServiceFormModalProps) {
   const editing = Boolean(service);
-  const [form, setForm] = useState(EMPTY);
-  const [errors, setErrors] = useState({});
-  const [submitError, setSubmitError] = useState(null);
+  const [form, setForm] = useState<ServiceFormState>(EMPTY);
+  const [errors, setErrors] = useState<ReturnType<typeof validateServiceForm>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -35,9 +50,9 @@ export default function ServiceFormModal({ isOpen, service, onClose, onSubmit })
 
   if (!isOpen) return null;
 
-  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const set = (field: keyof ServiceFormState) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const found = validateServiceForm(form);
     setErrors(found);
@@ -53,7 +68,7 @@ export default function ServiceFormModal({ isOpen, service, onClose, onSubmit })
   };
 
   const field = 'w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20';
-  const FieldError = ({ name }) => (errors[name] ? <p role="alert" className="mt-1 text-xs font-medium text-red-500">{errors[name]}</p> : null);
+  const FieldError = ({ name }: { name: keyof ReturnType<typeof validateServiceForm> }) => (errors[name] ? <p role="alert" className="mt-1 text-xs font-medium text-red-500">{errors[name]}</p> : null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="service-form-title">

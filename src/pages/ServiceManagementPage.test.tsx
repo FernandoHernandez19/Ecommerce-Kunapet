@@ -2,18 +2,26 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import useAuthStore from '../store/useAuthStore';
+import type { Item, User } from '@/types/api';
 import { apiItem, apiService, errorResponse, jsonResponse, page as basePage, routeFetch, sampleUser } from '../test/helpers';
 
 // El servidor devuelve meta.limit = el limit pedido (la pantalla pide 100).
-const page = (data, total = data.length) => basePage(data, total, { limit: 100 });
+const page = (data: Item[], total = data.length) => basePage(data, total, { limit: 100 });
 import ServiceManagementPage from './ServiceManagementPage';
 
-const provider = { ...sampleUser, id: 'prov-1', role: 'provider', name: 'Spa Pelusa' };
-const mine = (id, title, extra = {}) => apiService({ id, title, providerId: 'prov-1', provider: { id: 'prov-1', name: 'Spa Pelusa', avatarUrl: null }, ...extra });
+const provider: User = { ...sampleUser, id: 'prov-1', role: 'provider', name: 'Spa Pelusa' };
+const mine = (id: string, title: string, extra: Partial<Item> = {}) => apiService({ id, title, providerId: 'prov-1', provider: { id: 'prov-1', name: 'Spa Pelusa', avatarUrl: null }, ...extra });
 
 const renderPage = () => render(<MemoryRouter><ServiceManagementPage /></MemoryRouter>);
 
-const card = (title) => screen.getByRole('heading', { name: title }).closest('div[class*="rounded-3xl"]');
+const card = (title: string): HTMLElement => {
+  const found = screen.getByRole('heading', { name: title }).closest<HTMLElement>('div[class*="rounded-3xl"]');
+  if (!found) throw new Error(`No se encontró la tarjeta de «${title}»`);
+  return found;
+};
+
+/** El body que registró routeFetch es `unknown`: lo leemos como objeto plano. */
+const bodyOf = (body: unknown): Record<string, unknown> => (typeof body === 'object' && body !== null ? Object.fromEntries(Object.entries(body)) : {});
 
 describe('Gestión de servicios del proveedor', () => {
   beforeEach(() => {
@@ -69,8 +77,8 @@ describe('Gestión de servicios del proveedor', () => {
 
     expect(await screen.findByText('Paseo nocturno')).toBeInTheDocument();
     const post = calls.find((c) => c.method === 'POST');
-    expect(post.path).toBe('/items');
-    expect(post.body).toEqual({ type: 'service', title: 'Paseo nocturno', description: 'Paseo de 45 minutos', category: 'paseos', priceCents: 3050, durationMinutes: 45 });
+    expect(post?.path).toBe('/items');
+    expect(post?.body).toEqual({ type: 'service', title: 'Paseo nocturno', description: 'Paseo de 45 minutos', category: 'paseos', priceCents: 3050, durationMinutes: 45 });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
@@ -89,7 +97,7 @@ describe('Gestión de servicios del proveedor', () => {
 
   it('desactiva un servicio con el interruptor (PATCH isActive:false)', async () => {
     const { calls } = routeFetch(({ method, body }) =>
-      method === 'PATCH' ? jsonResponse({ data: mine('s1', 'Paseo grupal', { isActive: body.isActive }) }) : page([mine('s1', 'Paseo grupal')], 1),
+      method === 'PATCH' ? jsonResponse({ data: mine('s1', 'Paseo grupal', { isActive: bodyOf(body).isActive === true }) }) : page([mine('s1', 'Paseo grupal')], 1),
     );
     renderPage();
     await screen.findByText('Paseo grupal');
@@ -113,12 +121,12 @@ describe('Gestión de servicios del proveedor', () => {
   });
 
   it('acción masiva con error parcial: PATCH secuenciales, refleja solo lo confirmado y deja los fallidos seleccionados', async () => {
-    const order = [];
+    const order: string[] = [];
     const { calls } = routeFetch(({ method, path, body }) => {
       if (method === 'PATCH') {
         order.push(path);
         if (path === '/items/s2') return errorResponse(500, 'internal_error', 'x');
-        return jsonResponse({ data: mine(path.split('/').pop(), path === '/items/s1' ? 'Paseo grupal' : 'Baño', { isActive: body.isActive }) });
+        return jsonResponse({ data: mine((path.split('/').pop() ?? ''), path === '/items/s1' ? 'Paseo grupal' : 'Baño', { isActive: bodyOf(body).isActive === true }) });
       }
       return page([mine('s1', 'Paseo grupal'), mine('s2', 'Grooming completo'), mine('s3', 'Baño')], 3);
     });
@@ -146,7 +154,7 @@ describe('Gestión de servicios del proveedor', () => {
 
   it('acción masiva de precios: aplica el porcentaje en céntimos a cada servicio', async () => {
     const { calls } = routeFetch(({ method, path, body }) => {
-      if (method === 'PATCH') return jsonResponse({ data: mine(path.split('/').pop(), 'Paseo grupal', { priceCents: body.priceCents }) });
+      if (method === 'PATCH') return jsonResponse({ data: mine((path.split('/').pop() ?? ''), 'Paseo grupal', { priceCents: Number(bodyOf(body).priceCents) }) });
       return page([mine('s1', 'Paseo grupal', { priceCents: 2500 })], 1);
     });
     renderPage();
@@ -157,7 +165,7 @@ describe('Gestión de servicios del proveedor', () => {
     fireEvent.change(screen.getByPlaceholderText('Ej: 10'), { target: { value: '10' } });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar Cambios' }));
     await screen.findByText('S/ 27.50');
-    expect(calls.find((c) => c.method === 'PATCH').body).toEqual({ priceCents: 2750 });
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ priceCents: 2750 });
   });
 
   it('rechaza una acción masiva de más de 20 servicios sin llamar a la API', async () => {

@@ -1,6 +1,13 @@
-import React from 'react';
 
-export default function BulkActionBar({ selectedCount, onUpdatePrices, onChangeAvailability, onDelete, onClose }) {
+interface BulkActionBarProps {
+  selectedCount: number;
+  onUpdatePrices: () => void;
+  onChangeAvailability: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+}
+
+export default function BulkActionBar({ selectedCount, onUpdatePrices, onChangeAvailability, onDelete, onClose }: BulkActionBarProps) {
   if (selectedCount === 0) return null;
 
   return (

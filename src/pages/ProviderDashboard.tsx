@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProviderDashboardLayout from '../layouts/ProviderDashboardLayout';
 import DashboardHeader from '../components/Provider/DashboardHeader';
@@ -12,6 +11,7 @@ import useAuthStore from '../store/useAuthStore';
 import ExampleDataBadge from '../components/ExampleDataBadge';
 import useApiResource from '../hooks/useApiResource';
 import { listMyItems } from '../api/items';
+import type { Appointment, ReceivedOrder, StockAlert } from '../components/Provider/types';
 
 export default function ProviderDashboard() {
   const { user } = useAuthStore();
@@ -19,32 +19,37 @@ export default function ProviderDashboard() {
 
   // Dato REAL: servicios activos del proveedor (GET /items). Todo lo demás de este
   // panel (ventas, agenda, stock, pedidos recibidos) aún no existe en la API.
-  const { data: myItems, loading, error } = useApiResource(
-    (signal) => listMyItems(user.id, { signal }),
+  const myItems = useApiResource(
+    (signal) => listMyItems(user?.id ?? '', { signal }),
     [user?.id],
     { enabled: Boolean(user?.id) },
   );
-  const activeServices = loading ? '…' : error ? '—' : myItems.filter((i) => i.type === 'service' && i.isActive).length;
+  const activeServices =
+    myItems.status === 'success'
+      ? myItems.data.filter((i) => i.type === 'service' && i.isActive).length
+      : myItems.status === 'error'
+        ? '—'
+        : '…';
 
   // Datos de ejemplo (marcados en pantalla con «Datos de ejemplo»)
+  const appointments: Appointment[] = [
+    { time: '10:00', meridian: 'AM', service: 'Paseo Premium', pet: 'Bruno (Golden Retriever)', client: 'Juan Pérez', status: 'READY', statusText: 'Iniciar' },
+    { time: '14:00', meridian: 'PM', service: 'Baño y Corte', pet: 'Mimi (Persa)', client: 'Ana López', status: 'WAITING', statusText: 'En 3 horas' },
+    { time: '16:30', meridian: 'PM', service: 'Consulta Veterinaria', pet: 'Toby (Beagle)', client: 'Carlos Ruiz', status: 'PENDING', statusText: 'Pendiente' },
+  ];
+  const stockAlerts: StockAlert[] = [
+    { name: 'NutriCan Adultos 15kg', quantity: 3, severity: 'high' },
+    { name: 'Shampoo Antipulgas 500ml', quantity: 5, severity: 'high' },
+    { name: 'Collares Reflectivos', quantity: 12, severity: 'medium' },
+  ];
+  const orders: ReceivedOrder[] = [
+    { id: '#9402', client: 'Marta López', products: '2x Correa Retráctil, 1x Juguete Mordedor', total: '$1.250', status: 'PENDIENTE', action: '' },
+    { id: '#9399', client: 'Roberto García', products: '1x NutriCan Adultos 15kg', total: '$4.800', status: 'EN CAMINO', action: 'Rastrear' },
+    { id: '#9395', client: 'Sofía Díaz', products: '4x Latas Alimento Húmedo', total: '$850', status: 'ENTREGADO', action: 'Detalles' },
+  ];
   const dashboardData = {
     metrics: { sales: "S/ 4,520.00", rating: 4.9, reviews: 124, messages: 12 },
-    appointments: [
-      { time: '10:00', meridian: 'AM', service: 'Paseo Premium', pet: 'Bruno (Golden Retriever)', client: 'Juan Pérez', status: 'READY', statusText: 'Iniciar' },
-      { time: '14:00', meridian: 'PM', service: 'Baño y Corte', pet: 'Mimi (Persa)', client: 'Ana López', status: 'WAITING', statusText: 'En 3 horas' },
-      { time: '16:30', meridian: 'PM', service: 'Consulta Veterinaria', pet: 'Toby (Beagle)', client: 'Carlos Ruiz', status: 'PENDING', statusText: 'Pendiente' }
-    ],
-    stockAlerts: [
-      { name: 'NutriCan Adultos 15kg', quantity: 3, severity: 'high' },
-      { name: 'Shampoo Antipulgas 500ml', quantity: 5, severity: 'high' },
-      { name: 'Collares Reflectivos', quantity: 12, severity: 'medium' }
-    ],
-    growth: 14.2,
-    orders: [
-      { id: '#9402', client: 'Marta López', products: '2x Correa Retráctil, 1x Juguete Mordedor', total: '$1.250', status: 'PENDIENTE', action: '' },
-      { id: '#9399', client: 'Roberto García', products: '1x NutriCan Adultos 15kg', total: '$4.800', status: 'EN CAMINO', action: 'Rastrear' },
-      { id: '#9395', client: 'Sofía Díaz', products: '4x Latas Alimento Húmedo', total: '$850', status: 'ENTREGADO', action: 'Detalles' }
-    ]
+    growth: 14.2
   };
 
   const businessName = user?.name || "proveedor";
@@ -76,19 +81,19 @@ export default function ProviderDashboard() {
         {/* Agenda (Ocupa 2 columnas en pantallas grandes) */}
         <div className="xl:col-span-2">
           <div className="mb-2"><ExampleDataBadge /></div>
-          <TodayAgenda appointments={dashboardData.appointments} />
+          <TodayAgenda appointments={appointments} />
         </div>
         
         {/* Widgets Derechos (Ocupa 1 columna) */}
         <div className="xl:col-span-1">
           <div className="mb-2"><ExampleDataBadge /></div>
-          <BusinessWidgets stockAlerts={dashboardData.stockAlerts} growth={dashboardData.growth} />
+          <BusinessWidgets stockAlerts={stockAlerts} growth={dashboardData.growth} />
         </div>
       </div>
 
       {/* Tabla de Pedidos */}
       <div className="mt-8 mb-2"><ExampleDataBadge /></div>
-      <RecentOrders orders={dashboardData.orders} />
+      <RecentOrders orders={orders} />
 
       {/* FAB Botón Flotante (Solución a la Mejora 3 UX) */}
       <button 

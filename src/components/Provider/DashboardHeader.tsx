@@ -11,14 +11,22 @@
  *  @param {string}          className   — Clases adicionales
  */
 
-import React from 'react';
+
+import type { ReactNode } from 'react';
+
+interface DashboardHeaderProps {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+  className?: string;
+}
 
 export default function DashboardHeader({
   title,
   subtitle,
   action,
   className = '',
-}) {
+}: DashboardHeaderProps) {
   return (
     <header
       className={[

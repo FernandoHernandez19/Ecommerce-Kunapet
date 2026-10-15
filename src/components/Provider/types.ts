@@ -34,3 +34,19 @@ export interface ReceivedOrder {
   status: string;
   action: string;
 }
+
+/** Estado del formulario de registro de proveedor (paso 1). */
+export interface ProviderRegistrationData {
+  image: File | null;
+  businessName: string;
+  email: string;
+  password: string;
+  description: string;
+  zones: string[];
+}
+
+export type UpdateProviderData = <K extends keyof ProviderRegistrationData>(field: K, value: ProviderRegistrationData[K]) => void;
+
+export type ProviderFormErrors = Partial<Record<'businessName' | 'email' | 'password', string>>;
+
+export type VerificationDocId = 'identity' | 'certifications' | 'insurance';

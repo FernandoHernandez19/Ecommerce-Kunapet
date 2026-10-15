@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 interface WizardLayoutProps {
   children?: ReactNode;
-  onBack: () => void;
+  onBack?: () => void;
   onClose: () => void;
 }
 

@@ -15,3 +15,13 @@ export interface PetWizardForm {
 
 /** Actualiza un campo del formulario conservando el tipo de cada uno. */
 export type UpdatePetField = <K extends keyof PetWizardForm>(field: K, value: PetWizardForm[K]) => void;
+
+/** Estado del paso «Comportamiento» (página StepBehaviorPage, que puede usarse suelta). */
+export interface BehaviorFormData {
+  name?: string;
+  breed?: string;
+  age?: string;
+  photo?: string | null;
+  traits?: string[];
+  bio?: string;
+}

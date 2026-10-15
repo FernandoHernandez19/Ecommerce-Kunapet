@@ -1,0 +1,36 @@
+# Blueprint de Render para el backend de KunaPet (demo pública).
+# Uso: Render Dashboard → New → Blueprint → elige este repositorio.
+# Este archivo NO contiene secretos: JWT_SECRET lo genera Render y CORS_ORIGINS lo completas tú.
+services:
+  - type: web
+    name: kunapet-api
+    runtime: node
+    plan: free # El servicio gratuito se duerme tras ~15 min sin tráfico y tarda hasta ~1 min en despertar.
+    rootDir: server # El backend vive en /server; el resto del repositorio es el frontend.
+    # Render define NODE_ENV=production también durante la compilación; sin --include=dev
+    # no se instalaría TypeScript (devDependency) y `npm run build` fallaría.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      # Versión de Node (Vitest/ESLint piden >= 22.12).
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: NODE_ENV
+        value: production
+      # Siembra solo el catálogo de ejemplo; los usuarios se registran solos (ver server/README.md).
+      - key: DEMO_MODE
+        value: "true"
+      # Render pone un proxy delante: 1 salto de confianza para que req.ip sea la IP real
+      # y los límites de login y registro no se compartan entre todos los usuarios.
+      - key: TRUST_PROXY
+        value: "1"
+      - key: BCRYPT_COST
+        value: "10"
+      # Secreto del JWT: lo genera Render al crear el servicio (nunca se escribe aquí).
+      - key: JWT_SECRET
+        generateValue: true
+      # A COMPLETAR A MANO en el panel de Render tras desplegar el frontend: la URL de Vercel
+      # sin barra final, p. ej. https://tu-app.vercel.app (varias, separadas por comas).
+      - key: CORS_ORIGINS
+        sync: false

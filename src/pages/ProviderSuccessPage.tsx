@@ -11,7 +11,7 @@ export default function ProviderSuccessPage() {
   };
 
   const handleViewProfile = () => {
-    console.log("Redirigiendo a la vista previa del perfil público...");
+    // Pendiente: redirigir a la vista previa del perfil público.
     // Implementación real:
     // navigate('/provider-profile/preview');
   };

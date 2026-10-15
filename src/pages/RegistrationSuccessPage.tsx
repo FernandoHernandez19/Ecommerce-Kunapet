@@ -16,12 +16,10 @@ export default function RegistrationSuccessPage() {
 
   const handleGoToDashboard = () => {
     // Aquí aplicarías la Mejora 2: history.replace('/dashboard')
-    console.log("Redirigiendo al panel principal y limpiando historial...");
     window.location.href = '/pet-dashboard';
   };
 
   const handleAddAnother = () => {
-    console.log("Reiniciando el wizard de registro...");
     window.location.href = '/add-pet';
   };
 

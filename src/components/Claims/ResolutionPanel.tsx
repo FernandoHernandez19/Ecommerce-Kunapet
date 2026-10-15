@@ -18,7 +18,6 @@ export default function ResolutionPanel() {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isFormValid) return;
-    console.log("Resolución Emitida:", { option: selectedOption, notes });
     // Aquí iría la llamada a tu API backend
   };
 
@@ -62,8 +61,8 @@ export default function ResolutionPanel() {
       </div>
 
       <div className="mb-6">
-        <label className="block text-xs font-bold text-gray-700 mb-2">Notas de Resolución Oficiales</label>
-        <textarea 
+        <label htmlFor="resolution-notes" className="block text-xs font-bold text-gray-700 mb-2">Notas de Resolución Oficiales</label>
+        <textarea id="resolution-notes" 
           rows={4} 
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

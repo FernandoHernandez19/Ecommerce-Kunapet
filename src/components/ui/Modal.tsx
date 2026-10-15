@@ -100,7 +100,6 @@ export default function Modal({
           'animate-fade-in-scale',
           SIZES[size],
         ].join(' ')}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showClose) && (

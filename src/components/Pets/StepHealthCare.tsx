@@ -36,8 +36,8 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
           </h3>
           <div className="flex gap-4 items-end">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-gray-700 mb-2">Peso Aproximado (kg)</label>
-              <input 
+              <label htmlFor="pet-weight" className="block text-xs font-bold text-gray-700 mb-2">Peso Aproximado (kg)</label>
+              <input id="pet-weight" 
                 type="number" 
                 value={formData.weight}
                 onChange={(e) => updateData('weight', e.target.value)}
@@ -46,10 +46,11 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">¿Está esterilizado/a?</label>
+              <label htmlFor="pet-sterilized" className="block text-xs font-bold text-gray-700 mb-2">¿Está esterilizado/a?</label>
               <div className="flex items-center space-x-2 h-10">
                 {/* Custom Toggle Switch con Tailwind */}
                 <button 
+                  id="pet-sterilized"
                   onClick={() => updateData('isSterilized', !formData.isSterilized)}
                   className={`w-11 h-6 rounded-full flex items-center transition-colors p-1 ${formData.isSterilized ? 'bg-[#e23d28]' : 'bg-gray-300'}`}
                 >
@@ -95,8 +96,8 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
           <h3 className="text-base font-bold text-gray-900 flex items-center mb-4">
             <span className="text-[#e23d28] mr-2">🤧</span> Alergias
           </h3>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Alergias conocidas (Opcional)</label>
-          <textarea 
+          <label htmlFor="pet-allergies" className="block text-xs font-bold text-gray-700 mb-2">Alergias conocidas (Opcional)</label>
+          <textarea id="pet-allergies" 
             rows={2}
             maxLength={200}
             value={formData.allergies}
@@ -116,8 +117,8 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev, i
           <h3 className="text-base font-bold text-gray-900 flex items-center mb-4">
             <span className="text-[#e23d28] mr-2">♡</span> Necesidades Especiales
           </h3>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Notas adicionales para cuidadores (Opcional)</label>
-          <textarea 
+          <label htmlFor="pet-special-needs" className="block text-xs font-bold text-gray-700 mb-2">Notas adicionales para cuidadores (Opcional)</label>
+          <textarea id="pet-special-needs" 
             rows={3}
             maxLength={240}
             value={formData.specialNeeds}

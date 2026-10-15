@@ -349,8 +349,8 @@ export default function SettingsView({ user }: { user?: SettingsUser | null }) {
             </div>
             <form onSubmit={handleAddPayment} className="p-6 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-700 ml-1">Tipo de Tarjeta</label>
-                <select 
+                <label htmlFor="payment-card-type" className="text-sm font-bold text-gray-700 ml-1">Tipo de Tarjeta</label>
+                <select id="payment-card-type" 
                   className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all appearance-none"
                   value={newPayment.type}
                   onChange={(e) => setNewPayment({ ...newPayment, type: e.target.value })}

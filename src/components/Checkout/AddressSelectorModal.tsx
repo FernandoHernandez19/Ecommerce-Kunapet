@@ -42,9 +42,18 @@ export default function AddressSelectorModal({
           {addresses.map((addr) => (
             <div 
               key={addr.id}
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 onSelect(addr);
                 onClose();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(addr);
+                  onClose();
+                }
               }}
               className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 selectedAddressId === addr.id

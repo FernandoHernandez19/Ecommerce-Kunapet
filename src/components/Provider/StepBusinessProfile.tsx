@@ -34,12 +34,12 @@ export default function StepBusinessProfile({ formData, updateData, onNext, erro
         <ImageUploader onImageSelect={(file) => updateData('image', file)} />
 
         <div className="mb-6">
-          <label className="block text-xs font-bold text-gray-700 mb-2">
+          <label htmlFor="provider-business-name" className="block text-xs font-bold text-gray-700 mb-2">
             Nombre del Negocio o Proveedor <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <span className="absolute left-4 top-3.5 text-gray-400">🏪</span>
-            <input
+            <input id="provider-business-name"
               type="text"
               value={formData.businessName}
               onChange={(e) => updateData('businessName', e.target.value)}
@@ -50,11 +50,11 @@ export default function StepBusinessProfile({ formData, updateData, onNext, erro
         </div>
 
         <div className="mb-6">
-          <label className="block text-xs font-bold text-gray-700 mb-2">
+          <label htmlFor="provider-description" className="block text-xs font-bold text-gray-700 mb-2">
             Descripción Corta <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <textarea
+            <textarea id="provider-description"
               value={formData.description}
               onChange={(e) => updateData('description', e.target.value.substring(0, MAX_DESC))}
               placeholder="Describe brevemente tu experiencia y lo que te hace especial cuidando mascotas..."

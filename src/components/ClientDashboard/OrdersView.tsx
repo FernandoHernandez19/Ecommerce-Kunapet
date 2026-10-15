@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Package, Truck, CheckCircle2, ShoppingCart } from 'lucide-react';
 import { listOrders } from '../../api/orders';
 import type { UiOrder } from '../../api/adapters';
-import type { OrderStatus } from '@/types/api';
 import useApiResource from '../../hooks/useApiResource';
 import useCartStore from '../../store/useCartStore';
 

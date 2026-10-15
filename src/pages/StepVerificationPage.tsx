@@ -27,7 +27,6 @@ export default function StepVerificationPage() {
     if (!isNextEnabled) return;
     
     // Aquí iría la lógica para enviar el FormData con los archivos al backend
-    console.log("Enviando documentos a verificación...", documents);
     
     // Avanzar al último paso (Éxito)
     setCurrentStep(4);
@@ -35,12 +34,12 @@ export default function StepVerificationPage() {
   };
 
   const handlePrevStep = () => {
-    console.log("Volviendo a Servicios (Paso 2)");
+    // Pendiente: volver al paso 2 (Servicios), que aún no existe.
     // setCurrentStep(2);
   };
 
   const handleClose = () => {
-    console.log("Cerrando el asistente...");
+    // Pendiente: cerrar el asistente.
   };
 
   return (

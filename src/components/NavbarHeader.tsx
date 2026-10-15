@@ -5,7 +5,6 @@ import {
   ChevronDown, LayoutDashboard, ShoppingBag,
   Settings, LogOut, UserCircle2,
 } from 'lucide-react';
-import BrandImage from '../assets/Kunapet.png';
 import { Avatar, Badge } from './ui';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
 import type { Role, User } from '@/types/api';

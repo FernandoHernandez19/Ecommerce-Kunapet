@@ -19,7 +19,7 @@ const TYPES: { value: ItemType | ''; label: string }[] = [
   { value: 'product', label: 'Productos' },
   { value: 'service', label: 'Servicios' },
 ];
-export const CATEGORIES = ['Alimentos', 'Medicina', 'Accesorios', 'Grooming', 'Veterinaria', 'Paseos'];
+const CATEGORIES = ['Alimentos', 'Medicina', 'Accesorios', 'Grooming', 'Veterinaria', 'Paseos'];
 
 interface FilterSidebarProps {
   onApply?: (filters: CatalogFilters) => void;

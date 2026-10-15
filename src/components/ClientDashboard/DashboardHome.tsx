@@ -5,7 +5,7 @@ import type { UiPet, UiSpecies } from '../../api/adapters';
 import type { PetsStatus } from '../../store/usePetsStore';
 import type { MockActivity } from '../../data/mockData';
 import type { ClientView, DashboardUser } from '../../layouts/ClientDashboardLayout';
-import { PawPrint, CalendarCheck, ShoppingBag, Zap, Star, MapPin } from 'lucide-react';
+import { CalendarCheck, ShoppingBag, Zap, Star } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
 

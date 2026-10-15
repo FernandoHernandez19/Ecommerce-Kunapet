@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PawPrint, CalendarCheck, ShoppingBag,
   MessageSquare, Settings, HelpCircle, LogOut, Search,
-  ChevronDown, Bell, User, X, CheckCircle, AlertTriangle, Info, Star, type LucideIcon,
+  Bell, CheckCircle, AlertTriangle, Info, Star, type LucideIcon,
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { mockNotifications } from '../data/mockData';
@@ -117,12 +117,7 @@ function Sidebar({ activeView, setActiveView, user, unreadCount }: SidebarProps)
 }
 
 // ─── Navbar Superior ──────────────────────────────────────────────────────────
-function TopNavbar({ user }: { user?: DashboardUser | null }) {
-  const { logout } = useAuthStore();
-  const navigate = useNavigate();
-  const [dropOpen, setDropOpen] = useState(false);
-  const dropRef = useRef<HTMLDivElement>(null);
-
+function TopNavbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const [notifications, setNotifications] = useState(mockNotifications);
@@ -132,18 +127,10 @@ function TopNavbar({ user }: { user?: DashboardUser | null }) {
   };
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => { if (dropRef.current && e.target instanceof Node && !dropRef.current.contains(e.target)) setDropOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  useEffect(() => {
     const handler = (e: MouseEvent) => { if (notifRef.current && e.target instanceof Node && !notifRef.current.contains(e.target)) setNotifOpen(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
     <header className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-100 z-10 flex items-center px-6 gap-4">
@@ -270,7 +257,7 @@ export default function ClientDashboardLayout({ children, activeView, setActiveV
         unreadCount={unreadCount}
       />
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
-        <TopNavbar user={user} />
+        <TopNavbar />
         <main className="flex-1 pt-16 px-6 pb-6 lg:px-8 lg:pb-8 animate-slide-up">
           {children}
         </main>

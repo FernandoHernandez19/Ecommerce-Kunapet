@@ -57,8 +57,8 @@ export default function AddressFormModal({ isOpen, onClose, onSave, initialAddre
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Nombre (ej. Trabajo, Oficina)</label>
-              <input 
+              <label htmlFor="address-label" className="block text-sm font-bold text-gray-700 mb-1">Nombre (ej. Trabajo, Oficina)</label>
+              <input id="address-label" 
                 required
                 type="text" 
                 name="label"
@@ -70,8 +70,8 @@ export default function AddressFormModal({ isOpen, onClose, onSave, initialAddre
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Calle y número</label>
-              <input 
+              <label htmlFor="address-street" className="block text-sm font-bold text-gray-700 mb-1">Calle y número</label>
+              <input id="address-street" 
                 required
                 type="text" 
                 name="street"
@@ -83,8 +83,8 @@ export default function AddressFormModal({ isOpen, onClose, onSave, initialAddre
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Distrito</label>
-              <input 
+              <label htmlFor="address-district" className="block text-sm font-bold text-gray-700 mb-1">Distrito</label>
+              <input id="address-district" 
                 required
                 type="text" 
                 name="district"
@@ -96,8 +96,8 @@ export default function AddressFormModal({ isOpen, onClose, onSave, initialAddre
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Referencia (Opcional)</label>
-              <input 
+              <label htmlFor="address-reference" className="block text-sm font-bold text-gray-700 mb-1">Referencia (Opcional)</label>
+              <input id="address-reference" 
                 type="text" 
                 name="reference"
                 value={formData.reference}

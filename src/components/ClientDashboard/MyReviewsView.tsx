@@ -96,7 +96,7 @@ export default function MyReviewsView() {
       {/* MODAL: EDITAR RESEÑA */}
       {editingReview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setEditingReview(null)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" onClick={() => setEditingReview(null)} />
           <div className="relative bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-900">Editar Reseña</h2>
@@ -137,8 +137,8 @@ export default function MyReviewsView() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-gray-700">Comentario</label>
-                <textarea 
+                <label htmlFor="review-comment" className="text-sm font-semibold text-gray-700">Comentario</label>
+                <textarea id="review-comment" 
                   value={editingReview.comment}
                   onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
                   className="w-full h-32 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow text-sm"

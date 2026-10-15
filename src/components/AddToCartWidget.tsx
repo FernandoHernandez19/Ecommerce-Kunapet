@@ -41,8 +41,8 @@ const AddToCartWidget = ({ item }: { item: UiItem }) => {
 
       <form onSubmit={handleAddToCart} className="space-y-5">
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Cantidad</label>
-          <div className="flex items-center justify-between border border-gray-200 rounded-xl p-2 bg-white">
+          <p id="quantity-label" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Cantidad</p>
+          <div role="group" aria-labelledby="quantity-label" className="flex items-center justify-between border border-gray-200 rounded-xl p-2 bg-white">
             <button
               type="button"
               onClick={handleDecrement}

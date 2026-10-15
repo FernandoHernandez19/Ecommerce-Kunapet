@@ -147,7 +147,7 @@ export default function StepClientPreferences({ formData, updateData, onNext, on
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {SERVICES.map(({ id, label, desc, Icon, emoji }) => {
+              {SERVICES.map(({ id, label, desc, emoji }) => {
                 const active = services.includes(id);
                 return (
                   <button

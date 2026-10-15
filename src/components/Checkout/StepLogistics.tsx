@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar as CalendarIcon, Clock, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronRight } from 'lucide-react';
 import AddressCard from './AddressCard';
 import AddressFormModal from './AddressFormModal';
 import AddressSelectorModal from './AddressSelectorModal';
@@ -19,10 +19,6 @@ export default function StepLogistics({ items, onNext }: { items: CheckoutItem[]
   const hasServices = items.some(item => item.type === 'service');
   const hasProducts = items.some(item => item.type === 'product');
 
-  // Estado para la agenda simulada
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-
   // Estado de direcciones
   const [addresses, setAddresses] = useState<CheckoutAddress[]>(initialAddresses);
   const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(
@@ -34,17 +30,6 @@ export default function StepLogistics({ items, onNext }: { items: CheckoutItem[]
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const selectedAddress = addresses.find(a => a.id === selectedAddressId);
-
-  const dates = [
-    { day: 'Lun', date: '14' },
-    { day: 'Mar', date: '15' },
-    { day: 'Mié', date: '16' },
-    { day: 'Jue', date: '17' },
-    { day: 'Vie', date: '18' },
-    { day: 'Sáb', date: '19' },
-  ];
-
-  const times = ['09:00 AM', '10:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'];
 
   const handleSaveNewAddress = (newAddressData: NewAddressData) => {
     const newAddress: CheckoutAddress = {

@@ -39,6 +39,7 @@ const CartDrawer = () => {
       {/* Overlay oscuro */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        aria-hidden="true"
         onClick={closeCart}
       />
       

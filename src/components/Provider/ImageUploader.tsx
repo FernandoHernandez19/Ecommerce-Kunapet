@@ -23,8 +23,10 @@ export default function ImageUploader({ onImageSelect }: { onImageSelect: (file:
 
   return (
     <div className="mb-6 relative z-10">
-      <label className="block text-xs font-bold text-gray-700 mb-2">Foto de Perfil o Logo</label>
+      <p id="image-uploader-label" className="block text-xs font-bold text-gray-700 mb-2">Foto de Perfil o Logo</p>
       <div 
+        role="group"
+        aria-labelledby="image-uploader-label"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragEnter}
         onDragLeave={handleDragLeave}

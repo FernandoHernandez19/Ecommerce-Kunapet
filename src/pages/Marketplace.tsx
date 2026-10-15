@@ -22,7 +22,7 @@ type SortKey = 'recent' | 'price_asc' | 'price_desc';
 export type CatalogQueryInput = CatalogFilters & { q?: string };
 
 /** Convierte los filtros de la pantalla en los parámetros de GET /items (el servidor filtra). */
-export function buildQuery({ type, category, q, priceMin, priceMax }: CatalogQueryInput): ItemFilters {
+function buildQuery({ type, category, q, priceMin, priceMax }: CatalogQueryInput): ItemFilters {
   const params: ItemFilters = {};
   if (type) params.type = type;
   if (category) params.category = category;

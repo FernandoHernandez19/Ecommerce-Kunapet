@@ -1,6 +1,6 @@
 import { useState, type MouseEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MapPin, ArrowRight, Award, Clock, ShoppingCart, Calendar } from 'lucide-react';
+import { Heart, MapPin, Award, Clock, ShoppingCart, Calendar } from 'lucide-react';
 import useCartStore, { ITEM_TYPES } from '../store/useCartStore';
 import type { ItemType } from '@/types/api';
 import { formatMoney } from '../api/adapters';
@@ -111,7 +111,13 @@ const ProductCard = ({
 
   return (
     <div 
+      role="link"
+      tabIndex={0}
       onClick={onVerMas}
+      onKeyDown={(e) => {
+        // Solo cuando el foco está en la tarjeta (no en sus botones internos).
+        if (e.key === 'Enter' && e.target === e.currentTarget) onVerMas();
+      }}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col cursor-pointer"
     >
 

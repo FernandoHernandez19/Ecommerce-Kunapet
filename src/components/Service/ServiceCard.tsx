@@ -23,6 +23,7 @@ export default function ServiceCard({ service, onToggleActive, onEdit, onDelete,
 
   return (
     <div 
+      role="presentation"
       className={cardClasses}
       onClick={() => { if (isBatchMode) onToggleSelection(service.id); }}
     >
@@ -44,7 +45,7 @@ export default function ServiceCard({ service, onToggleActive, onEdit, onDelete,
           {service.icon}
         </div>
         
-        <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+        <div role="presentation" className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
           <span className="text-xs font-bold text-gray-500">Activo</span>
           <button 
             onClick={() => onToggleActive(service.id)}
@@ -80,7 +81,7 @@ export default function ServiceCard({ service, onToggleActive, onEdit, onDelete,
         </div>
       </div>
 
-      <div className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
+      <div role="presentation" className="flex items-center space-x-3" onClick={(e) => e.stopPropagation()}>
         <button type="button" onClick={() => onEdit(service)} disabled={isBatchMode || busy} className="flex-1 border border-[#e23d28] text-[#e23d28] hover:bg-red-50 font-bold py-2.5 rounded-full text-sm transition-colors disabled:opacity-50">
           Editar
         </button>

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Syringe, UtensilsCrossed, ChevronRight, Edit3, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Syringe, UtensilsCrossed, Edit3, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import usePetsStore from '../../store/usePetsStore';
 import { Modal, Input } from '../ui';
 import { friendlyMessage } from '../../api/errorMessages';
@@ -354,8 +354,8 @@ function PetDetail({ pet, onBack, activeReservation }: PetDetailProps) {
               required 
             />
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-bold text-gray-700 ml-1">Especie</label>
-              <select 
+              <label htmlFor="pet-edit-species" className="text-sm font-bold text-gray-700 ml-1">Especie</label>
+              <select id="pet-edit-species" 
                 className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
                 value={editForm.species}
                 onChange={(e) => {
@@ -376,8 +376,8 @@ function PetDetail({ pet, onBack, activeReservation }: PetDetailProps) {
               onChange={(e) => setEditForm({...editForm, breed: e.target.value})} 
             />
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-bold text-gray-700 ml-1">Género</label>
-              <select 
+              <label htmlFor="pet-edit-gender" className="text-sm font-bold text-gray-700 ml-1">Género</label>
+              <select id="pet-edit-gender" 
                 className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all appearance-none"
                 value={editForm.gender}
                 onChange={(e) => {

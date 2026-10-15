@@ -10,12 +10,12 @@ export default function ZoneSelector({ selectedZones, onToggleZone }: ZoneSelect
 
   return (
     <div className="mb-6 relative z-10">
-      <label className="block text-xs font-bold text-gray-700 mb-1">
+      <p id="provider-zones-label" className="block text-xs font-bold text-gray-700 mb-1">
         Zonas de Atención Principal <span className="text-red-500">*</span>
-      </label>
+      </p>
       <p className="text-xs text-gray-500 mb-3">Selecciona los distritos donde ofreces tus servicios.</p>
       
-      <div className="flex flex-wrap gap-2">
+      <div role="group" aria-labelledby="provider-zones-label" className="flex flex-wrap gap-2">
         {/* Mostramos las zonas seleccionadas y las populares sugeridas */}
         {[...new Set([...selectedZones, ...popularZones.slice(0, 4)])].map((zone) => {
           const isSelected = selectedZones.includes(zone);

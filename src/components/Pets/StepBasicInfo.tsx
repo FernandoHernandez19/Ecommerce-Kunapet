@@ -32,8 +32,8 @@ export default function StepBasicInfo({ formData, updateData, onNext }: StepBasi
 
         {/* Nombre */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Nombre de la Mascota <span className="text-red-500">*</span></label>
-          <input 
+          <label htmlFor="pet-name" className="block text-xs font-bold text-gray-700 mb-2">Nombre de la Mascota <span className="text-red-500">*</span></label>
+          <input id="pet-name" 
             type="text" 
             value={formData.name}
             onChange={(e) => updateData('name', e.target.value)}
@@ -44,8 +44,8 @@ export default function StepBasicInfo({ formData, updateData, onNext }: StepBasi
 
         {/* Especie */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Especie <span className="text-red-500">*</span></label>
-          <div className="grid grid-cols-3 gap-4">
+          <p id="pet-species-label" className="block text-xs font-bold text-gray-700 mb-2">Especie <span className="text-red-500">*</span></p>
+          <div role="group" aria-labelledby="pet-species-label" className="grid grid-cols-3 gap-4">
             {speciesOptions.map((opt) => (
               <button
                 key={opt.id}
@@ -65,10 +65,10 @@ export default function StepBasicInfo({ formData, updateData, onNext }: StepBasi
 
         {/* Raza y Fecha de Nacimiento */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Raza <span className="text-red-500">*</span></label>
+          <label htmlFor="pet-breed" className="block text-xs font-bold text-gray-700 mb-2">Raza <span className="text-red-500">*</span></label>
           <div className="relative">
             <span className="absolute left-3 top-3 text-gray-400">🔍</span>
-            <input 
+            <input id="pet-breed" 
               type="text" 
               value={formData.breed}
               onChange={(e) => updateData('breed', e.target.value)}
@@ -79,8 +79,8 @@ export default function StepBasicInfo({ formData, updateData, onNext }: StepBasi
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-2">Fecha de Nacimiento (Aprox.)</label>
-          <input 
+          <label htmlFor="pet-dob" className="block text-xs font-bold text-gray-700 mb-2">Fecha de Nacimiento (Aprox.)</label>
+          <input id="pet-dob" 
             type="date" 
             value={formData.dob}
             onChange={(e) => updateData('dob', e.target.value)}

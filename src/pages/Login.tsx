@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { Role } from '@/types/api';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
@@ -236,6 +236,7 @@ export default function Login() {
 
               {/* Recuperar contraseña */}
               <div className="flex justify-end">
+                {/* eslint-disable-next-line jsx-a11y/anchor-is-valid -- pendiente: la recuperación de contraseña aún no existe */}
                 <a
                   href="#"
                   className="text-sm font-semibold text-brand-primary hover:text-brand-primary-hover transition-colors no-underline"

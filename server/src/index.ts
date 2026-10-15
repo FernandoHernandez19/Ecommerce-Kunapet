@@ -4,7 +4,7 @@ import { InMemoryItemRepository } from './repositories/ItemRepository.js';
 import { InMemoryOrderRepository } from './repositories/OrderRepository.js';
 import { InMemoryPetRepository } from './repositories/PetRepository.js';
 import { InMemoryUserRepository } from './repositories/UserRepository.js';
-import { formatCredentials, seedDemoData, shouldSeed } from './seed/demoData.js';
+import { applySeed } from './seed/index.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -13,15 +13,7 @@ async function main(): Promise<void> {
   const petRepository = new InMemoryPetRepository();
   const orderRepository = new InMemoryOrderRepository();
 
-  if (shouldSeed(config)) {
-    const credentials = await seedDemoData(
-      { users: userRepository, items: itemRepository, pets: petRepository },
-      config.bcryptCost,
-    );
-    console.log(formatCredentials(credentials));
-  } else if (config.seedDemoData) {
-    console.warn('SEED_DEMO_DATA=true se ignora porque NODE_ENV=production.');
-  }
+  await applySeed(config, { users: userRepository, items: itemRepository, pets: petRepository });
 
   createApp(config, { userRepository, itemRepository, petRepository, orderRepository }).listen(config.port, () => {
     console.log(`KunaPet API escuchando en el puerto ${config.port}`);

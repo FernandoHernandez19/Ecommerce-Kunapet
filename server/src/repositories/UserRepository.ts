@@ -15,6 +15,7 @@ export interface UserRepository {
   findById(id: string): Promise<UserRecord | null>;
   /** Busca por email ya normalizado (minúsculas). */
   findByEmail(email: string): Promise<UserRecord | null>;
+  count(): Promise<number>;
   /** Lanza ConflictError si el email ya existe. */
   create(data: NewUser): Promise<UserRecord>;
 }
@@ -30,6 +31,10 @@ export class InMemoryUserRepository implements UserRepository {
   findByEmail(email: string): Promise<UserRecord | null> {
     const id = this.idByEmail.get(email);
     return Promise.resolve(id === undefined ? null : (this.byId.get(id) ?? null));
+  }
+
+  count(): Promise<number> {
+    return Promise.resolve(this.byId.size);
   }
 
   create(data: NewUser): Promise<UserRecord> {

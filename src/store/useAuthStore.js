@@ -1,19 +1,22 @@
 /**
- * useAuthStore — Zustand store de autenticación para KunaPet.
+ * useAuthStore — Zustand store de autenticación para KunaPet (API real).
  *
  * Gestiona:
- *  - Estado de sesión del usuario (cliente / proveedor / admin)
- *  - Token JWT (listo para integración con el API de C#)
- *  - Acciones: login, logout, updateProfile
- *  - Persistencia en localStorage (persist middleware de Zustand)
+ *  - Sesión: { user, token } (lo ÚNICO que se persiste en localStorage)
+ *  - Acciones: login, register, verifySession, logout, updateProfile
+ *  - `sessionStatus`: 'verifying' mientras se valida el token guardado con GET /auth/me;
+ *    'ready' cuando ya se sabe si hay sesión. ProtectedRoute espera a 'ready'.
  *
- * Cuando el backend esté listo, solo hay que cambiar las funciones
- * de acción para llamar al API real — el resto de la app no cambia.
+ * Seguridad: el token vive en localStorage (decisión de esta fase). Un XSS podría
+ * leerlo; la alternativa son cookies httpOnly (ver README). No se registra en consola.
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as authService from '../services/authService';
+import { friendlyMessage } from '../api/errorMessages';
+import useCartStore from './useCartStore';
+import usePetsStore from './usePetsStore';
 
 // ─── Tipos de Roles ───────────────────────────────────────────────────────────
 export const ROLES = {
@@ -22,78 +25,95 @@ export const ROLES = {
   ADMIN:    'admin',
 };
 
-// ─── Estado inicial ───────────────────────────────────────────────────────────
-const INITIAL_STATE = {
-  user:            null,   // Objeto del usuario autenticado
-  token:           null,   // JWT token (string)
-  isAuthenticated: false,  // Booleano derivado de user/token
-  isLoading:       false,  // Para estados de carga en formularios
-  error:           null,   // Mensaje de error del último intento
+const initialSession = {
+  user:            null,
+  token:           null,
+  isAuthenticated: false,
+  sessionStatus:   'ready',
 };
+
+// Un solo /auth/me en vuelo aunque React StrictMode monte dos veces.
+let verifyInFlight = null;
+
+function resetPersistedStores() {
+  useCartStore.setState({ items: [], isOpen: false });
+  useCartStore.persist.clearStorage();
+  usePetsStore.setState(usePetsStore.getInitialState(), true);
+  usePetsStore.persist.clearStorage();
+}
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      ...INITIAL_STATE,
+      ...initialSession,
+      isLoading: false,
+      error:     null,
 
       // ── LOGIN ──────────────────────────────────────────────────────────────
-      // TODO: Cuando el API de C# esté listo, reemplazar el bloque
-      //       de mock por: const res = await authService.login(credentials);
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          // ── MOCK: simula delay de red ──────────────────────────────────────
-          await new Promise((r) => setTimeout(r, 800));
-
-          // Mock de respuesta del servidor según el email ingresado
-          const roleMap = {
-            'admin@kunapet.com':    ROLES.ADMIN,
-            'proveedor@kunapet.com': ROLES.PROVIDER,
-          };
-          const role = roleMap[credentials.email] ?? ROLES.CLIENT;
-
-          const mockUser = {
-            id:        'usr-001',
-            email:     credentials.email,
-            name:      role === ROLES.ADMIN ? 'Fernando H.' : role === ROLES.PROVIDER ? 'PetShop Central' : 'Camila R.',
-            role,
-            avatar:    null,
-            createdAt: new Date().toISOString(),
-          };
-          const mockToken = `mock-jwt-token-${role}-${Date.now()}`;
-          // ── Fin MOCK ───────────────────────────────────────────────────────
-
-          set({
-            user:            mockUser,
-            token:           mockToken,
-            isAuthenticated: true,
-            isLoading:       false,
-            error:           null,
-          });
-
-          return { success: true, user: mockUser };
+          const { user, token } = await authService.login(credentials);
+          set({ user, token, isAuthenticated: true, sessionStatus: 'ready', isLoading: false, error: null });
+          return { success: true, user };
         } catch (err) {
-          const errorMessage = err?.message ?? 'Error al iniciar sesión. Intenta de nuevo.';
-          set({ isLoading: false, error: errorMessage });
-          return { success: false, error: errorMessage };
+          const message = friendlyMessage(err, 'login');
+          set({ isLoading: false, error: message });
+          return { success: false, error: message, code: err?.code };
         }
       },
 
-      // ── LOGOUT ─────────────────────────────────────────────────────────────
-      logout: () => {
-        set({ ...INITIAL_STATE });
-        // Nota: zustand/persist limpiará localStorage automáticamente
+      // ── REGISTER ───────────────────────────────────────────────────────────
+      // Crea la cuenta (rol client o provider) e inicia sesión con las mismas credenciales.
+      register: async ({ name, email, password, role, phone }) => {
+        set({ isLoading: true, error: null });
+        try {
+          await authService.register({ name, email, password, role, phone });
+        } catch (err) {
+          const message = friendlyMessage(err, 'register');
+          set({ isLoading: false, error: message });
+          return { success: false, error: message, code: err?.code };
+        }
+        const result = await get().login({ email, password });
+        return result.success
+          ? result
+          : { ...result, error: 'Tu cuenta se creó, pero no pudimos iniciar sesión. Inicia sesión manualmente.' };
       },
 
-      // ── UPDATE PROFILE ─────────────────────────────────────────────────────
+      // ── VERIFICAR SESIÓN (al cargar la app) ────────────────────────────────
+      verifySession: () => {
+        const { token } = get();
+        if (!token) {
+          set({ sessionStatus: 'ready' });
+          return Promise.resolve();
+        }
+        if (verifyInFlight) return verifyInFlight;
+        set({ sessionStatus: 'verifying' });
+        verifyInFlight = authService
+          .getProfile()
+          .then(({ user }) => set({ user, isAuthenticated: true, sessionStatus: 'ready' }))
+          .catch(() => get().logout()) // cualquier fallo cierra la sesión
+          .finally(() => {
+            verifyInFlight = null;
+          });
+        return verifyInFlight;
+      },
+
+      // ── LOGOUT ─────────────────────────────────────────────────────────────
+      // Limpia la sesión y los stores persistidos del carrito y de mascotas.
+      logout: () => {
+        set({ ...initialSession, isLoading: false, error: null });
+        resetPersistedStores();
+      },
+
+      // ── UPDATE PROFILE (solo estado local; el endpoint llega en otra fase) ──
       updateProfile: (partialUser) => {
         const { user } = get();
         if (!user) return;
         set({ user: { ...user, ...partialUser } });
       },
 
-      // ── CLEAR ERROR ────────────────────────────────────────────────────────
       clearError: () => set({ error: null }),
 
       // ── SELECTORS (helpers) ────────────────────────────────────────────────
@@ -102,14 +122,21 @@ const useAuthStore = create(
       isAdmin:    () => get().user?.role === ROLES.ADMIN,
     }),
     {
-      name:    'kunapet-auth',           // Clave en localStorage
+      name:    'kunapet-auth',
       storage: createJSONStorage(() => localStorage),
-      // Solo persistir lo necesario (no isLoading ni error)
-      partialize: (state) => ({
-        user:            state.user,
-        token:           state.token,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      // SOLO { user, token }: nunca isAuthenticated, isLoading ni errores.
+      partialize: (state) => ({ user: state.user, token: state.token }),
+      // Con una sesión guardada, se arranca "verificando" hasta que /auth/me responda.
+      merge: (persisted, current) => {
+        const hasSession = Boolean(persisted?.user && persisted?.token);
+        return {
+          ...current,
+          user:            hasSession ? persisted.user : null,
+          token:           hasSession ? persisted.token : null,
+          isAuthenticated: hasSession,
+          sessionStatus:   hasSession ? 'verifying' : 'ready',
+        };
+      },
     }
   )
 );

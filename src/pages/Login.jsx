@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
+import { generateGuestCredentials, isGuestAccessEnabled } from '../utils/guestCredentials';
 
 // ─── Validación ───────────────────────────────────────────────────────────────
 function validate(email, password) {
@@ -14,8 +15,6 @@ function validate(email, password) {
   }
   if (!password) {
     errors.password = 'La contraseña es obligatoria.';
-  } else if (password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres.';
   }
   return errors;
 }
@@ -42,6 +41,20 @@ export default function Login() {
 
   // Si venía de una ruta protegida, volver a ella tras login
   const from = location.state?.from?.pathname;
+
+  // ── Acceso de invitado (solo si VITE_ENABLE_GUEST=true) ─────────────────────
+  // Crea una cuenta aleatoria (@demo.kunapet.test) y entra con ella. Las credenciales
+  // no se muestran ni se guardan.
+  const { register } = useAuthStore();
+  const guestEnabled = isGuestAccessEnabled();
+  const handleGuest = async (role) => {
+    clearError();
+    const { name, email: guestEmail, password: guestPassword } = generateGuestCredentials(role);
+    const result = await register({ name, email: guestEmail, password: guestPassword, role });
+    if (result.success) {
+      navigate(from ?? DASHBOARD_BY_ROLE[role] ?? '/', { replace: true });
+    }
+  };
 
   // ── Validación en tiempo real (solo si ya tocó el campo) ──────────────────
   const handleBlur = (field) => {
@@ -70,21 +83,6 @@ export default function Login() {
       navigate(destination, { replace: true });
     }
 
-  };
-
-  // ── Credenciales de demo ──────────────────────────────────────────────────
-  const DEMO_ACCOUNTS = [
-    { label: 'Cliente demo', email: 'camila@kunapet.com', role: 'client' },
-    { label: 'Proveedor demo', email: 'proveedor@kunapet.com', role: 'provider' },
-    { label: 'Admin demo', email: 'admin@kunapet.com', role: 'admin' },
-  ];
-
-  const fillDemo = (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword('demo123456');
-    setFieldErrors({});
-    setTouched({ email: false, password: false });
-    clearError();
   };
 
   return (
@@ -275,24 +273,22 @@ export default function Login() {
               </p>
             </form>
 
-            {/* ── Cuentas de Demo ── */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-xs font-bold text-gray-400 text-center uppercase tracking-wider mb-3">
-                🎯 Acceso demo rápido
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {DEMO_ACCOUNTS.map(({ label, email: demoEmail }) => (
-                  <button
-                    key={demoEmail}
-                    type="button"
-                    onClick={() => fillDemo(demoEmail)}
-                    className="text-xs font-semibold text-gray-500 hover:text-brand-primary hover:bg-brand-primary-light px-2 py-1.5 rounded-lg border border-gray-200 hover:border-brand-primary/30 transition-all text-center"
-                  >
-                    {label}
-                  </button>
-                ))}
+            {/* ── Acceso de invitado (demo) ── */}
+            {guestEnabled && (
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <p className="text-xs font-bold text-gray-400 text-center uppercase tracking-wider mb-3">
+                  Probar la demo
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  <Button type="button" variant="outline" size="md" fullWidth disabled={isLoading} onClick={() => handleGuest('client')}>
+                    Entrar como cliente de prueba
+                  </Button>
+                  <Button type="button" variant="outline" size="md" fullWidth disabled={isLoading} onClick={() => handleGuest('provider')}>
+                    Entrar como proveedor de prueba
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

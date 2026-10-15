@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 import ProviderOnboardingLayout from '../layouts/ProviderOnboardingLayout';
 import RegistrationStepper from '../components/Provider/RegistrationStepper';
 import StepClientProfile from '../components/Client/StepClientProfile';
@@ -25,6 +27,8 @@ export default function ClientRegistration() {
     // Paso 1 — Perfil
     image: null,
     fullName: '',
+    email: '',
+    password: '',
     phone: '',
     city: '',
     // Paso 2 — Mascotas
@@ -43,8 +47,40 @@ export default function ClientRegistration() {
    * — Paso 2: no avanza si no hay mascotas (la regla la maneja StepClientPets,
    *   pero el orquestador también la aplica como segunda línea de defensa).
    */
+  const register = useAuthStore((s) => s.register);
+  const [submitError, setSubmitError] = useState(null);
+  const submitting = useRef(false);
+
+  // Último paso del formulario: crea la cuenta (rol client) e inicia sesión.
+  const submitRegistration = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setSubmitError(null);
+    const result = await register({
+      name: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      role: 'client',
+      phone: formData.phone,
+    });
+    submitting.current = false;
+    if (result.success) {
+      setCurrentStep(4);
+    } else {
+      setSubmitError(result.error);
+      // Correo repetido o datos inválidos: se corrigen en el paso 1.
+      if (result.code === 'conflict' || result.code === 'validation_error') setCurrentStep(1);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const goNext = () => {
     if (currentStep === 2 && formData.pets.length === 0) return; // guarda del orquestador
+    if (currentStep === 3) {
+      submitRegistration();
+      return;
+    }
+    setSubmitError(null);
     setCurrentStep((s) => Math.min(s + 1, 4));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -76,6 +112,15 @@ export default function ClientRegistration() {
 
       {/* Contenido del paso activo */}
       <div className="max-w-3xl mx-auto">
+        {submitError && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 p-4 mb-6 bg-danger-light border border-danger/20 rounded-2xl"
+          >
+            <AlertCircle size={18} className="text-danger shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm font-medium text-danger-text">{submitError}</p>
+          </div>
+        )}
         {currentStep === 1 && (
           <StepClientProfile
             formData={formData}

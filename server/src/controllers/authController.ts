@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { z } from 'zod';
 import { parseOrThrow } from '../errors/validate.js';
-import type { LoginRateLimiter } from '../middleware/loginRateLimiter.js';
+import type { RateLimiter } from '../middleware/rateLimiter.js';
 import type { AuthService } from '../services/AuthService.js';
 import { REGISTRABLE_ROLES } from '../types/user.js';
 
@@ -46,11 +46,13 @@ export const loginSchema = z.object({
 
 export function createAuthController(
   auth: AuthService,
-  loginLimiter: LoginRateLimiter,
+  loginLimiter: RateLimiter,
+  registerLimiter: RateLimiter,
 ): { register: RequestHandler; login: RequestHandler; me: RequestHandler } {
   return {
     register: async (req, res) => {
       const input = parseOrThrow(registerSchema, req.body);
+      registerLimiter.hit(req.ip ?? 'desconocida');
       const user = await auth.register(input);
       res.status(201).json({ user });
     },

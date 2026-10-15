@@ -6,6 +6,7 @@ export type ErrorCode =
   | 'conflict'
   | 'unprocessable_entity'
   | 'rate_limited'
+  | 'service_unavailable'
   | 'internal_error';
 
 export class AppError extends Error {
@@ -59,5 +60,11 @@ export class UnprocessableError extends AppError {
 export class RateLimitedError extends AppError {
   constructor(message = 'Demasiados intentos. Inténtalo más tarde.') {
     super(429, 'rate_limited', message);
+  }
+}
+
+export class ServiceUnavailableError extends AppError {
+  constructor(message = 'El servicio no está disponible por ahora.') {
+    super(503, 'service_unavailable', message);
   }
 }

@@ -19,6 +19,8 @@ Copia `.env.example` a `.env` y complétalo. `.env` está ignorado por git; nunc
 | `BCRYPT_COST` | No | Costo de bcrypt (4–15). Por defecto 10. |
 | `CORS_ORIGINS` | No | Orígenes permitidos separados por comas (p. ej. el de Vite). Vacío = ninguno. |
 | `SEED_DEMO_DATA` | No | `true` carga datos de ejemplo al arrancar (ver abajo). Por defecto no. |
+| `DEMO_MODE` | No | `true` siembra **solo el catálogo** (12 items bajo un proveedor demo). Válido también en producción; ideal para la demo pública. |
+| `MAX_USERS` | No | Tope total de usuarios (1000 por defecto). Al alcanzarlo, `POST /auth/register` responde 503. |
 | `NODE_ENV` | No | `development` por defecto. Con `production` el seed no se ejecuta aunque `SEED_DEMO_DATA=true`. |
 | `TRUST_PROXY` | No | Saltos de proxy de confianza (0 por defecto). Pon `1` detrás de Render, Vercel o nginx; con `0` se ignora `X-Forwarded-For`. |
 | `PORT` | No | Puerto HTTP. Por defecto 3000. |
@@ -96,6 +98,10 @@ Con `SEED_DEMO_DATA=true` (y `NODE_ENV` distinto de `production`) el arranque cr
 SEED_DEMO_DATA=true npm run dev
 ```
 
+### Modo demo público (`DEMO_MODE=true`)
+
+Pensado para desplegar una demo abierta. Al arrancar siembra únicamente el catálogo (los mismos 12 items) bajo un proveedor demo. La contraseña de ese proveedor se genera al azar, **no se imprime ni se registra** y no se conserva: nadie puede iniciar sesión con él. No se crea admin ni cliente; cada visitante se registra solo. A diferencia de `SEED_DEMO_DATA`, funciona con `NODE_ENV=production`. Si ambas variables están activas fuera de producción solo corre el seed completo (no se siembra dos veces).
+
 ## Probar el catálogo, mascotas y pedidos
 
 ```bash
@@ -116,6 +122,7 @@ curl -s $API/pets -H "Authorization: Bearer $TOKEN"
 - **`authenticate` recarga al usuario** del repositorio en cada petición: un usuario eliminado deja de entrar aunque su token siga vigente, y el rol efectivo es el del repositorio, no el del token.
 - **Contraseñas**: bcryptjs (JS puro), costo configurable, 8–72 caracteres y como máximo 72 **bytes** (bcrypt trunca ahí).
 - **Login**: email inexistente y contraseña errónea dan la misma respuesta; para el email inexistente se compara contra un hash ficticio para igualar tiempos. Límite de 10 intentos por IP+email cada 15 minutos (429).
+- **Registro**: máximo 10 registros por IP cada hora (429) y tope total `MAX_USERS` (503), para proteger la memoria de una demo pública.
 - **Registro**: solo `client` y `provider`; `admin` se rechaza siempre. Email en minúsculas y único.
 - **Errores**: formato uniforme `{ error: { code, message, details? } }`; sin stack traces ni mensajes internos.
 - **Cabeceras y entrada**: helmet, CORS solo para `CORS_ORIGINS`, body máximo 100 kb.

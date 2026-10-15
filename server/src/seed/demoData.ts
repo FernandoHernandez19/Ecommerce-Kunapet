@@ -151,3 +151,22 @@ export function formatCredentials(credentials: readonly DemoCredential[]): strin
     '',
   ].join('\n');
 }
+
+export const DEMO_PROVIDER_EMAIL = 'catalogo@demo.kunapet.test';
+
+/**
+ * Modo demo público: solo el catálogo, bajo un proveedor demo cuya contraseña es aleatoria,
+ * se descarta al crearlo y no se devuelve, imprime ni registra (nadie puede iniciar sesión con él).
+ */
+export async function seedDemoCatalog(targets: Pick<SeedTargets, 'users' | 'items'>, bcryptCost: number): Promise<void> {
+  const provider = await targets.users.create({
+    name: 'KunaPet Demo',
+    email: DEMO_PROVIDER_EMAIL,
+    passwordHash: await bcrypt.hash(randomPassword(), bcryptCost),
+    role: 'provider',
+    phone: null,
+  });
+  for (const item of [...PRODUCTS, ...SERVICES]) {
+    await targets.items.create({ ...item, providerId: provider.id, isActive: true });
+  }
+}

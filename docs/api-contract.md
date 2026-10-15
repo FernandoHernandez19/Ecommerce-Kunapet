@@ -42,7 +42,8 @@ Todos los errores usan la misma forma. Nunca incluyen stack traces ni mensajes i
 | 404 | `not_found` | Ruta o recurso inexistente (o ajeno, ver §2.3). |
 | 409 | `conflict` | Conflicto de unicidad (p. ej. email ya registrado). |
 | 422 | `unprocessable_entity` | La petición es válida pero no se puede procesar (p. ej. pedir un item inactivo). |
-| 429 | `rate_limited` | Demasiados intentos (login). |
+| 429 | `rate_limited` | Demasiados intentos (login) o registros desde una misma IP. |
+| 503 | `service_unavailable` | El registro está cerrado por capacidad (se alcanzó `MAX_USERS`). |
 | 500 | `internal_error` | Error inesperado; mensaje genérico. |
 
 ## 2. Autenticación y permisos
@@ -91,7 +92,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
   ```
   - `name`: 2–100 caracteres. `email`: válido, se normaliza a minúsculas, único. `password`: **8–72** caracteres (bcrypt trunca a 72 bytes). `role`: solo `client` o `provider` (por defecto `client`; `admin` se rechaza). `phone`: opcional.
 - `201`: `{ "user": User }` (nunca incluye el hash).
-- Errores: `400 validation_error`, `409 conflict` (email ya registrado, sin distinguir mayúsculas).
+- Errores: `400 validation_error`, `409 conflict` (email ya registrado, sin distinguir mayúsculas), `429 rate_limited` (más de 10 registros por IP en una hora), `503 service_unavailable` (tope de usuarios alcanzado; mensaje `"El registro no está disponible por ahora."`).
 
 ### POST /auth/login
 - Rol: público.
@@ -260,3 +261,6 @@ Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica d
 | 5 | `Order.status` inicial es `pending_payment` (antes `pending`). | Deja claro que falta el pago, que no existe todavía. |
 | 6 | `POST /orders` rechaza (400) campos desconocidos en vez de ignorarlos, admite máximo 20 líneas y no repite `itemId`. | Un precio enviado es una señal de cliente manipulado o desactualizado; mejor fallar que ignorar en silencio. |
 | 7 | El stock no se valida ni se descuenta en esta fase (antes: "sin stock → 400"). | Sin pago ni transiciones de estado no hay forma correcta de reservar stock. Queda para la fase de pagos. |
+| 8 | Nuevo código de error `service_unavailable` (503). | El registro público se cierra cuando se alcanza el tope de usuarios (`MAX_USERS`, 1000 por defecto). |
+| 9 | `POST /auth/register` responde 429 tras 10 registros por IP en una hora. | Proteger la memoria limitada de la demo pública. |
+| 10 | Se añade `DEMO_MODE`: siembra solo el catálogo bajo un proveedor demo sin contraseña conocida. | Demo pública sin cuentas con credenciales publicadas. |

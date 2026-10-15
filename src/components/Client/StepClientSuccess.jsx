@@ -27,8 +27,8 @@ export default function StepClientSuccess({ formData }) {
   const firstName = formData.fullName?.trim().split(' ')[0] ?? '';
 
   const handleFinish = () => {
-    // Aquí iría el POST real; por ahora simulamos y redirigimos
-    console.log('[KunaPet] formData final →', formData);
+    // La cuenta ya se creó y la sesión está iniciada (ClientRegistration).
+    // No se registra formData: contiene la contraseña.
     navigate('/clientdashboard');
   };
 

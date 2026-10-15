@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { ConflictError, UnauthorizedError } from '../errors/AppError.js';
+import { ConflictError, ServiceUnavailableError, UnauthorizedError } from '../errors/AppError.js';
 import type { UserRepository } from '../repositories/UserRepository.js';
 import { TOKEN_TTL_SECONDS, type TokenService } from './TokenService.js';
 import { toPublicUser, type RegistrableRole, type User } from '../types/user.js';
@@ -30,8 +30,15 @@ export class AuthService {
     private readonly users: UserRepository,
     private readonly tokens: TokenService,
     private readonly bcryptCost: number,
+    private readonly maxUsers: number,
   ) {
     this.dummyHash = bcrypt.hashSync(randomUUID(), bcryptCost);
+  }
+
+  private async assertCapacity(): Promise<void> {
+    if ((await this.users.count()) >= this.maxUsers) {
+      throw new ServiceUnavailableError('El registro no está disponible por ahora.');
+    }
   }
 
   async login(email: string, password: string): Promise<LoginResult> {
@@ -52,7 +59,10 @@ export class AuthService {
     if (await this.users.findByEmail(input.email)) {
       throw new ConflictError('Ya existe una cuenta con ese correo.');
     }
+    await this.assertCapacity();
     const passwordHash = await bcrypt.hash(input.password, this.bcryptCost);
+    // Segunda comprobación: el hash tarda y otras altas pudieron llegar mientras tanto.
+    await this.assertCapacity();
     const record = await this.users.create({
       name: input.name,
       email: input.email,

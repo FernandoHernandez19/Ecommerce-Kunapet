@@ -1,4 +1,5 @@
 import React from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { useNavigate } from 'react-router-dom';
 import { PawPrint, CalendarCheck, ShoppingBag, Zap, Star, MapPin } from 'lucide-react';
 
@@ -29,7 +30,7 @@ const SPECIES_EMOJI = { dog: '🐶', cat: '🐱', other: '🐾' };
 
 // ─── Pet Card Compacta ────────────────────────────────────────────────────────
 function PetCardCompact({ pet }) {
-  const vaccine = VACCINE_CONFIG[pet.vaccineStatus] ?? VACCINE_CONFIG.ok;
+  const vaccine = VACCINE_CONFIG[pet.vaccineStatus] ?? null; // la API aún no tiene vacunas
   return (
     <div className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md transition-all">
       <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0"
@@ -43,9 +44,11 @@ function PetCardCompact({ pet }) {
         <p className="font-bold text-sm text-gray-900 truncate">{pet.name}</p>
         <p className="text-xs text-gray-400 truncate">{pet.breed}</p>
       </div>
-      <span className={`text-xs font-bold px-2 py-1 rounded-full shrink-0 ${vaccine.bg} ${vaccine.text}`}>
-        {vaccine.label}
-      </span>
+      {vaccine && (
+        <span className={`text-xs font-bold px-2 py-1 rounded-full shrink-0 ${vaccine.bg} ${vaccine.text}`}>
+          {vaccine.label}
+        </span>
+      )}
     </div>
   );
 }
@@ -72,7 +75,7 @@ function TimelineItem({ item, isLast }) {
 }
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
-export default function DashboardHome({ user, pets, activity, setActiveView }) {
+export default function DashboardHome({ user, pets, petsStatus = 'ready', petsError = null, onRetryPets, activity, setActiveView }) {
   const navigate = useNavigate();
   const firstName = user?.name?.split(' ')[0] ?? 'Cliente';
   const activeCount = activity.filter((a) => a.status === 'in_progress').length;
@@ -155,6 +158,20 @@ export default function DashboardHome({ user, pets, activity, setActiveView }) {
               </button>
             </div>
             <div className="flex flex-col gap-2">
+              {petsStatus === 'loading' && pets.length === 0 && (
+                <div className="h-14 rounded-2xl bg-gray-100 animate-pulse" role="status" aria-label="Cargando mascotas" />
+              )}
+              {petsStatus === 'error' && (
+                <div role="alert" className="bg-white border border-red-100 rounded-2xl p-4 text-center">
+                  <p className="text-sm font-medium text-red-600 mb-3">{petsError}</p>
+                  <button onClick={onRetryPets} className="text-sm font-bold underline" style={{ color: ACCENT }}>Reintentar</button>
+                </div>
+              )}
+              {petsStatus === 'ready' && pets.length === 0 && (
+                <p className="text-sm text-gray-500 bg-white border border-gray-100 rounded-2xl p-4">
+                  Aún no tienes mascotas registradas. Añade la primera desde «Ver todas».
+                </p>
+              )}
               {pets.map((pet) => <PetCardCompact key={pet.id} pet={pet} />)}
             </div>
           </section>
@@ -163,7 +180,7 @@ export default function DashboardHome({ user, pets, activity, setActiveView }) {
         {/* ── Columna derecha (1/3): Actividad reciente ────────────────────── */}
         <div className="xl:col-span-1">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
-            <h2 className="text-sm font-bold text-gray-900 mb-5">Actividad Reciente</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-5 flex items-center gap-2">Actividad Reciente <ExampleDataBadge /></h2>
             <div className="flex flex-col">
               {activity.map((item, i) => (
                 <TimelineItem key={item.id} item={item} isLast={i === activity.length - 1} />

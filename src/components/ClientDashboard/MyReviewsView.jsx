@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { Star, Edit3, Trash2, X } from 'lucide-react';
 import { mockMyReviews } from '../../data/mockData';
 import { Link } from 'react-router-dom';
@@ -26,7 +27,7 @@ export default function MyReviewsView() {
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-gray-900">Mis Reseñas</h1>
+          <h1 className="text-2xl font-black tracking-tight text-gray-900 flex items-center gap-3">Mis Reseñas <ExampleDataBadge /></h1>
           <p className="text-sm text-gray-500 mt-1">
             Administra las opiniones que has dejado sobre productos y servicios.
           </p>

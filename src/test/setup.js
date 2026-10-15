@@ -5,6 +5,7 @@ import { afterEach, beforeEach, vi } from 'vitest';
 // Las pruebas NUNCA llaman a la red real: todo fetch debe simularse explícitamente.
 // Si alguna petición se cuela, falla con un mensaje claro.
 beforeEach(() => {
+  window.scrollTo = vi.fn(); // jsdom no lo implementa
   vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('fetch no simulado en la prueba'))));
 });
 

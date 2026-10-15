@@ -1,131 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PetHeroCard from '../components/PetDashboard/PetHeroCard';
 import MedicalTab from '../components/PetDashboard/MedicalTab';
 import DietBehaviorTab from '../components/PetDashboard/DietBehaviorTab';
 import LiveServiceWidget from '../components/PetDashboard/LiveServiceWidget';
-import FastBookingCard from '../components/PetDashboard/FastBookingCard';
-import useAuthStore from '../store/useAuthStore'; // <-- Integración de Auth
+import useAuthStore from '../store/useAuthStore';
+import usePetsStore from '../store/usePetsStore';
 import Sidebar from '../components/Sidebar/Sidebar';
+
+// Las alergias viven dentro de `notes` (línea «Alergias: …»), tal como las guarda el wizard.
+const allergiesFrom = (notes) =>
+  (notes || '').split('\n').find((l) => l.startsWith('Alergias:'))?.replace('Alergias:', '').trim() ?? '';
 
 export default function PetDashboardPage() {
   const [activeTab, setActiveTab] = useState('salud');
-  const { user } = useAuthStore(); // Usuario real
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const petId = searchParams.get('petId');
 
-  // Datos estructurados simulando la respuesta del backend para "Luna"
-  const petData = {
-    name: "Luna",
-    breed: "Golden Retriever",
-    age: "2 años y 4 meses",
-    weight: "28.5 kg",
-    photo: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&q=80",
-    medical: {
-      allergies: "Intolerancia severa a subproductos del trigo y sensibilidad al champú antipulgas genérico.",
-      vaccines: [
-        { name: "Quíntuple Canina", dateApplied: "12 Ene 2026", nextDue: "12 Ene 2027", status: "Vigente" },
-        { name: "Antirrábica", dateApplied: "10 Mar 2025", nextDue: "15 Jul 2026", status: "Próxima" },
-        { name: "KC (Tos de las perreras)", dateApplied: "05 Nov 2025", nextDue: "05 Nov 2026", status: "Vigente" }
-      ]
-    },
-    dietBehavior: {
-      diet: {
-        brand: "Barking Heads Salmon Premium",
-        portion: "320g repartidos en dos tandas (mañana/noche)",
-        notes: "Mezclar siempre con un chorrito de aceite de salmón para el pelaje. No dar snacks comerciales amarillos."
-      },
-      behavior: {
-        tags: ["Amigable", "Energía Alta", "Miedoso a Motos", "Sociable"],
-        notes: "Suele jalar un poco la correa los primeros 10 minutos por la emoción. Se distrae positivamente con pelotas de tenis."
-      }
-    },
-    currentService: {
-      title: "Paseo Premium de 1 Hora",
-      steps: [
-        { label: "Paseador recogió a Luna", completed: true },
-        { label: "Ruta activa en Parque El Olivar", completed: true },
-        { label: "Camino de retorno a casa", completed: false }
-      ],
-      provider: {
-        name: "Carlos Mendoza",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"
-      }
-    }
-  };
+  const pets = usePetsStore((s) => s.pets);
+  const status = usePetsStore((s) => s.status);
+  const error = usePetsStore((s) => s.error);
+  const fetchPets = usePetsStore((s) => s.fetchPets);
 
-  const handleEditProfile = () => {
-    console.log("Abriendo modal de edición de perfil...");
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchPets(controller.signal);
+    return () => controller.abort();
+  }, [fetchPets]);
 
-  const handleOpenChat = () => {
-    console.log("Iniciando conexión WebSockets con el paseador:", petData.currentService.provider.name);
-  };
+  const pet = pets.find((p) => p.id === petId) ?? pets[0] ?? null;
+
+  let content;
+  if (status === 'loading' && !pet) {
+    content = <div className="h-48 rounded-2xl bg-gray-100 animate-pulse" role="status" aria-label="Cargando mascota" />;
+  } else if (status === 'error') {
+    content = (
+      <div role="alert" className="bg-white border border-red-100 rounded-2xl p-8 text-center">
+        <p className="text-sm font-medium text-red-600 mb-4">{error}</p>
+        <button onClick={() => fetchPets()} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-[#006D44]">Reintentar</button>
+      </div>
+    );
+  } else if (!pet) {
+    content = (
+      <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
+        <p className="text-3xl mb-3" aria-hidden="true">🐾</p>
+        <h2 className="text-lg font-bold text-gray-900">Aún no tienes mascotas registradas</h2>
+        <Link to="/add-pet" className="inline-block mt-4 px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-[#006D44] no-underline">
+          Añadir mascota
+        </Link>
+      </div>
+    );
+  } else {
+    content = (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-8">
+          <PetHeroCard pet={pet} onEdit={() => navigate('/clientdashboard', { state: { tab: 'pets' } })} />
+
+          <div className="flex border-b border-gray-100 mb-6" role="tablist">
+            {[['salud', '🏥 Historial Médico'], ['dieta', '🍖 Notas de cuidado']].map(([id, label]) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={activeTab === id}
+                onClick={() => setActiveTab(id)}
+                className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${activeTab === id
+                  ? 'border-[#006D44] text-[#006D44]'
+                  : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-white p-2 rounded-2xl">
+            {activeTab === 'salud' && <MedicalTab medicalRecords={{ allergies: allergiesFrom(pet.notes), vaccines: pet.vaccines }} />}
+            {activeTab === 'dieta' && <DietBehaviorTab notes={pet.notes} />}
+          </div>
+        </div>
+
+        <div className="lg:col-span-4 space-y-2">
+          <LiveServiceWidget activeService={null} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800">
-      {/* Panel Lateral de Navegación */}
       <Sidebar user={user} />
       <main className="flex-1 p-6 md:p-10 lg:ml-64">
         <div className="min-h-screen bg-[#FDFDFD] py-8 px-4 sm:px-6 lg:px-8 font-sans">
-          <div className="max-w-6xl mx-auto">
-
-            {/* Layout en Grid Principal */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-              {/* Columna Izquierda (Datos Mascota) - Ocupa 8 de 12 subcolumnas */}
-              <div className="lg:col-span-8">
-                <PetHeroCard pet={petData} onEdit={handleEditProfile} />
-
-                {/* Selector de Pestañas (Mejora UX 2) */}
-                <div className="flex border-b border-gray-100 mb-6">
-                  <button
-                    onClick={() => setActiveTab('salud')}
-                    className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${activeTab === 'salud'
-                      ? 'border-[#006D44] text-[#006D44]'
-                      : 'border-transparent text-gray-400 hover:text-gray-700'
-                      }`}
-                  >
-                    🏥 Historial Médico
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('dieta')}
-                    className={`pb-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 outline-none transition-all ${activeTab === 'dieta'
-                      ? 'border-[#006D44] text-[#006D44]'
-                      : 'border-transparent text-gray-400 hover:text-gray-700'
-                      }`}
-                  >
-                    🍖 Dieta & Conducta
-                  </button>
-                </div>
-
-                {/* Renderizado Condicional del Contenido de las Pestañas */}
-                <div className="bg-white p-2 rounded-2xl">
-                  {activeTab === 'salud' && <MedicalTab medicalRecords={petData.medical} />}
-                  {activeTab === 'dieta' && <DietBehaviorTab data={petData.dietBehavior} />}
-                </div>
-              </div>
-
-              {/* Columna Derecha (Tracking & Conversión) - Ocupa 4 de 12 subcolumnas */}
-              <div className="lg:col-span-4 space-y-2">
-                <LiveServiceWidget
-                  activeService={petData.currentService}
-                  onOpenChat={handleOpenChat}
-                />
-
-              </div>
-              <div className="lg:col-span-4">
-                <FastBookingCard />
-              </div>
-
-            </div>
-
-          </div>
+          <div className="max-w-6xl mx-auto">{content}</div>
         </div>
       </main>
-
-
-
     </div>
-
   );
 }

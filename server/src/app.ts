@@ -42,7 +42,7 @@ export function createApp(config: Config, deps: Partial<AppDependencies> = {}): 
   const authService = new AuthService(userRepository, tokenService, config.bcryptCost, config.maxUsers);
   const authenticate = createAuthenticate(tokenService, userRepository);
   const optionalAuthenticate = createOptionalAuthenticate(tokenService, userRepository);
-  const catalogService = new CatalogService(itemRepository);
+  const catalogService = new CatalogService(itemRepository, userRepository);
 
   const app = express();
   app.disable('x-powered-by');

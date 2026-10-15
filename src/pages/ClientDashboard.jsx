@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import usePetsStore from '../store/usePetsStore';
 import { useLocation } from 'react-router-dom';
@@ -18,22 +18,33 @@ import {
   mockUser,
   mockActivity,
   mockReservations,
-  mockOrders,
   mockChats,
 } from '../data/mockData';
+
+const VIEWS = ['home', 'pets', 'reservations', 'orders', 'messages', 'reviews', 'settings'];
 
 export default function ClientDashboard() {
   const { user: authUser } = useAuthStore();
   const [activeView, setActiveView] = useState('home');
   const location = useLocation();
-  // Mascotas desde el store global (reactivo: se actualiza al añadir una mascota)
+  // Mascotas desde la API (store global: se actualiza al crear, editar o borrar)
   const pets = usePetsStore((state) => state.pets);
+  const petsStatus = usePetsStore((state) => state.status);
+  const petsError = usePetsStore((state) => state.error);
+  const fetchPets = usePetsStore((state) => state.fetchPets);
+
+  const loadPets = useCallback((signal) => fetchPets(signal), [fetchPets]);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadPets(controller.signal);
+    return () => controller.abort();
+  }, [loadPets]);
 
   // Si el navbar navegó con { state: { tab } }, activar esa pestaña al montar
   useEffect(() => {
-    const tab = location.state?.tab;
-    if (tab) setActiveView(tab);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const tab = location.state?.tab ?? new URLSearchParams(location.search).get('tab');
+    if (VIEWS.includes(tab)) setActiveView(tab);
+  }, [location.state, location.search]);
 
   // Usar datos de auth si existen, si no usar mockUser como fallback
   const user = authUser ?? mockUser;
@@ -49,6 +60,9 @@ export default function ClientDashboard() {
           <DashboardHome
             user={user}
             pets={pets}
+            petsStatus={petsStatus}
+            petsError={petsError}
+            onRetryPets={() => loadPets()}
             activity={mockActivity}
             setActiveView={setActiveView}
           />
@@ -57,13 +71,16 @@ export default function ClientDashboard() {
         return (
           <PetsManager
             pets={pets}
+            status={petsStatus}
+            error={petsError}
+            onRetry={() => loadPets()}
             reservations={mockReservations}
           />
         );
       case 'reservations':
         return <ReservationsView reservations={mockReservations} />;
       case 'orders':
-        return <OrdersView orders={mockOrders} />;
+        return <OrdersView />;
       case 'messages':
         return <MessagesView chats={mockChats} />;
       case 'reviews':

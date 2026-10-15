@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Syringe, UtensilsCrossed, ChevronRight, Edit3, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import usePetsStore from '../../store/usePetsStore';
 import { Modal, Input } from '../ui';
+import { friendlyMessage } from '../../api/errorMessages';
+import { PET_NOTES_MAX } from '../../api/adapters';
 
 const ACCENT = '#2D6A4F';
 const SPECIES_EMOJI = { dog: '🐶', cat: '🐱', other: '🐾' };
-const SPECIES_LABEL = { dog: 'Perro', cat: 'Gato', other: 'Otro' };
 
 const VACCINE_STATUS = {
   ok:       { label: 'Vigente',  bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
@@ -21,7 +22,7 @@ const VACCINE_BADGE = {
 
 // ─── Tarjeta de mascota (vista lista) ─────────────────────────────────────────
 function PetCard({ pet, onSelect }) {
-  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? VACCINE_BADGE.ok;
+  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? null; // la API aún no tiene vacunas
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all flex flex-col">
       {/* Avatar */}
@@ -36,12 +37,14 @@ function PetCard({ pet, onSelect }) {
         <div>
           <p className="font-extrabold text-gray-900">{pet.name}</p>
           <p className="text-xs text-gray-400 font-medium mt-0.5">
-            {SPECIES_LABEL[pet.species]} · {pet.breed} · {pet.age} años
+            {pet.speciesLabel} · {pet.breed} · {pet.ageLabel}
           </p>
         </div>
-        <span className={`self-start text-xs font-bold px-2 py-1 rounded-full ${badge.bg} ${badge.text}`}>
-          {badge.label}
-        </span>
+        {badge && (
+          <span className={`self-start text-xs font-bold px-2 py-1 rounded-full ${badge.bg} ${badge.text}`}>
+            {badge.label}
+          </span>
+        )}
         <button
           onClick={() => onSelect(pet)}
           className="mt-auto text-sm font-bold py-2.5 rounded-xl border-2 transition-all hover:text-white"
@@ -95,36 +98,55 @@ function LiveMapWidget({ reservation }) {
 // ─── Vista Detalle de Mascota ─────────────────────────────────────────────────
 function PetDetail({ pet, onBack, activeReservation }) {
   const [tab, setTab] = useState('health');
-  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? VACCINE_BADGE.ok;
+  const badge = VACCINE_BADGE[pet.vaccineStatus] ?? null;
 
   const { updatePet, removePet } = usePetsStore();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
-  // Edit form state
-  const [editForm, setEditForm] = useState({
+  // Edit form state (valores de la API: species dog|cat|bird|exotic|other, gender female|male|unknown)
+  const buildForm = () => ({
     name: pet.name,
-    species: pet.species,
-    breed: pet.breed,
-    gender: pet.gender,
+    species: pet.speciesApi,
+    breed: pet.breed === 'Raza no especificada' ? '' : pet.breed,
+    gender: pet.genderApi,
     birthdate: pet.birthdate,
-    diet: pet.diet || '',
-    behavior: pet.behavior || '',
+    notes: pet.notes,
   });
+  const [editForm, setEditForm] = useState(buildForm);
 
-  const handleDelete = () => {
-    removePet(pet.id);
-    onBack();
+  const openEdit = () => {
+    setEditForm(buildForm());
+    setActionError(null);
+    setIsEditOpen(true);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    let newAge = pet.age;
-    if (editForm.birthdate) {
-      newAge = new Date().getFullYear() - new Date(editForm.birthdate).getFullYear();
+  const handleDelete = async () => {
+    setBusy(true);
+    setActionError(null);
+    try {
+      await removePet(pet.id);
+      onBack();
+    } catch (err) {
+      setActionError(friendlyMessage(err));
+      setBusy(false);
     }
-    updatePet(pet.id, { ...editForm, age: newAge });
-    setIsEditOpen(false);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setActionError(null);
+    try {
+      await updatePet(pet.id, editForm);
+      setIsEditOpen(false);
+    } catch (err) {
+      setActionError(friendlyMessage(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -142,14 +164,14 @@ function PetDetail({ pet, onBack, activeReservation }) {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsEditOpen(true)}
+            onClick={openEdit}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: ACCENT }}
           >
             <Edit3 size={16} strokeWidth={2} /> Editar
           </button>
           <button
-            onClick={() => setIsDeleteOpen(true)}
+            onClick={() => { setActionError(null); setIsDeleteOpen(true); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-all"
           >
             <Trash2 size={16} strokeWidth={2} /> Eliminar
@@ -164,19 +186,22 @@ function PetDetail({ pet, onBack, activeReservation }) {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-5">
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shrink-0"
               style={{ backgroundColor: `${ACCENT}12` }}>
-              {SPECIES_EMOJI[pet.species]}
+              {pet.photo ? <img src={pet.photo} alt={pet.name} className="w-full h-full rounded-2xl object-cover" /> : SPECIES_EMOJI[pet.species]}
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-extrabold text-gray-900">{pet.name}</h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                {SPECIES_LABEL[pet.species]} · {pet.breed} · {pet.gender}
+                {pet.speciesLabel} · {pet.breed} · {pet.gender}
               </p>
               <p className="text-sm text-gray-500">
-                {pet.age} años · Nacimiento: {pet.birthdate}
+                {pet.ageLabel} · Nacimiento: {pet.birthdateLabel}
               </p>
-              <span className={`inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full ${badge.bg} ${badge.text}`}>
-                {badge.label}
-              </span>
+              {pet.weightGrams && <p className="text-sm text-gray-500">Peso: {(pet.weightGrams / 1000).toFixed(1)} kg</p>}
+              {badge && (
+                <span className={`inline-block mt-2 text-xs font-bold px-3 py-1 rounded-full ${badge.bg} ${badge.text}`}>
+                  {badge.label}
+                </span>
+              )}
             </div>
           </div>
 
@@ -185,7 +210,7 @@ function PetDetail({ pet, onBack, activeReservation }) {
             <div className="flex border-b border-gray-100">
               {[
                 { id: 'health', label: 'Historial Médico', Icon: Syringe },
-                { id: 'diet',   label: 'Dieta & Conducta',  Icon: UtensilsCrossed },
+                { id: 'diet',   label: 'Notas',  Icon: UtensilsCrossed },
               ].map(({ id, label, Icon }) => (
                 <button
                   key={id}
@@ -203,48 +228,50 @@ function PetDetail({ pet, onBack, activeReservation }) {
 
             <div className="p-5">
               {tab === 'health' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left border-b border-gray-100">
-                        <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Vacuna</th>
-                        <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Fecha</th>
-                        <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Próxima dosis</th>
-                        <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {pet.vaccines.map((v) => {
-                        const s = VACCINE_STATUS[v.status] ?? VACCINE_STATUS.ok;
-                        return (
-                          <tr key={v.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="py-3 font-semibold text-gray-800">{v.name}</td>
-                            <td className="py-3 text-gray-500">{v.date}</td>
-                            <td className="py-3 text-gray-500">{v.nextDue}</td>
-                            <td className="py-3">
-                              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full ${s.bg} ${s.text}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                                {s.label}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                pet.vaccines.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-6">Aún no hay vacunas registradas</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left border-b border-gray-100">
+                          <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Vacuna</th>
+                          <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Fecha</th>
+                          <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Próxima dosis</th>
+                          <th className="pb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {pet.vaccines.map((v) => {
+                          const st = VACCINE_STATUS[v.status] ?? VACCINE_STATUS.ok;
+                          return (
+                            <tr key={v.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="py-3 font-semibold text-gray-800">{v.name}</td>
+                              <td className="py-3 text-gray-500">{v.date}</td>
+                              <td className="py-3 text-gray-500">{v.nextDue}</td>
+                              <td className="py-3">
+                                <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full ${st.bg} ${st.text}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                                  {st.label}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )
               )}
 
               {tab === 'diet' && (
-                <div className="flex flex-col gap-5">
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Plan de Dieta</h3>
-                    <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 leading-relaxed">{pet.diet}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Conducta</h3>
-                    <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 leading-relaxed">{pet.behavior}</p>
-                  </div>
+                <div>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notas (alergias, necesidades, conducta)</h3>
+                  {pet.notes ? (
+                    <p className="text-sm text-gray-700 bg-gray-50 rounded-xl p-4 leading-relaxed whitespace-pre-line">{pet.notes}</p>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-6">Aún no hay notas registradas</p>
+                  )}
                 </div>
               )}
             </div>
@@ -280,8 +307,9 @@ function PetDetail({ pet, onBack, activeReservation }) {
           </div>
           <h3 className="text-xl font-bold text-gray-900">¿Eliminar a {pet.name}?</h3>
           <p className="text-sm text-gray-500 leading-relaxed">
-            Esta acción es irreversible y eliminará todo el historial médico y de reservas asociado a esta mascota.
+            Esta acción es irreversible: se eliminará el perfil de la mascota.
           </p>
+          {actionError && <p role="alert" className="text-sm font-medium text-red-600">{actionError}</p>}
           <div className="flex gap-3 w-full mt-4">
             <button
               onClick={() => setIsDeleteOpen(false)}
@@ -291,9 +319,10 @@ function PetDetail({ pet, onBack, activeReservation }) {
             </button>
             <button
               onClick={handleDelete}
-              className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all"
+              disabled={busy}
+              className="flex-1 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 rounded-xl transition-all"
             >
-              Sí, Eliminar
+              {busy ? 'Eliminando…' : 'Sí, Eliminar'}
             </button>
           </div>
         </div>
@@ -318,6 +347,8 @@ function PetDetail({ pet, onBack, activeReservation }) {
               >
                 <option value="dog">Perro</option>
                 <option value="cat">Gato</option>
+                <option value="bird">Ave</option>
+                <option value="exotic">Exótico</option>
                 <option value="other">Otro</option>
               </select>
             </div>
@@ -333,38 +364,34 @@ function PetDetail({ pet, onBack, activeReservation }) {
                 value={editForm.gender}
                 onChange={(e) => setEditForm({...editForm, gender: e.target.value})}
               >
-                <option value="Macho">Macho</option>
-                <option value="Hembra">Hembra</option>
+                <option value="male">Macho</option>
+                <option value="female">Hembra</option>
+                <option value="unknown">Sin especificar</option>
               </select>
             </div>
             <Input 
               type="date"
               label="Fecha de Nacimiento" 
+              max={new Date().toISOString().slice(0, 10)}
               value={editForm.birthdate} 
               onChange={(e) => setEditForm({...editForm, birthdate: e.target.value})} 
             />
           </div>
           
-          <div className="flex flex-col gap-4 mt-2">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-bold text-gray-700 ml-1">Plan de Dieta / Necesidades Especiales</label>
-              <textarea 
-                className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all resize-none"
-                rows="3"
-                value={editForm.diet}
-                onChange={(e) => setEditForm({...editForm, diet: e.target.value})}
-              ></textarea>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-bold text-gray-700 ml-1">Notas de Conducta (Alergias, miedos, etc.)</label>
-              <textarea 
-                className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all resize-none"
-                rows="3"
-                value={editForm.behavior}
-                onChange={(e) => setEditForm({...editForm, behavior: e.target.value})}
-              ></textarea>
-            </div>
+          <div className="flex flex-col gap-1.5 mt-2">
+            <label htmlFor="pet-notes" className="text-sm font-bold text-gray-700 ml-1">Notas (alergias, necesidades especiales, conducta)</label>
+            <textarea
+              id="pet-notes"
+              className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all resize-none"
+              rows="4"
+              maxLength={PET_NOTES_MAX}
+              value={editForm.notes}
+              onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+            ></textarea>
+            <span className="text-xs text-gray-400 text-right">{editForm.notes.length}/{PET_NOTES_MAX}</span>
           </div>
+
+          {actionError && <p role="alert" className="text-sm font-medium text-red-600">{actionError}</p>}
 
           <div className="flex justify-end gap-3 mt-4">
             <button
@@ -376,10 +403,11 @@ function PetDetail({ pet, onBack, activeReservation }) {
             </button>
             <button
               type="submit"
-              className="px-6 py-3 text-sm font-bold text-white rounded-xl transition-all hover:opacity-90 flex items-center gap-2"
+              disabled={busy}
+              className="px-6 py-3 text-sm font-bold text-white rounded-xl transition-all hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
               style={{ backgroundColor: ACCENT }}
             >
-              <CheckCircle2 size={18} strokeWidth={2} /> Guardar Cambios
+              <CheckCircle2 size={18} strokeWidth={2} /> {busy ? 'Guardando…' : 'Guardar Cambios'}
             </button>
           </div>
         </form>
@@ -389,9 +417,12 @@ function PetDetail({ pet, onBack, activeReservation }) {
 }
 
 // ─── PetsManager Principal ────────────────────────────────────────────────────
-export default function PetsManager({ pets, reservations }) {
-  const [selectedPet, setSelectedPet] = useState(null);
+export default function PetsManager({ pets, status = 'ready', error = null, onRetry, reservations }) {
+  const [selectedId, setSelectedId] = useState(null);
   const navigate = useNavigate();
+
+  // La mascota seleccionada se toma de la lista del store: así refleja las ediciones.
+  const selectedPet = selectedId ? pets.find((p) => p.id === selectedId) ?? null : null;
 
   const activeReservation = selectedPet
     ? reservations.find((r) => r.petId === selectedPet.id && r.status === 'in_progress')
@@ -401,7 +432,7 @@ export default function PetsManager({ pets, reservations }) {
     return (
       <PetDetail
         pet={selectedPet}
-        onBack={() => setSelectedPet(null)}
+        onBack={() => setSelectedId(null)}
         activeReservation={activeReservation}
       />
     );
@@ -419,11 +450,37 @@ export default function PetsManager({ pets, reservations }) {
           + Añadir Mascota
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {pets.map((pet) => (
-          <PetCard key={pet.id} pet={pet} onSelect={setSelectedPet} />
-        ))}
-      </div>
+
+      {status === 'loading' && pets.length === 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" role="status" aria-label="Cargando mascotas">
+          {[0, 1, 2].map((i) => <div key={i} className="h-64 rounded-2xl bg-gray-100 animate-pulse" />)}
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div role="alert" className="bg-white border border-red-100 rounded-2xl p-8 text-center">
+          <p className="text-sm font-medium text-red-600 mb-4">{error}</p>
+          <button onClick={onRetry} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl" style={{ backgroundColor: ACCENT }}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {status === 'ready' && pets.length === 0 && (
+        <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
+          <p className="text-3xl mb-3" aria-hidden="true">🐾</p>
+          <h2 className="text-lg font-bold text-gray-900">Aún no tienes mascotas registradas</h2>
+          <p className="text-sm text-gray-500 mt-1">Añade a tu primera mascota para empezar.</p>
+        </div>
+      )}
+
+      {pets.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {pets.map((pet) => (
+            <PetCard key={pet.id} pet={pet} onSelect={(p) => setSelectedId(p.id)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

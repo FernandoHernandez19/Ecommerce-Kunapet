@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { Search, Send, Paperclip, Image, Phone, MoreVertical } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
@@ -114,7 +115,7 @@ export default function MessagesView({ chats: initialChats }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-extrabold text-gray-900">Mensajes</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">Mensajes <ExampleDataBadge /></h1>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex"
         style={{ height: 'calc(100vh - 200px)', minHeight: '500px' }}>

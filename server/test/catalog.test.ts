@@ -104,6 +104,31 @@ describe('GET /items', () => {
   });
 });
 
+describe('proveedor público en los items', () => {
+  it('GET /items y GET /items/:id incluyen provider { id, name, avatarUrl } y nunca email ni teléfono', async () => {
+    const { app } = buildApp();
+    const provider = await session(app, 'provider', 'privado@prov.test');
+    const item = await createItem(app, provider);
+
+    const list = await request(app).get(`${API}/items`).expect(200);
+    const one = await request(app).get(`${API}/items/${item.id}`).expect(200);
+    for (const body of [list.body.data[0], one.body.data]) {
+      expect(body.provider).toEqual({ id: provider.id, name: 'Camila Rodríguez', avatarUrl: null });
+      expect(Object.keys(body.provider).sort()).toEqual(['avatarUrl', 'id', 'name']);
+    }
+    expect(JSON.stringify([list.body, one.body])).not.toMatch(/privado@prov\.test|phone|passwordHash/);
+  });
+
+  it('el proveedor ve su nombre también en sus items inactivos', async () => {
+    const { app } = buildApp();
+    const a = await session(app, 'provider', 'a@prov.test');
+    const item = await createItem(app, a);
+    await request(app).delete(`${API}/items/${item.id}`).set(a.auth).expect(204);
+    const res = await request(app).get(`${API}/items/${item.id}`).set(a.auth).expect(200);
+    expect(res.body.data.provider.id).toBe(a.id);
+  });
+});
+
 describe('gestión de items', () => {
   it('el proveedor crea un item propio (201)', async () => {
     const { app } = buildApp();

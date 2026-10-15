@@ -4,6 +4,7 @@ import AddressCard from './AddressCard';
 import AddressFormModal from './AddressFormModal';
 import AddressSelectorModal from './AddressSelectorModal';
 import { mockUser } from '../../data/mockData';
+import ExampleDataBadge from '../ExampleDataBadge';
 
 export default function StepLogistics({ items, onNext }) {
   const hasServices = items.some(item => item.type === 'service');
@@ -49,11 +50,16 @@ export default function StepLogistics({ items, onNext }) {
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Despacho y Reserva</h1>
-      <p className="text-sm text-gray-500 mb-6">Confirma dónde y cuándo quieres recibir tus pedidos o servicios.</p>
+      <p className="text-sm text-gray-500 mb-6">Confirma dónde quieres recibir tus pedidos.</p>
 
       {hasProducts && (
         <div className="mb-8">
-          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Dirección de Entrega</h2>
+          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2 border-b border-gray-100 pb-2 flex items-center gap-2">
+            Dirección de Entrega <ExampleDataBadge />
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            La API todavía no guarda direcciones: esta dirección es de ejemplo y no se envía con el pedido.
+          </p>
           {selectedAddress && (
             <AddressCard address={selectedAddress} onEdit={() => setIsSelectorOpen(true)} />
           )}
@@ -70,7 +76,7 @@ export default function StepLogistics({ items, onNext }) {
         <div className="mb-8">
           <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2 flex items-center gap-2">
             <CalendarIcon size={16} className="text-brand-secondary" />
-            Resumen de tus citas
+            Servicios del pedido
           </h2>
           <div className="space-y-4">
             {items.filter(item => item.type === 'service').map((service) => (
@@ -80,12 +86,8 @@ export default function StepLogistics({ items, onNext }) {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 mb-1">{service.title}</h3>
-                  {/* El subtitle en los mocks contiene 'Para Luna • 12 Oct, 10:00 AM' */}
                   <p className="text-sm text-brand-secondary font-medium mb-2">{service.subtitle}</p>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Cita Pre-agendada
-                  </span>
+                  <p className="text-xs text-gray-500">La reserva con fecha llega en una próxima versión.</p>
                 </div>
               </div>
             ))}

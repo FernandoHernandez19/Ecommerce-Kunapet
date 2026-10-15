@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MapPin, ArrowRight, Award, Clock, ShoppingCart, Calendar } from 'lucide-react';
 import useCartStore, { ITEM_TYPES } from '../store/useCartStore';
+import { formatMoney } from '../api/adapters';
 
 /**
  * ProductCard — muestra un producto o servicio del marketplace de KunaPet.
@@ -45,6 +46,7 @@ const StarRating = ({ rating }) => (
 
 const ProductCard = ({
   id,
+  type,
   image,
   title,
   provider,
@@ -52,6 +54,7 @@ const ProductCard = ({
   rating,
   reviewCount,
   price,
+  priceCents,
   originalPrice = null,
   priceLabel = 'S/',
   category,
@@ -65,7 +68,7 @@ const ProductCard = ({
   const addItem = useCartStore((state) => state.addItem);
   const navigate = useNavigate();
 
-  const isService = category && category.toLowerCase().includes('servicio');
+  const isService = type ? type === ITEM_TYPES.SERVICE : Boolean(category && category.toLowerCase().includes('servicio'));
 
   const handleActionClick = (e) => {
     e.stopPropagation();
@@ -76,7 +79,7 @@ const ProductCard = ({
       addItem({
         id,
         title,
-        price,
+        priceCents,
         image,
         provider,
         type: ITEM_TYPES.PRODUCT
@@ -165,8 +168,13 @@ const ProductCard = ({
 
         {/* Rating + distance */}
         <div className="flex items-center gap-3 text-sm text-gray-500">
-          <StarRating rating={rating} />
-          <span>({reviewCount} reseñas)</span>
+          {/* Sin calificaciones ni reseñas en la API: no se muestran estrellas ni conteos. */}
+          {rating != null && reviewCount > 0 && (
+            <>
+              <StarRating rating={rating} />
+              <span>({reviewCount} reseñas)</span>
+            </>
+          )}
           {distance && (
             <span className="flex items-center gap-0.5 ml-auto">
               <MapPin className="w-3 h-3" />
@@ -180,14 +188,14 @@ const ProductCard = ({
           <div className="flex flex-col">
             {originalPrice && (
               <span className="text-xs text-gray-400 line-through">
-                S/ {originalPrice.toFixed(2)}
+                {formatMoney(Math.round(originalPrice * 100))}
               </span>
             )}
             <span className="text-lg font-bold text-gray-900">
               {priceLabel !== 'S/' ? (
                 <span className="text-xs font-normal text-gray-500 mr-1">{priceLabel}</span>
               ) : null}
-              S/ {price.toFixed(2)}
+              {formatMoney(priceCents ?? Math.round(price * 100))}
             </span>
           </div>
 

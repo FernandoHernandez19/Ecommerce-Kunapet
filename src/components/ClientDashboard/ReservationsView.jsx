@@ -1,4 +1,5 @@
 import React from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { MessageSquare, FileText, XCircle, CalendarCheck, User } from 'lucide-react';
 
 const ACCENT = '#2D6A4F';
@@ -79,7 +80,7 @@ export default function ReservationsView({ reservations }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-extrabold text-gray-900">Mis Reservas</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">Mis Reservas <ExampleDataBadge /></h1>
 
       {active.length > 0 && (
         <section>

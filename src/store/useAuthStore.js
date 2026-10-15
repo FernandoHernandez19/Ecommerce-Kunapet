@@ -38,8 +38,7 @@ let verifyInFlight = null;
 function resetPersistedStores() {
   useCartStore.setState({ items: [], isOpen: false });
   useCartStore.persist.clearStorage();
-  usePetsStore.setState(usePetsStore.getInitialState(), true);
-  usePetsStore.persist.clearStorage();
+  usePetsStore.getState().reset();
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────

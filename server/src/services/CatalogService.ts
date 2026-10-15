@@ -1,25 +1,41 @@
 import { NotFoundError, ValidationError } from '../errors/AppError.js';
 import type { ItemFilter, ItemRepository, NewItem } from '../repositories/ItemRepository.js';
-import type { Item } from '../types/item.js';
+import type { UserRepository } from '../repositories/UserRepository.js';
+import type { Item, ItemProvider, PublicItem } from '../types/item.js';
 import type { User } from '../types/user.js';
 import type { PageRequest, Paginated } from '../utils/pagination.js';
 
 export class CatalogService {
-  constructor(private readonly items: ItemRepository) {}
+  constructor(
+    private readonly items: ItemRepository,
+    private readonly users: UserRepository,
+  ) {}
 
-  /** Lista activos para todos; el proveedor además ve sus propios items inactivos. */
-  list(filter: Omit<ItemFilter, 'includeInactiveOf'>, page: PageRequest, viewer?: User): Promise<Paginated<Item>> {
-    const includeInactiveOf = viewer?.role === 'provider' ? viewer.id : undefined;
-    return this.items.search({ ...filter, ...(includeInactiveOf ? { includeInactiveOf } : {}) }, page);
+  /** Agrega { id, name, avatarUrl } del proveedor; jamás email, teléfono ni otros datos. */
+  private async withProviders(items: readonly Item[]): Promise<PublicItem[]> {
+    const providers = new Map<string, ItemProvider>();
+    for (const id of new Set(items.map((i) => i.providerId))) {
+      const user = await this.users.findById(id);
+      providers.set(id, { id, name: user?.name ?? 'Proveedor KunaPet', avatarUrl: user?.avatarUrl ?? null });
+    }
+    return items.map((item) => ({ ...item, provider: providers.get(item.providerId) as ItemProvider }));
   }
 
-  async get(id: string, viewer?: User): Promise<Item> {
+  /** Lista activos para todos; el proveedor además ve sus propios items inactivos. */
+  async list(filter: Omit<ItemFilter, 'includeInactiveOf'>, page: PageRequest, viewer?: User): Promise<Paginated<PublicItem>> {
+    const includeInactiveOf = viewer?.role === 'provider' ? viewer.id : undefined;
+    const result = await this.items.search({ ...filter, ...(includeInactiveOf ? { includeInactiveOf } : {}) }, page);
+    return { data: await this.withProviders(result.data), meta: result.meta };
+  }
+
+  async get(id: string, viewer?: User): Promise<PublicItem> {
     const item = await this.items.findById(id);
     // Un item inactivo ajeno se comporta como inexistente.
     if (!item || (!item.isActive && item.providerId !== viewer?.id)) {
       throw new NotFoundError('Item no encontrado.');
     }
-    return item;
+    const [withProvider] = await this.withProviders([item]);
+    return withProvider as PublicItem;
   }
 
   create(provider: User, input: Omit<NewItem, 'providerId' | 'isActive'>): Promise<Item> {

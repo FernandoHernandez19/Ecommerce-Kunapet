@@ -174,6 +174,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `targetPets` | string[] | `dog`, `cat`, `bird`, `exotic` |
 | `isActive` | boolean | |
 | `createdAt`, `updatedAt` | string (ISO) | |
+| `provider` | `{ id, name, avatarUrl }` | **Solo en `GET /items` y `GET /items/:id`** (público). Nunca incluye email ni teléfono. |
 
 ```json
 { "id": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "providerId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "type": "service", "title": "Baño y Corte de Pelo Completo", "description": "Grooming integral.", "category": "grooming", "priceCents": 4500, "currency": "PEN", "stock": null, "durationMinutes": 90, "location": "San Borja, Lima", "imageUrl": null, "targetPets": ["dog", "cat"], "isActive": true, "createdAt": "2025-06-01T10:00:00.000Z", "updatedAt": "2025-06-01T10:00:00.000Z" }
@@ -248,6 +249,27 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 11. `usePetsStore` inicializa con `mockPets` y calcula la edad restando años (sin considerar mes/día).
 12. Las rutas de `admin` (`/claims-queue`, `/claims/:id`) no tienen modelo de datos en el frontend ni en esta API.
 
+### 7.1 Estado tras conectar el frontend (catálogo, mascotas, pedidos y proveedor)
+
+Resueltas: 1, 2, 3, 4, 5 (el carrito solo *estima*; el total válido lo devuelve `POST /orders`), 6, 7 y 11. La capa `src/api/adapters.js` traduce entre este contrato y la forma que esperan las pantallas.
+
+Brechas que **siguen abiertas** (la API no las ofrece; la interfaz muestra un estado vacío o la etiqueta «Datos de ejemplo», nunca datos inventados):
+
+| Área | Qué falta | Cómo se ve hoy |
+|---|---|---|
+| Reseñas y calificaciones | No hay endpoints ni campos (`rating`, `reviewCount`) | Sin estrellas ni conteos; «Aún no hay reseñas». «Mis Reseñas» usa datos de ejemplo. |
+| Vacunas e historial de la mascota | No existen en `Pet` | «Aún no hay vacunas registradas». El wizard ya no pide vacunas; alergias y necesidades van dentro de `notes` (máx. 500). |
+| Direcciones y métodos de pago guardados | No existen | El paso de envío del checkout y «Configuración» muestran datos de ejemplo; la dirección **no** se envía con el pedido. |
+| Reservas con fecha y horario | `POST /orders` no recibe fecha ni mascota por línea | Los servicios se compran sin fecha («La reserva con fecha llega en una próxima versión»). «Mis Reservas» y la actividad del panel usan datos de ejemplo. |
+| Mensajes y notificaciones | No existen | Datos de ejemplo. |
+| Filtros del catálogo | `GET /items` no filtra por tipo de mascota, distrito, disponibilidad ni calificación, ni ordena por precio | El marketplace ofrece solo tipo, categoría, búsqueda y rango de precio; el orden por precio se aplica a los resultados ya cargados. |
+| Items del proveedor | No hay filtro `mine` / `providerId` en `GET /items` | La pantalla de servicios pagina el catálogo (≤ 5 páginas de 100) y filtra por `provider.id`. |
+| Acciones masivas | No hay endpoints masivos | Se hacen con `PATCH`/`DELETE` individuales y secuenciales (máx. 20) con reporte de errores parciales. |
+| Productos del proveedor | La UI de «Gestión de Servicios» solo crea y edita `type=service` | Los productos se pueden crear por API, pero no desde la interfaz. |
+| Imágenes | No hay subida de archivos (`imageUrl` / `photoUrl` son URLs) | Sin foto de mascota ni imagen de servicio propia; se muestra un marcador. |
+| Panel del proveedor | Ventas, agenda, stock y pedidos recibidos no existen | Solo «Servicios activos» es real; el resto lleva la etiqueta «Datos de ejemplo». |
+| Stock y pago | El stock no se descuenta y no hay cobro | El pedido nace `pending_payment`: «Pago pendiente (demo sin cobro real)». |
+
 ## 8. Cambios respecto a la primera versión del contrato
 
 Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica dónde se reflejó arriba.
@@ -264,3 +286,4 @@ Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica d
 | 8 | Nuevo código de error `service_unavailable` (503). | El registro público se cierra cuando se alcanza el tope de usuarios (`MAX_USERS`, 1000 por defecto). |
 | 9 | `POST /auth/register` responde 429 tras 10 registros por IP en una hora. | Proteger la memoria limitada de la demo pública. |
 | 10 | Se añade `DEMO_MODE`: siembra solo el catálogo bajo un proveedor demo sin contraseña conocida. | Demo pública sin cuentas con credenciales publicadas. |
+| 11 | `GET /items` y `GET /items/:id` incluyen `provider: { id, name, avatarUrl }`. | El catálogo necesita mostrar quién vende. Se expone solo lo público: nunca email ni teléfono. |

@@ -32,7 +32,7 @@ export default function BulkActionBar({ selectedCount, onUpdatePrices, onChangeA
           onClick={onDelete}
           className="flex items-center space-x-2 text-red-600 hover:text-red-800 font-bold text-sm transition-colors pl-6 border-l border-gray-300"
         >
-          <span>🗑️</span> <span>Eliminar</span>
+          <span>🗑️</span> <span>Desactivar</span>
         </button>
 
         {/* Botón Cerrar */}

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Minus, Plus, Trash2, ShoppingBag, Calendar } from 'lucide-react';
-import useCartStore, { useCartTotals, ITEM_TYPES } from '../store/useCartStore';
+import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import useCartStore, { useCartTotals, unitCents } from '../store/useCartStore';
+import { formatMoney } from '../api/adapters';
 
 const CartDrawer = () => {
   const navigate = useNavigate();
@@ -93,21 +94,12 @@ const CartDrawer = () => {
                     {typeof item.provider === 'string' ? item.provider : item.provider?.name || ''}
                   </p>
                   
-                  {item.type === ITEM_TYPES.SERVICE && item.bookingDate && (
-                    <div className="flex flex-col mt-1.5 mb-1 gap-1 bg-brand-primary-light/30 p-2 rounded-lg">
-                      <p className="text-xs font-semibold text-brand-primary flex items-center gap-1.5">
-                        <Calendar size={12} /> {item.bookingDate} a las {item.bookingTime}
-                      </p>
-                      <p className="text-[10px] text-gray-500 font-medium">Mascotas: {item.quantity}</p>
-                    </div>
-                  )}
-
                   <div className="flex items-end justify-between mt-auto pt-2">
-                    <span className="font-bold text-green-700">S/ {item.price.toFixed(2)}</span>
+                    <span className="font-bold text-green-700">{formatMoney(unitCents(item))}</span>
                     
                     {/* Controles de cantidad */}
                     <div className="flex items-center gap-3">
-                      {item.type === ITEM_TYPES.PRODUCT ? (
+                      {(
                         <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
                           <button 
                             onClick={() => updateQuantity(item.id, item.type, item.quantity - 1)}
@@ -125,7 +117,7 @@ const CartDrawer = () => {
                             <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                      ) : null}
+                      )}
                       
                       <button 
                         onClick={() => removeItem(item.id, item.type)}
@@ -147,25 +139,26 @@ const CartDrawer = () => {
           <div className="p-5 bg-gray-50 border-t border-gray-200 flex flex-col gap-3">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Subtotal</span>
-              <span className="font-medium">S/ {totals.subtotal.toFixed(2)}</span>
+              <span className="font-medium">{formatMoney(totals.subtotalCents)}</span>
             </div>
-            {totals.shipping > 0 && (
+            {totals.shippingCents > 0 && (
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Envío estimado</span>
-                <span className="font-medium">S/ {totals.shipping.toFixed(2)}</span>
+                <span className="font-medium">{formatMoney(totals.shippingCents)}</span>
               </div>
             )}
-            {totals.platformFee > 0 && (
+            {totals.platformFeeCents > 0 && (
               <div className="flex justify-between text-sm text-gray-600">
-                <span>Tarifa de servicio</span>
-                <span className="font-medium">S/ {totals.platformFee.toFixed(2)}</span>
+                <span>Tarifa de servicio (estimada)</span>
+                <span className="font-medium">{formatMoney(totals.platformFeeCents)}</span>
               </div>
             )}
             
             <div className="flex justify-between text-lg font-black text-gray-900 pt-3 border-t border-gray-200 mt-1">
-              <span>Total</span>
-              <span className="text-green-700">S/ {totals.total.toFixed(2)}</span>
+              <span>Total estimado</span>
+              <span className="text-green-700">{formatMoney(totals.totalCents)}</span>
             </div>
+            <p className="text-xs text-gray-400">El total definitivo lo calcula el servidor al confirmar el pedido.</p>
 
             <button 
               onClick={handleCheckout}

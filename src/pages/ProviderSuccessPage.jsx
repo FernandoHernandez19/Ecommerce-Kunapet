@@ -1,14 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import SuccessCard from '../components/Provider/SuccessCard';
 import FinalStepper from '../components/Provider/FinalStepper';
 
 export default function ProviderSuccessPage() {
-  
+  const navigate = useNavigate();
+
+  // La cuenta ya se creó y la sesión está iniciada (ProviderRegistration).
   const handleGoToDashboard = () => {
-    console.log("Navegando al Dashboard del Proveedor...");
-    // Implementación real: 
-    // window.location.replace('/provider-dashboard'); 
-    // o navigate('/provider-dashboard', { replace: true });
+    navigate('/providerdashboard', { replace: true });
   };
 
   const handleViewProfile = () => {

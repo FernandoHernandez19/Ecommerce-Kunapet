@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploader from '../Provider/ImageUploader';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import { validateCredentials, PASSWORD_MIN, PASSWORD_MAX } from '../../utils/accountValidation';
 
 // Ícono persona
 const PersonIcon = () => (
@@ -53,6 +54,7 @@ export default function StepClientProfile({ formData, updateData, onNext }) {
       newErrors.phone = 'Ingresa un número de teléfono válido.';
     if (!formData.city)
       newErrors.city = 'Selecciona tu ciudad.';
+    Object.assign(newErrors, validateCredentials(formData));
     return newErrors;
   };
 
@@ -109,6 +111,32 @@ export default function StepClientProfile({ formData, updateData, onNext }) {
           onChange={(e) => updateData('phone', e.target.value)}
           leftIcon={<PhoneIcon />}
           error={errors.phone}
+        />
+
+        {/* Credenciales de la cuenta */}
+        <Input
+          id="client-email"
+          label="Correo electrónico"
+          type="email"
+          required
+          placeholder="nombre@ejemplo.com"
+          autoComplete="email"
+          value={formData.email}
+          onChange={(e) => updateData('email', e.target.value)}
+          error={errors.email}
+        />
+
+        <Input
+          id="client-password"
+          label="Contraseña"
+          type="password"
+          required
+          placeholder={`Entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres`}
+          autoComplete="new-password"
+          value={formData.password}
+          onChange={(e) => updateData('password', e.target.value)}
+          hint={`Entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres.`}
+          error={errors.password}
         />
 
         {/* Ciudad (select nativo estilizado) */}

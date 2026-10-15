@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
+import { validateCredentials } from '../utils/accountValidation';
 import ProviderOnboardingLayout from '../layouts/ProviderOnboardingLayout';
 import RegistrationStepper from '../components/Provider/RegistrationStepper';
 import StepBusinessProfile from '../components/Provider/StepBusinessProfile';
@@ -10,6 +14,8 @@ export default function ProviderRegistration() {
   const [formData, setFormData] = useState({
     image: null,
     businessName: '',
+    email: '',
+    password: '',
     description: '',
     zones: ['Miraflores'] // Pre-seleccionado como en la imagen
   });
@@ -18,13 +24,38 @@ export default function ProviderRegistration() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleNextStep = () => {
-    // Validaciones simples antes de avanzar
-    if (!formData.businessName || !formData.description || formData.zones.length === 0) {
-      alert("Por favor completa los campos obligatorios.");
-      return;
+  const navigate = useNavigate();
+  const register = useAuthStore((state) => state.register);
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Crea la cuenta (rol provider) e inicia sesión. Es el último paso implementado del flujo.
+  const handleNextStep = async () => {
+    const newErrors = validateCredentials(formData);
+    const name = formData.businessName.trim();
+    if (!name || !formData.description.trim() || formData.zones.length === 0) {
+      setSubmitError('Por favor completa los campos obligatorios.');
+    } else {
+      setSubmitError(null);
     }
-    setCurrentStep(2);
+    if (name.length < 2 && name) newErrors.businessName = 'El nombre debe tener al menos 2 caracteres.';
+    setErrors(newErrors);
+    if (!name || !formData.description.trim() || formData.zones.length === 0 || Object.keys(newErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    const result = await register({
+      name,
+      email: formData.email,
+      password: formData.password,
+      role: 'provider',
+    });
+    setIsSubmitting(false);
+    if (result.success) {
+      navigate('/provider-success', { replace: true });
+    } else {
+      setSubmitError(result.error);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -38,11 +69,19 @@ export default function ProviderRegistration() {
       <RegistrationStepper currentStep={currentStep} />
 
       <div className="max-w-3xl mx-auto">
+        {submitError && (
+          <div role="alert" className="flex items-start gap-3 p-4 mb-6 bg-danger-light border border-danger/20 rounded-2xl">
+            <AlertCircle size={18} className="text-danger shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm font-medium text-danger-text">{submitError}</p>
+          </div>
+        )}
         {currentStep === 1 && (
           <StepBusinessProfile 
             formData={formData}
             updateData={updateFormData}
             onNext={handleNextStep}
+            errors={errors}
+            isSubmitting={isSubmitting}
           />
         )}
         

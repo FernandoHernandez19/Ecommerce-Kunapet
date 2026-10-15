@@ -14,8 +14,6 @@ function validate(email, password) {
   }
   if (!password) {
     errors.password = 'La contraseña es obligatoria.';
-  } else if (password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres.';
   }
   return errors;
 }
@@ -70,21 +68,6 @@ export default function Login() {
       navigate(destination, { replace: true });
     }
 
-  };
-
-  // ── Credenciales de demo ──────────────────────────────────────────────────
-  const DEMO_ACCOUNTS = [
-    { label: 'Cliente demo', email: 'camila@kunapet.com', role: 'client' },
-    { label: 'Proveedor demo', email: 'proveedor@kunapet.com', role: 'provider' },
-    { label: 'Admin demo', email: 'admin@kunapet.com', role: 'admin' },
-  ];
-
-  const fillDemo = (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword('demo123456');
-    setFieldErrors({});
-    setTouched({ email: false, password: false });
-    clearError();
   };
 
   return (
@@ -274,25 +257,6 @@ export default function Login() {
                 Te llevaremos al selector de roles para iniciar el registro guiado.
               </p>
             </form>
-
-            {/* ── Cuentas de Demo ── */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-xs font-bold text-gray-400 text-center uppercase tracking-wider mb-3">
-                🎯 Acceso demo rápido
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {DEMO_ACCOUNTS.map(({ label, email: demoEmail }) => (
-                  <button
-                    key={demoEmail}
-                    type="button"
-                    onClick={() => fillDemo(demoEmail)}
-                    className="text-xs font-semibold text-gray-500 hover:text-brand-primary hover:bg-brand-primary-light px-2 py-1.5 rounded-lg border border-gray-200 hover:border-brand-primary/30 transition-all text-center"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>

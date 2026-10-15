@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import ImageUploader from './ImageUploader';
 import ZoneSelector from './ZoneSelector';
 
-export default function StepBusinessProfile({ formData, updateData, onNext }) {
+import { PASSWORD_MIN, PASSWORD_MAX } from '../../utils/accountValidation';
+
+export default function StepBusinessProfile({ formData, updateData, onNext, errors = {}, isSubmitting = false }) {
   const MAX_DESC = 300;
   const currentLength = formData.description.length;
   const navigate = useNavigate();
@@ -56,6 +58,40 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
           </div>
         </div>
 
+        <div className="mb-6">
+          <label htmlFor="provider-email" className="block text-xs font-bold text-gray-700 mb-2">
+            Correo electrónico <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="provider-email"
+            type="email"
+            autoComplete="email"
+            value={formData.email}
+            onChange={(e) => updateData('email', e.target.value)}
+            placeholder="nombre@ejemplo.com"
+            aria-invalid={Boolean(errors.email)}
+            className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] transition-all"
+          />
+          {errors.email && <p role="alert" className="mt-1.5 text-xs font-medium text-red-500">{errors.email}</p>}
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="provider-password" className="block text-xs font-bold text-gray-700 mb-2">
+            Contraseña <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="provider-password"
+            type="password"
+            autoComplete="new-password"
+            value={formData.password}
+            onChange={(e) => updateData('password', e.target.value)}
+            placeholder={`Entre ${PASSWORD_MIN} y ${PASSWORD_MAX} caracteres`}
+            aria-invalid={Boolean(errors.password)}
+            className="w-full bg-[#F9FAFB] border border-transparent hover:border-gray-200 p-3.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#e23d28]/20 focus:border-[#e23d28] transition-all"
+          />
+          {errors.password && <p role="alert" className="mt-1.5 text-xs font-medium text-red-500">{errors.password}</p>}
+        </div>
+
         <ZoneSelector
           selectedZones={formData.zones}
           onToggleZone={(zone) => {
@@ -75,9 +111,10 @@ export default function StepBusinessProfile({ formData, updateData, onNext }) {
           <button
             type="button"
             onClick={onNext}
-            className="bg-[#e23d28] hover:bg-[#c93623] text-white text-sm font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center"
+            disabled={isSubmitting}
+            className="bg-[#e23d28] hover:bg-[#c93623] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold py-3 px-8 rounded-xl shadow-md transition-colors flex items-center"
           >
-            Siguiente Paso <span className="ml-2 font-bold">→</span>
+            {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'} <span className="ml-2 font-bold">→</span>
           </button>
         </div>
       </form>

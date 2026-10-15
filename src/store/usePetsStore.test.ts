@@ -8,7 +8,7 @@ describe('usePetsStore (API real)', () => {
     usePetsStore.getState().reset();
     const { calls } = routeFetch(() => ({ data: [apiPet()], meta: { page: 1, limit: 100, total: 1 } }));
     await usePetsStore.getState().fetchPets();
-    expect(calls[0].path).toBe('/pets');
+    expect(calls[0]?.path).toBe('/pets');
     expect(usePetsStore.getState()).toMatchObject({ status: 'ready', error: null });
     expect(usePetsStore.getState().pets[0]).toMatchObject({ name: 'Luna', ageLabel: expect.any(String) });
     expect(localStorage.getItem('kunapet-pets')).toBeNull();
@@ -26,7 +26,7 @@ describe('usePetsStore (API real)', () => {
     const { calls } = routeFetch(({ method }) => (method === 'POST' ? jsonResponse({ data: apiPet({ id: 'p2', name: 'Rex', species: 'cat' }) }, 201) : undefined));
     const pet = await usePetsStore.getState().addPet({ name: 'Rex', species: 'gato', breed: '', dob: '', weight: '4,5', allergies: 'Pollo', specialNeeds: '', isSterilized: false, vaccines: ['Rabia'] });
     expect(calls[0]).toMatchObject({ method: 'POST', path: '/pets' });
-    expect(calls[0].body).toEqual({ name: 'Rex', species: 'cat', weightGrams: 4500, notes: 'Alergias: Pollo\nEsterilizado: No' });
+    expect(calls[0]?.body).toEqual({ name: 'Rex', species: 'cat', weightGrams: 4500, notes: 'Alergias: Pollo\nEsterilizado: No' });
     expect(pet).toMatchObject({ id: 'p2', speciesLabel: 'Gato' });
     expect(usePetsStore.getState().pets.map((p) => p.id)).toEqual(['p2']);
   });
@@ -43,8 +43,8 @@ describe('usePetsStore (API real)', () => {
     const { calls } = routeFetch(({ method }) => (method === 'PATCH' ? { data: apiPet({ name: 'Luna II' }) } : undefined));
     await usePetsStore.getState().updatePet('p1', { name: 'Luna II', species: 'dog', breed: '', gender: 'female', birthdate: '2022-03-15', notes: '' });
     expect(calls[0]).toMatchObject({ method: 'PATCH', path: '/pets/p1' });
-    expect(calls[0].body).toMatchObject({ name: 'Luna II', birthDate: '2022-03-15', notes: null });
-    expect(usePetsStore.getState().pets[0].name).toBe('Luna II');
+    expect(calls[0]?.body).toMatchObject({ name: 'Luna II', birthDate: '2022-03-15', notes: null });
+    expect(usePetsStore.getState().pets[0]?.name).toBe('Luna II');
   });
 
   it('borrar: DELETE /pets/:id solo quita la mascota si la API respondió bien', async () => {

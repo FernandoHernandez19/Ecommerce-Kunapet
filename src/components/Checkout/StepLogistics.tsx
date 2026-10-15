@@ -1,0 +1,119 @@
+import { useState } from 'react';
+import { Calendar as CalendarIcon, ChevronRight } from 'lucide-react';
+import AddressCard from './AddressCard';
+import AddressFormModal from './AddressFormModal';
+import AddressSelectorModal from './AddressSelectorModal';
+import { mockUser } from '../../data/mockData';
+import type { CheckoutAddress, CheckoutItem, NewAddressData } from './types';
+import ExampleDataBadge from '../ExampleDataBadge';
+
+const initialAddresses: CheckoutAddress[] = mockUser.addresses.map((a) => ({
+  id: a.id,
+  label: a.label,
+  street: a.address,
+  district: '',
+  isDefault: a.isDefault,
+}));
+
+export default function StepLogistics({ items, onNext }: { items: CheckoutItem[]; onNext: () => void }) {
+  const hasServices = items.some(item => item.type === 'service');
+  const hasProducts = items.some(item => item.type === 'product');
+
+  // Estado de direcciones
+  const [addresses, setAddresses] = useState<CheckoutAddress[]>(initialAddresses);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(
+    initialAddresses.find(a => a.isDefault)?.id || initialAddresses[0]?.id
+  );
+
+  // Estados de los Modales
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+
+  const handleSaveNewAddress = (newAddressData: NewAddressData) => {
+    const newAddress: CheckoutAddress = {
+      ...newAddressData,
+      id: `a${Date.now()}`, // ID simulado
+      isDefault: false
+    };
+    setAddresses([...addresses, newAddress]);
+    setSelectedAddressId(newAddress.id);
+  };
+
+  return (
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Despacho y Reserva</h1>
+      <p className="text-sm text-gray-500 mb-6">Confirma dónde quieres recibir tus pedidos.</p>
+
+      {hasProducts && (
+        <div className="mb-8">
+          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2 border-b border-gray-100 pb-2 flex items-center gap-2">
+            Dirección de Entrega <ExampleDataBadge />
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            La API todavía no guarda direcciones: esta dirección es de ejemplo y no se envía con el pedido.
+          </p>
+          {selectedAddress && (
+            <AddressCard address={selectedAddress} onEdit={() => setIsSelectorOpen(true)} />
+          )}
+          <button 
+            onClick={() => setIsFormOpen(true)}
+            className="text-sm font-bold text-brand-secondary hover:text-brand-secondary-hover transition-colors underline-offset-2 hover:underline"
+          >
+            + Agregar nueva dirección
+          </button>
+        </div>
+      )}
+
+      {hasServices && (
+        <div className="mb-8">
+          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2 flex items-center gap-2">
+            <CalendarIcon size={16} className="text-brand-secondary" />
+            Servicios del pedido
+          </h2>
+          <div className="space-y-4">
+            {items.filter(item => item.type === 'service').map((service) => (
+              <div key={service.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-brand-secondary-light/20 flex items-center justify-center shrink-0 mt-1">
+                  <CalendarIcon size={20} className="text-brand-secondary" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">{service.title}</h3>
+                  <p className="text-sm text-brand-secondary font-medium mb-2">{service.subtitle}</p>
+                  <p className="text-xs text-gray-500">La reserva con fecha llega en una próxima versión.</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="lg:hidden mt-6">
+        <button 
+          onClick={onNext}
+          className="w-full bg-brand-secondary text-white font-bold py-4 rounded-xl shadow-md flex justify-center items-center gap-2"
+        >
+          Continuar al Pago <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {/* Modal para Seleccionar Dirección Existente */}
+      <AddressSelectorModal 
+        isOpen={isSelectorOpen}
+        onClose={() => setIsSelectorOpen(false)}
+        addresses={addresses}
+        selectedAddressId={selectedAddressId}
+        onSelect={(addr) => setSelectedAddressId(addr.id)}
+        onAddNew={() => setIsFormOpen(true)}
+      />
+
+      {/* Modal para Crear Nueva Dirección */}
+      <AddressFormModal 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSave={handleSaveNewAddress}
+      />
+    </div>
+  );
+}

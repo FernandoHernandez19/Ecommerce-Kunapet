@@ -144,7 +144,7 @@ const TARGET_PET_LABEL: Readonly<Record<TargetPet, string>> = { dog: 'Perro', ca
 export interface UiFeature {
   id: number;
   label: string;
-  type: 'duration' | 'activity';
+  type: 'duration' | 'activity' | 'insurance' | 'report';
 }
 
 export interface UiProvider {
@@ -309,6 +309,15 @@ export function wizardSpeciesToApi(value: string | undefined): Species {
 }
 
 /** Mascota como la consumen las pantallas (modelo de vista). */
+/** Vacuna del historial médico (la API aún no las guarda; la lista llega vacía). */
+export interface UiVaccine {
+  id: string;
+  name: string;
+  date: string;
+  nextDue: string;
+  status: 'ok' | 'upcoming' | 'expired';
+}
+
 export interface UiPet {
   id: string;
   name: string;
@@ -327,7 +336,7 @@ export interface UiPet {
   notes: string;
   // La API no tiene vacunas ni historial: la interfaz muestra un estado vacío.
   vaccineStatus: null;
-  vaccines: never[];
+  vaccines: UiVaccine[];
   createdAt: string;
 }
 

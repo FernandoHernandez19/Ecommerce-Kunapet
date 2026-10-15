@@ -162,3 +162,10 @@ export const page = <T>(data: T[], total: number = data.length, extra: Partial<{
   data,
   meta: { page: 1, limit: 12, total, ...extra },
 });
+
+/** Primer elemento de una lista; falla con un mensaje claro si está vacía (noUncheckedIndexedAccess). */
+export function first<T>(list: readonly T[]): T {
+  const item = list[0];
+  if (item === undefined) throw new Error('Se esperaba al menos un elemento');
+  return item;
+}

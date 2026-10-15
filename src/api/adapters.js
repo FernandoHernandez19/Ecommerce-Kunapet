@@ -18,6 +18,7 @@ export function formatMoney(cents) {
 
 /** Soles (número o texto del formulario) → céntimos enteros. NaN/negativos → null. */
 export function solesToCents(soles) {
+  if (typeof soles === 'string' && soles.trim() === '') return null; // Number('') === 0
   const n = typeof soles === 'string' ? Number(soles.replace(',', '.').trim()) : soles;
   if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) return null;
   return Math.round(n * 100 + Number.EPSILON);

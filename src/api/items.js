@@ -34,7 +34,9 @@ export async function listMyItems(userId, { signal } = {}) {
   const mine = [];
   for (let page = 1; page <= 5; page += 1) {
     const { data, meta } = await listItems({ page, limit: 100 }, { signal });
-    mine.push(...data.filter((i) => i.provider.id === userId));
+    for (const item of data) {
+      if (item.provider.id === userId && !mine.some((m) => m.id === item.id)) mine.push(item);
+    }
     if (page * meta.limit >= meta.total) break;
   }
   return mine;

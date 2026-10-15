@@ -1,10 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { listItems } from '../../api/items';
 import useApiResource from '../../hooks/useApiResource';
 
 /** Otros items de la misma categoría, traídos de la API. */
-const RelatedServices = ({ category, excludeId }) => {
+const RelatedServices = ({ category, excludeId }: { category: string; excludeId: string }) => {
   const { data, loading, error, reload } = useApiResource(
     async (signal) => {
       const { data: items } = await listItems({ category, limit: 4 }, { signal });
@@ -33,7 +32,7 @@ const RelatedServices = ({ category, excludeId }) => {
         <p className="text-sm text-gray-500">Por ahora no hay otros items en esta categoría.</p>
       )}
 
-      {data?.length > 0 && (
+      {data !== null && data.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {data.map((item) => (
             <Link

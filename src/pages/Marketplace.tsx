@@ -2,51 +2,78 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import NavbarHeader from '../components/NavbarHeader';
-import FilterSidebar from '../components/FilterSidebar';
+import FilterSidebar, { type CatalogFilters } from '../components/FilterSidebar';
 import ProductCard from '../components/ProductCard';
-import { listItems } from '../api/items';
-import { categoryToSlug, solesToCents } from '../api/adapters';
+import { listItems, type ItemFilters } from '../api/items';
+import { categoryToSlug, solesToCents, type UiItem } from '../api/adapters';
 import { friendlyMessage } from '../api/errorMessages';
 
 const PAGE_SIZE = 12;
 
-const SORT_OPTIONS = [
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'recent',     label: 'Más recientes' },
   { value: 'price_asc',  label: 'Precio: menor a mayor' },
   { value: 'price_desc', label: 'Precio: mayor a menor' },
 ];
 
+type SortKey = 'recent' | 'price_asc' | 'price_desc';
+
+/** Filtros de la pantalla + la búsqueda de la URL (q). */
+export type CatalogQueryInput = CatalogFilters & { q?: string };
+
 /** Convierte los filtros de la pantalla en los parámetros de GET /items (el servidor filtra). */
-export function buildQuery({ type, category, q, priceMin, priceMax }) {
-  const params = {};
+export function buildQuery({ type, category, q, priceMin, priceMax }: CatalogQueryInput): ItemFilters {
+  const params: ItemFilters = {};
   if (type) params.type = type;
   if (category) params.category = category;
   if (q) params.q = q;
-  const min = priceMin === '' || priceMin == null ? null : solesToCents(priceMin);
-  const max = priceMax === '' || priceMax == null ? null : solesToCents(priceMax);
+  const min = priceMin === '' ? null : solesToCents(priceMin);
+  const max = priceMax === '' ? null : solesToCents(priceMax);
   if (min !== null) params.minPriceCents = min;
   if (max !== null) params.maxPriceCents = max;
   return params;
 }
 
-function useCatalog(query) {
+interface CatalogData {
+  items: UiItem[];
+  total: number;
+  page: number;
+}
+
+/**
+ * Estado del catálogo como unión discriminada por `status`. Cada variante repite los campos
+ * «planos» (loading, error, loadingMore, moreError) para poder desestructurar sin perder tipos.
+ */
+type CatalogState =
+  | (CatalogData & { status: 'loading'; loading: true; error: null; loadingMore: false; moreError: null })
+  | (CatalogData & { status: 'error'; loading: false; error: string; loadingMore: false; moreError: null })
+  | (CatalogData & { status: 'success'; loading: false; error: null; loadingMore: boolean; moreError: string | null });
+
+const EMPTY: CatalogData = { items: [], total: 0, page: 1 };
+const LOADING: CatalogState = { ...EMPTY, status: 'loading', loading: true, error: null, loadingMore: false, moreError: null };
+
+function useCatalog(query: ItemFilters) {
   const key = JSON.stringify(query);
-  const [state, setState] = useState({ items: [], total: 0, page: 1, loading: true, loadingMore: false, error: null, moreError: null });
+  const [state, setState] = useState<CatalogState>(LOADING);
   const [tick, setTick] = useState(0);
-  const moreController = useRef(null);
+  const moreController = useRef<AbortController | null>(null);
   const busy = useRef(false); // evita doble clic en «Cargar más» antes del siguiente render
 
   useEffect(() => {
     const controller = new AbortController();
     moreController.current?.abort();
     busy.current = false;
-    setState((s) => ({ ...s, items: [], total: 0, page: 1, loading: true, loadingMore: false, error: null, moreError: null }));
-    listItems({ ...JSON.parse(key), page: 1, limit: PAGE_SIZE }, { signal: controller.signal })
+    setState(LOADING);
+    // `key` es el JSON de `query`: la efectos se re-ejecutan cuando cambian los filtros.
+    const filters = JSON.parse(key) as ItemFilters;
+    listItems({ ...filters, page: 1, limit: PAGE_SIZE }, { signal: controller.signal })
       .then(({ data, meta }) => {
-        if (!controller.signal.aborted) setState((s) => ({ ...s, items: data, total: meta.total, page: 1, loading: false }));
+        if (controller.signal.aborted) return;
+        setState({ status: 'success', items: data, total: meta.total, page: 1, loading: false, error: null, loadingMore: false, moreError: null });
       })
-      .catch((err) => {
-        if (!controller.signal.aborted) setState((s) => ({ ...s, loading: false, error: friendlyMessage(err) }));
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        setState({ ...EMPTY, status: 'error', loading: false, error: friendlyMessage(err), loadingMore: false, moreError: null });
       });
     return () => controller.abort();
   }, [key, tick]);
@@ -58,28 +85,33 @@ function useCatalog(query) {
 
   const loadMore = useCallback(() => {
     const cur = stateRef.current;
-    if (busy.current || cur.loadingMore || cur.loading) return;
+    if (cur.status !== 'success' || busy.current || cur.loadingMore) return;
     busy.current = true;
     const controller = new AbortController();
     moreController.current = controller;
     const nextPage = cur.page + 1;
-    setState((s) => ({ ...s, loadingMore: true, moreError: null }));
-    listItems({ ...JSON.parse(key), page: nextPage, limit: PAGE_SIZE }, { signal: controller.signal })
+    setState({ ...cur, loadingMore: true, moreError: null });
+    const filters = JSON.parse(key) as ItemFilters;
+    listItems({ ...filters, page: nextPage, limit: PAGE_SIZE }, { signal: controller.signal })
       .then(({ data, meta }) => {
         if (controller.signal.aborted) return;
         busy.current = false;
-        setState((s) => ({
-          ...s,
-          items: [...s.items, ...data.filter((n) => !s.items.some((o) => o.id === n.id))],
-          total: meta.total,
-          page: nextPage,
-          loadingMore: false,
-        }));
+        setState((s) =>
+          s.status !== 'success'
+            ? s
+            : {
+                ...s,
+                items: [...s.items, ...data.filter((n) => !s.items.some((o) => o.id === n.id))],
+                total: meta.total,
+                page: nextPage,
+                loadingMore: false,
+              },
+        );
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (controller.signal.aborted) return;
         busy.current = false;
-        setState((s) => ({ ...s, loadingMore: false, moreError: friendlyMessage(err) }));
+        setState((s) => (s.status !== 'success' ? s : { ...s, loadingMore: false, moreError: friendlyMessage(err) }));
       });
   }, [key]);
 
@@ -103,7 +135,7 @@ function SkeletonCard() {
 }
 
 export default function Marketplace() {
-  const [sortBy, setSortBy]     = useState('recent');
+  const [sortBy, setSortBy]     = useState<SortKey>('recent');
   const [showSort, setShowSort] = useState(false);
   const navigate                = useNavigate();
   const location                = useLocation();
@@ -112,7 +144,7 @@ export default function Marketplace() {
   const urlCategory = params.get('category')?.split(',')[0] ?? '';
   const q = params.get('q')?.trim() ?? '';
 
-  const [filters, setFilters] = useState({ type: '', category: urlCategory ? categoryToSlug(urlCategory) : '', priceMin: '', priceMax: '' });
+  const [filters, setFilters] = useState<CatalogFilters>({ type: '', category: urlCategory ? categoryToSlug(urlCategory) : '', priceMin: '', priceMax: '' });
 
   // La URL (carrusel, buscador del navbar) manda sobre la categoría.
   useEffect(() => {
@@ -145,7 +177,7 @@ export default function Marketplace() {
 
       <div className="flex max-w-screen-xl mx-auto">
         <FilterSidebar
-          onApply={(f) => setFilters({ type: f.type, category: f.category, priceMin: f.priceMin, priceMax: f.priceMax })}
+          onApply={(f) => setFilters(f)}
           initialCategory={urlCategory}
         />
 

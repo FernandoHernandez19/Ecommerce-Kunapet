@@ -1,20 +1,33 @@
 import { useEffect, useState } from 'react';
 import { categoryToSlug, solesToCents } from '../api/adapters';
+import type { ItemType } from '@/types/api';
 
 /**
  * Filtros del marketplace. Solo incluye lo que la API puede filtrar en el servidor:
  * tipo (producto/servicio), categoría (una a la vez) y rango de precio.
  * (Tipo de mascota, distrito, disponibilidad y calificación no existen en la API.)
  */
-const TYPES = [
+export interface CatalogFilters {
+  type: ItemType | '';
+  category: string;
+  priceMin: string;
+  priceMax: string;
+}
+
+const TYPES: { value: ItemType | ''; label: string }[] = [
   { value: '', label: 'Todos' },
   { value: 'product', label: 'Productos' },
   { value: 'service', label: 'Servicios' },
 ];
 export const CATEGORIES = ['Alimentos', 'Medicina', 'Accesorios', 'Grooming', 'Veterinaria', 'Paseos'];
 
-const FilterSidebar = ({ onApply, initialCategory = '' }) => {
-  const [type, setType] = useState('');
+interface FilterSidebarProps {
+  onApply?: (filters: CatalogFilters) => void;
+  initialCategory?: string;
+}
+
+const FilterSidebar = ({ onApply, initialCategory = '' }: FilterSidebarProps) => {
+  const [type, setType] = useState<ItemType | ''>('');
   const [category, setCategory] = useState(initialCategory);
   const [priceMin, setPriceMin] = useState('');
   const [priceMax, setPriceMax] = useState('');

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, MapPin, ArrowRight, Award, Clock, ShoppingCart, Calendar } from 'lucide-react';
 import useCartStore, { ITEM_TYPES } from '../store/useCartStore';
+import type { ItemType } from '@/types/api';
 import { formatMoney } from '../api/adapters';
 
 /**
@@ -22,7 +23,9 @@ import { formatMoney } from '../api/adapters';
  *  - distance    {string|null} Distancia al proveedor (ej: "1.2 km")
  *  - onVerMas    {func}    Callback al pulsar "Ver más"
  */
-const BADGE_CONFIG = {
+type BadgeKey = 'bestseller' | 'available';
+
+const BADGE_CONFIG: Record<BadgeKey, { icon: ReactNode; label: string; className: string }> = {
   bestseller: {
     icon: <Award className="w-3 h-3" />,
     label: 'Más Vendido',
@@ -35,7 +38,7 @@ const BADGE_CONFIG = {
   },
 };
 
-const StarRating = ({ rating }) => (
+const StarRating = ({ rating }: { rating: number }) => (
   <span className="flex items-center gap-0.5">
     <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -43,6 +46,25 @@ const StarRating = ({ rating }) => (
     <span className="text-sm font-semibold text-gray-800">{rating}</span>
   </span>
 );
+
+export interface ProductCardProps {
+  id: string;
+  type?: ItemType;
+  image: string | null;
+  title: string;
+  provider: string;
+  providerUrl?: string;
+  rating: number | null;
+  reviewCount: number | null;
+  price: number;
+  priceCents?: number;
+  originalPrice?: number | null;
+  priceLabel?: string;
+  category: string;
+  badge?: BadgeKey | null;
+  distance?: string | null;
+  onVerMas: () => void;
+}
 
 const ProductCard = ({
   id,
@@ -61,7 +83,7 @@ const ProductCard = ({
   badge = null,
   distance = null,
   onVerMas,
-}) => {
+}: ProductCardProps) => {
   const [favorited, setFavorited] = useState(false);
   const badgeMeta = badge ? BADGE_CONFIG[badge] : null;
 
@@ -70,7 +92,7 @@ const ProductCard = ({
 
   const isService = type ? type === ITEM_TYPES.SERVICE : Boolean(category && category.toLowerCase().includes('servicio'));
 
-  const handleActionClick = (e) => {
+  const handleActionClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (isService) {
       // Redirige al detalle para configuración obligatoria (fecha, mascota)
@@ -169,7 +191,7 @@ const ProductCard = ({
         {/* Rating + distance */}
         <div className="flex items-center gap-3 text-sm text-gray-500">
           {/* Sin calificaciones ni reseñas en la API: no se muestran estrellas ni conteos. */}
-          {rating != null && reviewCount > 0 && (
+          {rating !== null && reviewCount !== null && reviewCount > 0 && (
             <>
               <StarRating rating={rating} />
               <span>({reviewCount} reseñas)</span>

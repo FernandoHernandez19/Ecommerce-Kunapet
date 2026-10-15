@@ -144,7 +144,7 @@ const TARGET_PET_LABEL: Readonly<Record<TargetPet, string>> = { dog: 'Perro', ca
 export interface UiFeature {
   id: number;
   label: string;
-  type: 'duration' | 'activity';
+  type: 'duration' | 'activity' | 'insurance' | 'report';
 }
 
 export interface UiProvider {

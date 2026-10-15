@@ -1,7 +1,7 @@
-import React from 'react';
+import type { UiFeature } from '../../api/adapters';
 
 // Mapeador de iconos de características para evitar lógica compleja en el render
-const getFeatureIcon = (type) => {
+const getFeatureIcon = (type: UiFeature['type']) => {
   switch (type) {
     case 'duration':
       return (
@@ -33,7 +33,13 @@ const getFeatureIcon = (type) => {
   }
 };
 
-const ServiceDescription = ({ description, extraInfo, features }) => {
+interface ServiceDescriptionProps {
+  description: string;
+  extraInfo?: string | null;
+  features: UiFeature[];
+}
+
+const ServiceDescription = ({ description, extraInfo, features }: ServiceDescriptionProps) => {
   return (
     <div className="space-y-6 border-t border-gray-200 pt-6">
       <div className="space-y-4">

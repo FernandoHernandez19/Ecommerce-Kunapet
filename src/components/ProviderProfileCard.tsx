@@ -1,10 +1,11 @@
-import React from 'react';
 
 /**
  * Tarjeta del proveedor. Muestra solo lo que la API entrega públicamente
  * (id, nombre y avatar): sin verificación, experiencia ni ventas inventadas.
  */
-const ProviderProfileCard = ({ provider }) => {
+import type { UiProvider } from '../api/adapters';
+
+const ProviderProfileCard = ({ provider }: { provider?: UiProvider | null }) => {
   const initial = provider?.name?.trim().charAt(0).toUpperCase() || '?';
 
   return (

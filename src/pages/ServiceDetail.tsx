@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Navbar from '../components/NavbarHeader';
 import ServiceGallery from '../components/Service/ServiceGallery';
@@ -14,8 +13,9 @@ import useApiResource from '../hooks/useApiResource';
 export default function ServiceDetailPage() {
   const { id } = useParams();
   const { data: service, loading, error, errorCode, reload } = useApiResource(
-    (signal) => getItem(id, { signal }),
+    (signal) => getItem(id ?? '', { signal }),
     [id],
+    { enabled: Boolean(id) },
   );
 
   if (loading) {

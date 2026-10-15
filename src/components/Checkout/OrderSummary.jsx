@@ -24,7 +24,7 @@ export default function OrderSummary({ items, totals, onPay, isReadyToPay, curre
       case 3:
       default:
         return {
-          text: `Pagar ${totals.total}`,
+          text: 'Confirmar pedido',
           icon: <LockKeyhole size={18} />,
           action: onPay,
           disabled: !isReadyToPay || isLoading
@@ -47,7 +47,7 @@ export default function OrderSummary({ items, totals, onPay, isReadyToPay, curre
           <div className="space-y-4">
             {services.map((item, idx) => (
               <div key={`srv-${idx}`} className="flex space-x-4">
-                <img src={item.image} alt={item.title} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shrink-0" />
+                {item.image ? <img src={item.image} alt={item.title} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shrink-0" /> : <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0" aria-hidden="true" />}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-bold text-gray-900 truncate">{item.title}</h4>
                   <p className="text-xs text-brand-secondary font-medium mb-1 truncate">{item.subtitle}</p>
@@ -66,7 +66,7 @@ export default function OrderSummary({ items, totals, onPay, isReadyToPay, curre
           <div className="space-y-4">
             {products.map((item, idx) => (
               <div key={`prd-${idx}`} className="flex space-x-4">
-                <img src={item.image} alt={item.title} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shrink-0" />
+                {item.image ? <img src={item.image} alt={item.title} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shrink-0" /> : <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0" aria-hidden="true" />}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-bold text-gray-900 truncate">{item.title}</h4>
                   <p className="text-xs text-gray-500 font-medium mb-1 truncate">{item.subtitle}</p>
@@ -85,20 +85,23 @@ export default function OrderSummary({ items, totals, onPay, isReadyToPay, curre
           <span>{totals.subtotal}</span>
         </div>
         <div className="flex justify-between text-gray-600 font-medium">
-          <span>Costo de envío</span>
+          <span>Envío (estimado)</span>
           <span>{totals.shipping}</span>
         </div>
         <div className="flex justify-between text-gray-600 font-medium">
-          <span>Tarifa de servicio</span>
+          <span>Tarifa de servicio (estimada)</span>
           <span>{totals.serviceFee}</span>
         </div>
       </div>
 
       {/* Total */}
       <div className="flex justify-between items-end mb-8 border-t border-gray-100 pt-4">
-        <span className="text-lg font-bold text-gray-900">Total</span>
+        <span className="text-lg font-bold text-gray-900">Total estimado</span>
         <span className="text-3xl font-black text-brand-secondary">{totals.total}</span>
       </div>
+      <p className="-mt-6 mb-6 text-xs text-gray-400">
+        Es una estimación: el total definitivo lo calcula el servidor al confirmar el pedido.
+      </p>
 
       {/* Botón de Pago CTA Dinámico */}
       <button 
@@ -131,7 +134,7 @@ export default function OrderSummary({ items, totals, onPay, isReadyToPay, curre
       <div className="mt-5 flex items-center justify-center gap-2 text-gray-400">
         <ShieldCheck size={16} />
         <p className="text-center text-xs font-bold uppercase tracking-wider">
-          Pago 100% seguro y encriptado
+          Demo sin cobro real
         </p>
       </div>
     </div>

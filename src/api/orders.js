@@ -23,3 +23,25 @@ export async function getOrder(id, { signal } = {}) {
   const res = await api.get(`/orders/${encodeURIComponent(id)}`, { signal });
   return toUiOrder(res.data);
 }
+
+/**
+ * Identifica qué línea del pedido rechazó el servidor, para quitarla del carrito.
+ * - 400/422 traen `details: [{ path: 'items.N.itemId' }]` con la posición.
+ * - 404 trae el id en el mensaje («El item <id> no existe.»).
+ * @param {{ code?: string, message?: string, details?: unknown }} err  ApiError
+ * @param {{ itemId: string }[]} lines  Las líneas enviadas, en el mismo orden.
+ * @returns {string|null} itemId o null si no se puede determinar
+ */
+export function findOffendingItemId(err, lines) {
+  if (!err) return null;
+  if (Array.isArray(err.details)) {
+    for (const d of err.details) {
+      const m = /^items\.(\d+)\.itemId$/.exec(d?.path ?? '');
+      if (m && lines[Number(m[1])]) return lines[Number(m[1])].itemId;
+    }
+  }
+  if (err.code === 'not_found' && typeof err.message === 'string') {
+    return lines.find((l) => err.message.includes(l.itemId))?.itemId ?? null;
+  }
+  return null;
+}

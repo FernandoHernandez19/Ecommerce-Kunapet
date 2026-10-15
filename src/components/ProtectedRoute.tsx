@@ -32,13 +32,14 @@
  *   } />
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
+import type { Role } from '@/types/api';
 
 // Pantalla mínima mientras se valida la sesión guardada con GET /auth/me:
 // evita parpadeos y redirecciones prematuras a /login.
-export function SessionChecking() {
+export function SessionChecking(): ReactNode {
   return (
     <div role="status" aria-live="polite" className="min-h-screen flex flex-col items-center justify-center gap-3 bg-surface-secondary">
       <span className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-primary" aria-hidden="true" />
@@ -47,10 +48,16 @@ export function SessionChecking() {
   );
 }
 
+interface ProtectedRouteProps {
+  children: ReactNode;
+  /** Array vacío = cualquier usuario autenticado puede acceder. */
+  allowedRoles?: readonly Role[];
+}
+
 export default function ProtectedRoute({
   children,
-  allowedRoles = [],   // Array vacío = cualquier usuario autenticado puede acceder
-}) {
+  allowedRoles = [],
+}: ProtectedRouteProps): ReactNode {
   const { isAuthenticated, user, sessionStatus } = useAuthStore();
   const location = useLocation();
 
@@ -69,7 +76,7 @@ export default function ProtectedRoute({
   }
 
   // ── 2. Rol no permitido ──────────────────────────────────────────────────────
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+  if (allowedRoles.length > 0 && (!user || !allowedRoles.includes(user.role))) {
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -80,7 +87,7 @@ export default function ProtectedRoute({
 // ─── Helper: redirect autenticado ────────────────────────────────────────────
 // Úsalo en rutas como /login o /select-role para que un usuario ya logueado
 // sea redirigido a su dashboard correspondiente en vez de ver el login de nuevo.
-export function PublicOnlyRoute({ children }) {
+export function PublicOnlyRoute({ children }: { children: ReactNode }): ReactNode {
   const { isAuthenticated, user, sessionStatus } = useAuthStore();
 
   if (sessionStatus === 'verifying') return <SessionChecking />;
@@ -88,7 +95,7 @@ export function PublicOnlyRoute({ children }) {
   if (!isAuthenticated) return children;
 
   // Redirigir al dashboard del rol correspondiente
-  const dashboardMap = {
+  const dashboardMap: Readonly<Record<Role, string>> = {
     [ROLES.CLIENT]:   '/clientdashboard',
     [ROLES.PROVIDER]: '/providerdashboard',
     [ROLES.ADMIN]:    '/admindashboard',
@@ -96,7 +103,7 @@ export function PublicOnlyRoute({ children }) {
 
   return (
     <Navigate
-      to={dashboardMap[user?.role] ?? '/clientdashboard'}
+      to={user ? dashboardMap[user.role] : '/clientdashboard'}
       replace
     />
   );

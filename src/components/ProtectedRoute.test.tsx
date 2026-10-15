@@ -1,14 +1,17 @@
 import { render, screen } from '@testing-library/react';
+import type { Role } from '@/types/api';
+import type { AuthStore } from '../store/useAuthStore';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import useAuthStore from '../store/useAuthStore';
 import { sampleUser } from '../test/helpers';
 import ProtectedRoute, { PublicOnlyRoute } from './ProtectedRoute';
 
-const setSession = (patch) =>
+const setSession = (patch: Partial<Pick<AuthStore, 'user' | 'token' | 'isAuthenticated' | 'sessionStatus'>>): void => {
   useAuthStore.setState({ user: null, token: null, isAuthenticated: false, sessionStatus: 'ready', ...patch });
+};
 
-function renderAt(path, allowedRoles) {
+function renderAt(path: string, allowedRoles?: readonly Role[]) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
@@ -51,7 +54,7 @@ describe('ProtectedRoute', () => {
 
   it('sin roles definidos permite a cualquier usuario autenticado', () => {
     setSession({ user: { ...sampleUser, role: 'admin' }, token: 't', isAuthenticated: true });
-    renderAt('/secreto', undefined);
+    renderAt('/secreto');
     expect(screen.getByText('Contenido protegido')).toBeInTheDocument();
   });
 });
@@ -61,19 +64,19 @@ describe('PublicOnlyRoute', () => {
 
   it('espera la verificación antes de decidir (sin parpadeo del login)', () => {
     setSession({ user: sampleUser, token: 't', isAuthenticated: true, sessionStatus: 'verifying' });
-    renderAt('/login');
+    renderAt('/login', []);
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.queryByText('Pantalla de login')).not.toBeInTheDocument();
   });
 
   it('un usuario autenticado es enviado a su panel', () => {
     setSession({ user: sampleUser, token: 't', isAuthenticated: true });
-    renderAt('/login');
+    renderAt('/login', []);
     expect(screen.getByText('Panel del cliente')).toBeInTheDocument();
   });
 
   it('un visitante ve la pantalla pública', () => {
-    renderAt('/login');
+    renderAt('/login', []);
     expect(screen.getByText('Pantalla de login')).toBeInTheDocument();
   });
 });

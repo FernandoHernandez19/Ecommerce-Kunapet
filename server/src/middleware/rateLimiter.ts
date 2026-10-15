@@ -7,13 +7,14 @@ interface Bucket {
 
 const MAX_TRACKED_KEYS = 10_000;
 
-/** Limitador en memoria por clave (IP+email). Cada intento cuenta, acertado o no. */
-export class LoginRateLimiter {
+/** Limitador en memoria por clave (p. ej. IP+email). Cada intento cuenta, acertado o no. */
+export class RateLimiter {
   private readonly buckets = new Map<string, Bucket>();
 
   constructor(
-    private readonly maxAttempts = 10,
-    private readonly windowMs = 15 * 60 * 1000,
+    private readonly maxAttempts: number,
+    private readonly windowMs: number,
+    private readonly message: string,
   ) {}
 
   /** Registra un intento; lanza RateLimitedError si se superó el máximo en la ventana. */
@@ -28,7 +29,7 @@ export class LoginRateLimiter {
     }
     current.count += 1;
     if (current.count > this.maxAttempts) {
-      throw new RateLimitedError('Demasiados intentos de inicio de sesión. Inténtalo más tarde.');
+      throw new RateLimitedError(this.message);
     }
   }
 
@@ -38,3 +39,11 @@ export class LoginRateLimiter {
     }
   }
 }
+
+/** Login: 10 intentos por IP+email cada 15 minutos. */
+export const createLoginLimiter = (): RateLimiter =>
+  new RateLimiter(10, 15 * 60 * 1000, 'Demasiados intentos de inicio de sesión. Inténtalo más tarde.');
+
+/** Registro público: 10 registros por IP cada hora. */
+export const createRegisterLimiter = (): RateLimiter =>
+  new RateLimiter(10, 60 * 60 * 1000, 'Demasiados registros desde esta dirección. Inténtalo más tarde.');

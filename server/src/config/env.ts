@@ -23,6 +23,10 @@ const envSchema = z.object({
   SEED_DEMO_DATA: z.preprocess(emptyToUndefined, z.string().default('false')),
   // Demo pública: siembra solo el catálogo; es válida también en producción.
   DEMO_MODE: z.preprocess(emptyToUndefined, z.string().default('false')),
+  MAX_USERS: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int('MAX_USERS debe ser un entero.').min(1, 'MAX_USERS mínimo 1.').default(1000),
+  ),
   TRUST_PROXY: z.preprocess(
     emptyToUndefined,
     z.coerce
@@ -50,6 +54,8 @@ export interface Config {
   seedDemoData: boolean;
   /** Demo pública (también en producción): solo se siembra el catálogo. */
   demoMode: boolean;
+  /** Tope total de usuarios en memoria; al alcanzarlo el registro responde 503. */
+  maxUsers: number;
 }
 
 export class ConfigError extends Error {
@@ -76,6 +82,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     port: data.PORT,
     nodeEnv: data.NODE_ENV,
     seedDemoData: data.SEED_DEMO_DATA.trim().toLowerCase() === 'true',
+    maxUsers: data.MAX_USERS,
     demoMode: data.DEMO_MODE.trim().toLowerCase() === 'true',
   };
 }

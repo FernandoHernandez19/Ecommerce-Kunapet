@@ -1,7 +1,11 @@
-import React from 'react';
 import { Check } from 'lucide-react';
 
-export default function CheckoutStepper({ currentStep = 1, onStepClick }) {
+interface CheckoutStepperProps {
+  currentStep?: number;
+  onStepClick: (step: number) => void;
+}
+
+export default function CheckoutStepper({ currentStep = 1, onStepClick }: CheckoutStepperProps) {
   const steps = [
     { id: 1, label: 'Carrito' },
     { id: 2, label: 'Envío/Reserva' },

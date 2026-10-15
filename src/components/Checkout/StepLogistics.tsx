@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Calendar as CalendarIcon, Clock, ChevronRight } from 'lucide-react';
 import AddressCard from './AddressCard';
 import AddressFormModal from './AddressFormModal';
 import AddressSelectorModal from './AddressSelectorModal';
 import { mockUser } from '../../data/mockData';
+import type { CheckoutAddress, CheckoutItem, NewAddressData } from './types';
 import ExampleDataBadge from '../ExampleDataBadge';
 
-export default function StepLogistics({ items, onNext }) {
+const initialAddresses: CheckoutAddress[] = mockUser.addresses.map((a) => ({
+  id: a.id,
+  label: a.label,
+  street: a.address,
+  district: '',
+  isDefault: a.isDefault,
+}));
+
+export default function StepLogistics({ items, onNext }: { items: CheckoutItem[]; onNext: () => void }) {
   const hasServices = items.some(item => item.type === 'service');
   const hasProducts = items.some(item => item.type === 'product');
 
   // Estado para la agenda simulada
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   // Estado de direcciones
-  const [addresses, setAddresses] = useState(mockUser.addresses);
-  const [selectedAddressId, setSelectedAddressId] = useState(
-    mockUser.addresses.find(a => a.isDefault)?.id || mockUser.addresses[0]?.id
+  const [addresses, setAddresses] = useState<CheckoutAddress[]>(initialAddresses);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(
+    initialAddresses.find(a => a.isDefault)?.id || initialAddresses[0]?.id
   );
 
   // Estados de los Modales
@@ -37,8 +46,8 @@ export default function StepLogistics({ items, onNext }) {
 
   const times = ['09:00 AM', '10:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'];
 
-  const handleSaveNewAddress = (newAddressData) => {
-    const newAddress = {
+  const handleSaveNewAddress = (newAddressData: NewAddressData) => {
+    const newAddress: CheckoutAddress = {
       ...newAddressData,
       id: `a${Date.now()}`, // ID simulado
       isDefault: false

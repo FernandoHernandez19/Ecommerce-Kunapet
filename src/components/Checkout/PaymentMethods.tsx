@@ -1,16 +1,22 @@
-import React, { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
+import type { PaymentMethod } from '@/types/api';
 import { CreditCard, Smartphone, Building2, Lock, QrCode, Upload, Copy } from 'lucide-react';
 
-export default function PaymentMethods({ selectedMethod, onSelectMethod }) {
-  const fileInputRef = useRef(null);
+interface PaymentMethodsProps {
+  selectedMethod: PaymentMethod;
+  onSelectMethod: (method: PaymentMethod) => void;
+}
 
-  const methods = [
+export default function PaymentMethods({ selectedMethod, onSelectMethod }: PaymentMethodsProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const methods: { id: PaymentMethod; label: string; icon: ReactNode }[] = [
     { id: 'card', label: 'Tarjeta de Crédito / Débito', icon: <CreditCard size={20} className="text-gray-400" /> },
     { id: 'yape', label: 'Yape / Plin', icon: <Smartphone size={20} className="text-gray-400" /> },
     { id: 'transfer', label: 'Transferencia Bancaria', icon: <Building2 size={20} className="text-gray-400" /> }
   ];
 
-  const handleCopy = (text) => {
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 

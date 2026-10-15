@@ -1,9 +1,9 @@
-import React from 'react';
 import { CheckCircle, ExternalLink, Home } from 'lucide-react';
+import type { UiOrder } from '../../api/adapters';
 import { useNavigate } from 'react-router-dom';
 
 /** Pantalla final: muestra el pedido y los totales que devolvió el servidor (no los del carrito). */
-export default function StepOrderSuccess({ order }) {
+export default function StepOrderSuccess({ order }: { order: UiOrder }) {
   const navigate = useNavigate();
 
   return (

@@ -1,6 +1,15 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
+import type { CheckoutAddress } from './types';
 import { X, MapPin, Plus } from 'lucide-react';
+
+interface AddressSelectorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  addresses?: CheckoutAddress[];
+  selectedAddressId: string | undefined;
+  onSelect: (address: CheckoutAddress) => void;
+  onAddNew: () => void;
+}
 
 export default function AddressSelectorModal({ 
   isOpen, 
@@ -9,7 +18,7 @@ export default function AddressSelectorModal({
   selectedAddressId, 
   onSelect, 
   onAddNew 
-}) {
+}: AddressSelectorModalProps) {
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
@@ -49,7 +58,7 @@ export default function AddressSelectorModal({
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-900">{addr.label}</p>
-                  <p className="text-xs text-gray-600 mt-1">{addr.street}, {addr.district}</p>
+                  <p className="text-xs text-gray-600 mt-1">{[addr.street, addr.district].filter(Boolean).join(', ')}</p>
                 </div>
               </div>
             </div>

@@ -1,7 +1,17 @@
-import React from 'react';
+import type { CheckoutItem, CheckoutTotals } from './types';
 import { ShieldCheck, LockKeyhole, ChevronRight } from 'lucide-react';
 
-export default function OrderSummary({ items, totals, onPay, isReadyToPay, currentStep, onNextStep, isLoading }) {
+interface OrderSummaryProps {
+  items: CheckoutItem[];
+  totals: CheckoutTotals;
+  onPay: () => void;
+  isReadyToPay: boolean;
+  currentStep: number;
+  onNextStep: () => void;
+  isLoading: boolean;
+}
+
+export default function OrderSummary({ items, totals, onPay, isReadyToPay, currentStep, onNextStep, isLoading }: OrderSummaryProps) {
   const services = items.filter(item => item.type === 'service');
   const products = items.filter(item => item.type === 'product');
 

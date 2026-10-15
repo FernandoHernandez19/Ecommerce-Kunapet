@@ -1,8 +1,16 @@
-import React from 'react';
+import type { PaymentMethod } from '@/types/api';
 import PaymentMethods from './PaymentMethods';
 import { ChevronRight } from 'lucide-react';
 
-export default function StepPaymentGateway({ selectedMethod, onSelectMethod, onPay, isLoading, error }) {
+interface StepPaymentGatewayProps {
+  selectedMethod: PaymentMethod;
+  onSelectMethod: (method: PaymentMethod) => void;
+  onPay: () => void;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export default function StepPaymentGateway({ selectedMethod, onSelectMethod, onPay, isLoading, error }: StepPaymentGatewayProps) {
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Método de pago</h1>

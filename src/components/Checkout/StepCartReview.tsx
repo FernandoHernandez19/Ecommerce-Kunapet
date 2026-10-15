@@ -1,8 +1,8 @@
-import React from 'react';
 import { Trash2, ChevronRight, Minus, Plus } from 'lucide-react';
+import type { CheckoutItem } from './types';
 import { MAX_QUANTITY } from '../../store/useCartStore';
 
-function Thumb({ item, size }) {
+function Thumb({ item, size }: { item: CheckoutItem; size: string }) {
   return item.image ? (
     <img src={item.image} alt={item.title} className={`${size} rounded-xl object-cover shrink-0`} />
   ) : (
@@ -10,7 +10,12 @@ function Thumb({ item, size }) {
   );
 }
 
-function Quantity({ item, onQuantity }) {
+interface QuantityProps {
+  item: CheckoutItem;
+  onQuantity: (item: CheckoutItem, quantity: number) => void;
+}
+
+function Quantity({ item, onQuantity }: QuantityProps) {
   return (
     <div className="flex items-center gap-2 mt-2">
       <button type="button" aria-label="Disminuir cantidad" onClick={() => onQuantity(item, item.quantity - 1)} className="p-1 rounded-lg border border-gray-200 text-gray-500 hover:text-green-700">
@@ -24,7 +29,14 @@ function Quantity({ item, onQuantity }) {
   );
 }
 
-export default function StepCartReview({ items, onNext, onRemove, onQuantity }) {
+interface StepCartReviewProps {
+  items: CheckoutItem[];
+  onNext: () => void;
+  onRemove: (item: CheckoutItem) => void;
+  onQuantity: (item: CheckoutItem, quantity: number) => void;
+}
+
+export default function StepCartReview({ items, onNext, onRemove, onQuantity }: StepCartReviewProps) {
   const services = items.filter(item => item.type === 'service');
   const products = items.filter(item => item.type === 'product');
 

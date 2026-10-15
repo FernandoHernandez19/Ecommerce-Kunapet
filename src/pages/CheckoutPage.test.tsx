@@ -95,7 +95,7 @@ describe('Checkout con pedidos reales', () => {
     goToPayment();
     confirm();
     await screen.findByText('Pedido registrado');
-    expect(calls[0].body.paymentMethod).toBe('card');
+    expect(calls[0]?.body).toMatchObject({ paymentMethod: 'card' });
   });
 
   it('404 por un item: lo quita del carrito, avisa y vuelve al paso 1 sin vaciar el resto', async () => {

@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import type { NewAddressData } from './types';
 import ReactDOM from 'react-dom';
 import { X, MapPin } from 'lucide-react';
 
-export default function AddressFormModal({ isOpen, onClose, onSave, initialAddress = {} }) {
+interface AddressFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (address: NewAddressData) => void;
+  initialAddress?: Partial<NewAddressData>;
+}
+
+export default function AddressFormModal({ isOpen, onClose, onSave, initialAddress = {} }: AddressFormModalProps) {
   const [formData, setFormData] = useState({
     label: initialAddress.label || '',
     street: initialAddress.street || '',
@@ -12,11 +20,11 @@ export default function AddressFormModal({ isOpen, onClose, onSave, initialAddre
 
   if (!isOpen) return null;
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSave({
       ...formData,

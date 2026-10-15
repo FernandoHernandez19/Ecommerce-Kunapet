@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { PaymentMethod } from '@/types/api';
 import { Link } from 'react-router-dom';
 import CheckoutLayout from '../layouts/CheckoutLayout';
 import CheckoutStepper from '../components/Checkout/CheckoutStepper';
@@ -8,19 +9,20 @@ import StepCartReview from '../components/Checkout/StepCartReview';
 import StepLogistics from '../components/Checkout/StepLogistics';
 import StepPaymentGateway from '../components/Checkout/StepPaymentGateway';
 import StepOrderSuccess from '../components/Checkout/StepOrderSuccess';
+import type { CheckoutItem, CheckoutTotals } from '../components/Checkout/types';
 
 import useCartStore, { toEstimateLines, unitCents } from '../store/useCartStore';
-import { estimateTotals, formatMoney } from '../api/adapters';
+import { estimateTotals, formatMoney, type UiOrder } from '../api/adapters';
 import { createOrder, findOffendingItemId } from '../api/orders';
 import { friendlyMessage } from '../api/errorMessages';
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState('card');
-  const [error, setError] = useState(null);
-  const [notice, setNotice] = useState(null);
-  const [order, setOrder] = useState(null); // pedido devuelto por el servidor
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('card');
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [order, setOrder] = useState<UiOrder | null>(null); // pedido devuelto por el servidor
 
   const cartItems = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -29,7 +31,7 @@ export default function CheckoutPage() {
   const clearCart = useCartStore((s) => s.clearCart);
 
   // Items tal como los dibujan los pasos del checkout (precios SOLO para mostrar).
-  const orderItems = useMemo(
+  const orderItems = useMemo<CheckoutItem[]>(
     () =>
       cartItems.map((i) => ({
         id: i.id,
@@ -45,14 +47,14 @@ export default function CheckoutPage() {
 
   // ESTIMACIÓN: el total válido es el que devuelve el servidor al crear el pedido.
   const estimate = useMemo(() => estimateTotals(toEstimateLines(cartItems)), [cartItems]);
-  const orderTotals = {
+  const orderTotals: CheckoutTotals = {
     subtotal: formatMoney(estimate.subtotalCents),
     shipping: formatMoney(estimate.shippingCents),
     serviceFee: formatMoney(estimate.platformFeeCents),
     total: formatMoney(estimate.totalCents),
   };
 
-  const goToStep = (step) => {
+  const goToStep = (step: number) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentStep(step);
   };
@@ -71,7 +73,7 @@ export default function CheckoutPage() {
       setOrder(created);
       goToStep(4);
     } catch (err) {
-      const offendingId = findOffendingItemId(err, lines);
+      const offendingId = findOffendingItemId(err instanceof Error ? err : null, lines);
       if (offendingId) {
         // El servidor ya no reconoce o no puede vender ese item (p. ej. ids antiguos del carrito).
         const title = cartItems.find((i) => i.id === offendingId)?.title ?? 'Un item';

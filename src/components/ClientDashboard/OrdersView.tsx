@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Truck, CheckCircle2, ShoppingCart } from 'lucide-react';
 import { listOrders } from '../../api/orders';
+import type { UiOrder } from '../../api/adapters';
+import type { OrderStatus } from '@/types/api';
 import useApiResource from '../../hooks/useApiResource';
 import useCartStore from '../../store/useCartStore';
 
@@ -25,7 +27,7 @@ const STATUS_STYLES = {
 };
 
 // ─── Tracking horizontal ─────────────────────────────────────────────────────
-function TrackingBanner({ order }) {
+function TrackingBanner({ order }: { order: UiOrder }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <div className="flex items-center gap-2 mb-5">
@@ -42,7 +44,7 @@ function TrackingBanner({ order }) {
           const active = order.trackingStep === step.id;
           const { Icon } = step;
           return (
-            <React.Fragment key={step.id}>
+            <Fragment key={step.id}>
               <div className="flex flex-col items-center gap-1.5 shrink-0">
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
@@ -63,7 +65,7 @@ function TrackingBanner({ order }) {
                 <div className={`flex-1 h-0.5 mx-1 mb-5 transition-all ${done ? '' : 'bg-gray-200'}`}
                   style={done ? { backgroundColor: ACCENT } : {}} />
               )}
-            </React.Fragment>
+            </Fragment>
           );
         })}
       </div>
@@ -72,7 +74,7 @@ function TrackingBanner({ order }) {
 }
 
 // ─── Historial tabla ─────────────────────────────────────────────────────────
-function OrdersTable({ orders }) {
+function OrdersTable({ orders }: { orders: UiOrder[] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -86,7 +88,7 @@ function OrdersTable({ orders }) {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {orders.map((o) => {
-              const s = STATUS_STYLES[o.status] ?? STATUS_STYLES.confirmed;
+              const s = STATUS_STYLES[o.status];
               return (
                 <tr key={o.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4 font-mono text-xs text-gray-500">{o.shortId}</td>
@@ -112,13 +114,13 @@ function OrdersTable({ orders }) {
 }
 
 // ─── Volver a comprar ─────────────────────────────────────────────────────────
-function ReorderGrid({ orders }) {
+function ReorderGrid({ orders }: { orders: UiOrder[] }) {
   const addItem = useCartStore((st) => st.addItem);
   const openCart = useCartStore((st) => st.openCart);
 
   // Vuelve a poner las líneas del pedido en el carrito. Los precios son de referencia:
   // al confirmar, el servidor usa el precio vigente del catálogo.
-  const reorder = (order) => {
+  const reorder = (order: UiOrder) => {
     for (const l of order.raw.items) {
       addItem({ id: l.itemId, type: l.type, title: l.title, priceCents: l.unitPriceCents, image: null, provider: '', quantity: l.quantity });
     }

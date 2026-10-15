@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getOrder } from '../api/orders';
 import useApiResource from '../hooks/useApiResource';
@@ -8,7 +7,7 @@ export default function OrderConfirmationPage() {
   const [params] = useSearchParams();
   const id = params.get('id');
   const { data: order, loading, error, errorCode, reload } = useApiResource(
-    (signal) => getOrder(id, { signal }),
+    (signal) => getOrder(id ?? '', { signal }),
     [id],
     { enabled: Boolean(id) },
   );

@@ -11,11 +11,19 @@
  *  @param {boolean}  isLoading   — Estado de carga
  */
 
-import React from 'react';
 import { MapPin } from 'lucide-react';
+import type { CheckoutAddress } from './types';
+
+interface AddressCardProps {
+  address?: CheckoutAddress;
+  onEdit?: () => void;
+  isLoading?: boolean;
+}
 
 export default function AddressCard({
   address = {
+    id: 'default',
+    isDefault: true,
     label:      'Casa (Principal)',
     street:     'Av. Javier Prado Este 456, Dpto 302',
     district:   'San Isidro',
@@ -25,7 +33,7 @@ export default function AddressCard({
   },
   onEdit = () => {},
   isLoading = false,
-}) {
+}: AddressCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6 flex items-center justify-between">
       {isLoading ? (
@@ -43,7 +51,7 @@ export default function AddressCard({
               Dirección de Envío y Servicio
             </p>
             <p className="text-xs text-gray-600">
-              {address.street}, {address.district}
+              {[address.street, address.district].filter(Boolean).join(', ')}
             </p>
           </div>
         </div>

@@ -31,6 +31,10 @@ export function friendlyMessage(err, context = 'generic') {
       if (first && typeof first.message === 'string') return first.message;
       return context === 'login' ? 'Revisa tu correo y contraseña.' : 'Revisa los datos ingresados.';
     }
+    case 'not_found':
+      return 'No encontramos lo que buscas.';
+    case 'unprocessable_entity':
+      return err.message || 'No se pudo procesar la solicitud.';
     case 'forbidden':
       return 'No tienes permiso para realizar esta acción.';
     default:

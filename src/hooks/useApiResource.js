@@ -14,7 +14,7 @@ import { friendlyMessage } from '../api/errorMessages';
  * @param {{ enabled?: boolean }} [options]
  */
 export default function useApiResource(load, deps, { enabled = true } = {}) {
-  const [state, setState] = useState({ data: null, error: null, loading: enabled });
+  const [state, setState] = useState({ data: null, error: null, errorCode: null, loading: enabled });
   const [tick, setTick] = useState(0);
   const loadRef = useRef(load);
   loadRef.current = load;
@@ -22,15 +22,15 @@ export default function useApiResource(load, deps, { enabled = true } = {}) {
   useEffect(() => {
     if (!enabled) return undefined;
     const controller = new AbortController();
-    setState((s) => ({ ...s, loading: true, error: null }));
+    setState((s) => ({ ...s, loading: true, error: null, errorCode: null }));
     loadRef
       .current(controller.signal)
       .then((data) => {
-        if (!controller.signal.aborted) setState({ data, error: null, loading: false });
+        if (!controller.signal.aborted) setState({ data, error: null, errorCode: null, loading: false });
       })
       .catch((err) => {
         if (controller.signal.aborted) return;
-        setState((s) => ({ ...s, error: friendlyMessage(err), loading: false }));
+        setState((s) => ({ ...s, error: friendlyMessage(err), errorCode: err?.code ?? null, loading: false }));
       });
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   frontend:
-    name: Frontend (test, build)
+    name: Frontend (typecheck, test, build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -24,6 +24,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      - run: npm run typecheck
       - run: npm test
       # Deuda conocida: `npm run lint` del frontend aún no se ejecuta porque falla
       # (falta la configuración de ESLint 9). Se añadirá cuando exista eslint.config.js.

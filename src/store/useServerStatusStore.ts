@@ -9,8 +9,15 @@ import { create } from 'zustand';
 
 export const SLOW_AFTER_MS = 5_000;
 
-const useServerStatusStore = create((set) => ({
-  slowCount: 0, // peticiones que ya superaron el umbral y siguen pendientes
+interface ServerStatusState {
+  /** Peticiones que ya superaron el umbral y siguen pendientes. */
+  slowCount: number;
+  isWaking: boolean;
+  _setSlowCount: (slowCount: number) => void;
+}
+
+const useServerStatusStore = create<ServerStatusState>()((set) => ({
+  slowCount: 0,
   isWaking: false,
   _setSlowCount: (slowCount) => set({ slowCount, isWaking: slowCount > 0 }),
 }));
@@ -19,10 +26,10 @@ const useServerStatusStore = create((set) => ({
  * Registra una petición en curso. Devuelve `done()`, que debe llamarse siempre
  * al terminar (éxito o error).
  */
-export function trackRequest() {
+export function trackRequest(): () => void {
   let slow = false;
   let finished = false;
-  const adjust = (delta) => {
+  const adjust = (delta: number): void => {
     const { slowCount, _setSlowCount } = useServerStatusStore.getState();
     _setSlowCount(Math.max(0, slowCount + delta));
   };
@@ -32,7 +39,7 @@ export function trackRequest() {
     adjust(1);
   }, SLOW_AFTER_MS);
 
-  return function done() {
+  return function done(): void {
     if (finished) return;
     finished = true;
     clearTimeout(timer);

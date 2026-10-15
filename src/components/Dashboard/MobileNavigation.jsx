@@ -5,7 +5,7 @@ const navItems = [
   { id: 'dashboard', label: 'Inicio',     icon: '📊', href: '/clientdashboard' },
   { id: 'pets',      label: 'Mascotas',   icon: '🐾', href: '/add-pet' },
   { id: 'shop',      label: 'Tienda',     icon: '🛍️', href: '/marketplace' },
-  { id: 'orders',    label: 'Pedidos',    icon: '📦', href: '/order-confirmation' },
+  { id: 'orders',    label: 'Pedidos',    icon: '📦', href: '/clientdashboard?tab=orders' },
   { id: 'profile',   label: 'Perfil',     icon: '👤', href: '#' },
 ];
 

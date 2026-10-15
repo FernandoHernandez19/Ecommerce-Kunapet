@@ -1,4 +1,5 @@
 import React from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { useNavigate } from 'react-router-dom';
 import { PawPrint, CalendarCheck, ShoppingBag, Zap, Star, MapPin } from 'lucide-react';
 
@@ -179,7 +180,7 @@ export default function DashboardHome({ user, pets, petsStatus = 'ready', petsEr
         {/* ── Columna derecha (1/3): Actividad reciente ────────────────────── */}
         <div className="xl:col-span-1">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
-            <h2 className="text-sm font-bold text-gray-900 mb-5">Actividad Reciente</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-5 flex items-center gap-2">Actividad Reciente <ExampleDataBadge /></h2>
             <div className="flex flex-col">
               {activity.map((item, i) => (
                 <TimelineItem key={item.id} item={item} isLast={i === activity.length - 1} />

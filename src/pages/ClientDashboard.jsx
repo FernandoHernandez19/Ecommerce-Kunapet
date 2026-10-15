@@ -18,9 +18,10 @@ import {
   mockUser,
   mockActivity,
   mockReservations,
-  mockOrders,
   mockChats,
 } from '../data/mockData';
+
+const VIEWS = ['home', 'pets', 'reservations', 'orders', 'messages', 'reviews', 'settings'];
 
 export default function ClientDashboard() {
   const { user: authUser } = useAuthStore();
@@ -41,9 +42,9 @@ export default function ClientDashboard() {
 
   // Si el navbar navegó con { state: { tab } }, activar esa pestaña al montar
   useEffect(() => {
-    const tab = location.state?.tab;
-    if (tab) setActiveView(tab);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const tab = location.state?.tab ?? new URLSearchParams(location.search).get('tab');
+    if (VIEWS.includes(tab)) setActiveView(tab);
+  }, [location.state, location.search]);
 
   // Usar datos de auth si existen, si no usar mockUser como fallback
   const user = authUser ?? mockUser;
@@ -79,7 +80,7 @@ export default function ClientDashboard() {
       case 'reservations':
         return <ReservationsView reservations={mockReservations} />;
       case 'orders':
-        return <OrdersView orders={mockOrders} />;
+        return <OrdersView />;
       case 'messages':
         return <MessagesView chats={mockChats} />;
       case 'reviews':

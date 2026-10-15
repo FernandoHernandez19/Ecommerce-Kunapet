@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Package, Truck, CheckCircle2, Clock, Download, ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Package, Truck, CheckCircle2, ShoppingCart } from 'lucide-react';
+import { listOrders } from '../../api/orders';
+import useApiResource from '../../hooks/useApiResource';
+import useCartStore from '../../store/useCartStore';
 
 const ACCENT = '#2D6A4F';
 
@@ -10,11 +14,14 @@ const TRACKING_STEPS = [
   { id: 3, label: 'Entregado',     Icon: CheckCircle2 },
 ];
 
-const STATUS_LABELS = {
-  shipping:  { label: 'En Camino',     bg: 'bg-blue-50',   text: 'text-blue-700'   },
-  delivered: { label: 'Entregado',     bg: 'bg-green-50',  text: 'text-green-700'  },
-  preparing: { label: 'En Preparación', bg: 'bg-amber-50', text: 'text-amber-700'  },
-  pending:   { label: 'Pendiente',     bg: 'bg-gray-100',  text: 'text-gray-600'   },
+// Colores por estado de la API (la etiqueta en español viene del adaptador: order.statusLabel)
+const STATUS_STYLES = {
+  pending_payment: { bg: 'bg-amber-50',  text: 'text-amber-700' },
+  confirmed:       { bg: 'bg-gray-100',  text: 'text-gray-600'  },
+  preparing:       { bg: 'bg-amber-50',  text: 'text-amber-700' },
+  shipping:        { bg: 'bg-blue-50',   text: 'text-blue-700'  },
+  delivered:       { bg: 'bg-green-50',  text: 'text-green-700' },
+  cancelled:       { bg: 'bg-red-50',    text: 'text-red-600'   },
 };
 
 // ─── Tracking horizontal ─────────────────────────────────────────────────────
@@ -24,7 +31,7 @@ function TrackingBanner({ order }) {
       <div className="flex items-center gap-2 mb-5">
         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
         <p className="text-sm font-bold text-gray-900">Seguimiento Activo</p>
-        <span className="ml-auto text-xs font-bold text-gray-400">{order.id}</span>
+        <span className="ml-auto text-xs font-bold text-gray-400">{order.shortId}</span>
       </div>
       <p className="text-sm font-semibold text-gray-700 mb-5 truncate">{order.product}</p>
 
@@ -72,27 +79,27 @@ function OrdersTable({ orders }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 text-left">
-              {['ID Pedido', 'Producto', 'Fecha', 'Total', 'Estado', 'Factura'].map((h) => (
+              {['ID Pedido', 'Producto', 'Fecha', 'Total', 'Estado', ''].map((h) => (
                 <th key={h} className="px-5 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {orders.map((o) => {
-              const s = STATUS_LABELS[o.status] ?? STATUS_LABELS.pending;
+              const s = STATUS_STYLES[o.status] ?? STATUS_STYLES.confirmed;
               return (
                 <tr key={o.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 font-mono text-xs text-gray-500">{o.id}</td>
+                  <td className="px-5 py-4 font-mono text-xs text-gray-500">{o.shortId}</td>
                   <td className="px-5 py-4 font-semibold text-gray-800 max-w-[200px] truncate">{o.product}</td>
                   <td className="px-5 py-4 text-gray-500">{o.date}</td>
                   <td className="px-5 py-4 font-bold text-gray-800">{o.cost}</td>
                   <td className="px-5 py-4">
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${s.bg} ${s.text}`}>{s.label}</span>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${s.bg} ${s.text}`}>{o.statusLabel}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <button className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 transition-all">
-                      <Download size={13} strokeWidth={1.5} /> {o.invoice}
-                    </button>
+                    <Link to={`/order-confirmation?id=${o.id}`} className="text-xs font-bold text-gray-500 hover:text-gray-900 transition-all underline-offset-2 hover:underline">
+                      Ver detalle
+                    </Link>
                   </td>
                 </tr>
               );
@@ -106,6 +113,18 @@ function OrdersTable({ orders }) {
 
 // ─── Volver a comprar ─────────────────────────────────────────────────────────
 function ReorderGrid({ orders }) {
+  const addItem = useCartStore((st) => st.addItem);
+  const openCart = useCartStore((st) => st.openCart);
+
+  // Vuelve a poner las líneas del pedido en el carrito. Los precios son de referencia:
+  // al confirmar, el servidor usa el precio vigente del catálogo.
+  const reorder = (order) => {
+    for (const l of order.raw.items) {
+      addItem({ id: l.itemId, type: l.type, title: l.title, priceCents: l.unitPriceCents, image: null, provider: '', quantity: l.quantity });
+    }
+    openCart();
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {orders.map((o) => (
@@ -117,6 +136,8 @@ function ReorderGrid({ orders }) {
           <p className="text-sm font-bold text-gray-800 line-clamp-2">{o.product}</p>
           <p className="text-sm font-bold" style={{ color: ACCENT }}>{o.cost}</p>
           <button
+            type="button"
+            onClick={() => reorder(o)}
             className="flex items-center justify-center gap-2 text-sm font-bold py-2.5 rounded-xl text-white transition-all hover:opacity-90"
             style={{ backgroundColor: ACCENT }}
           >
@@ -129,39 +150,67 @@ function ReorderGrid({ orders }) {
 }
 
 // ─── OrdersView Principal ─────────────────────────────────────────────────────
-export default function OrdersView({ orders }) {
+export default function OrdersView() {
   const [tab, setTab] = useState('history');
+  const { data, loading, error, reload } = useApiResource((signal) => listOrders({ limit: 50 }, { signal }), []);
+  const orders = data?.data ?? [];
   const activeShipping = orders.find((o) => o.status === 'shipping' || o.status === 'preparing');
 
   return (
     <div className="flex flex-col gap-8">
       <h1 className="text-2xl font-extrabold text-gray-900">Mis Pedidos</h1>
 
-      {/* Tracking activo — condicional */}
-      {activeShipping && <TrackingBanner order={activeShipping} />}
-
-      {/* Sub-tabs */}
-      <div className="flex flex-col gap-5">
-        <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 w-fit">
-          {[
-            { id: 'history', label: 'Historial Detallado' },
-            { id: 'reorder', label: 'Volver a Comprar'   },
-          ].map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-                tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+      {loading && (
+        <div className="flex flex-col gap-3" role="status" aria-label="Cargando pedidos">
+          {[0, 1, 2].map((i) => <div key={i} className="h-14 rounded-2xl bg-gray-100 animate-pulse" />)}
         </div>
+      )}
 
-        {tab === 'history' && <OrdersTable orders={orders} />}
-        {tab === 'reorder' && <ReorderGrid orders={orders} />}
-      </div>
+      {!loading && error && (
+        <div role="alert" className="bg-white border border-red-100 rounded-2xl p-8 text-center">
+          <p className="text-sm font-medium text-red-600 mb-4">{error}</p>
+          <button onClick={reload} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl" style={{ backgroundColor: ACCENT }}>Reintentar</button>
+        </div>
+      )}
+
+      {!loading && !error && orders.length === 0 && (
+        <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
+          <p className="text-3xl mb-3" aria-hidden="true">📦</p>
+          <h2 className="text-lg font-bold text-gray-900">Aún no tienes pedidos</h2>
+          <p className="text-sm text-gray-500 mt-1 mb-5">Cuando confirmes una compra aparecerá aquí.</p>
+          <Link to="/marketplace" className="inline-block px-5 py-2.5 text-sm font-bold text-white rounded-xl no-underline" style={{ backgroundColor: ACCENT }}>
+            Ir al marketplace
+          </Link>
+        </div>
+      )}
+
+      {!loading && !error && orders.length > 0 && (
+        <>
+          {activeShipping && <TrackingBanner order={activeShipping} />}
+
+          <div className="flex flex-col gap-5">
+            <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 w-fit">
+              {[
+                { id: 'history', label: 'Historial Detallado' },
+                { id: 'reorder', label: 'Volver a Comprar'   },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${
+                    tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'history' && <OrdersTable orders={orders} />}
+            {tab === 'reorder' && <ReorderGrid orders={orders} />}
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ExampleDataBadge from '../ExampleDataBadge';
 import { User, MapPin, CreditCard, Bell, Plus, Trash2, CheckCircle2, X } from 'lucide-react';
 import { Input } from '../ui';
 
@@ -118,7 +119,7 @@ export default function SettingsView({ user }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-extrabold text-gray-900">Configuración</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">Configuración <ExampleDataBadge /></h1>
 
       <div className="flex gap-6 items-start">
         {/* Menú secundario */}

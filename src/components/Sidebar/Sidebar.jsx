@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const menuItems = [
   { id: 'dashboard', label: 'Panel Principal', icon: '📊', href: '/clientdashboard' },
   { id: 'pets', label: 'Mis Mascotas', icon: '🐾', href: '/pet-dashboard' },
-  { id: 'orders', label: 'Mis Pedidos', icon: '🛍️', href: '/order-confirmation' },
+  { id: 'orders', label: 'Mis Pedidos', icon: '🛍️', href: '/clientdashboard?tab=orders' },
   { id: 'messages', label: 'Mensajes', icon: '💬', href: '#' },
   { id: 'settings', label: 'Configuración', icon: '⚙️', href: '#' },
 ];

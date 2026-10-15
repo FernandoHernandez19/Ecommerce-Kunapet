@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import ProtectedRoute, { PublicOnlyRoute } from './components/ProtectedRoute';
-import { ROLES } from './store/useAuthStore';
+import useAuthStore, { ROLES } from './store/useAuthStore';
+import { setUnauthorizedHandler } from './api/client';
 import ServerWakingNotice from './components/ServerWakingNotice';
 
 // ─── Páginas Públicas ──────────────────────────────────────────────────────────
@@ -40,9 +42,30 @@ import ClaimDetailsPage from './pages/ClaimDetailsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
+// Valida la sesión guardada al cargar (GET /auth/me) y, si la API responde 401 en
+// cualquier otra petición, lleva a /login conservando la ruta de origen.
+function SessionBootstrap() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const locationRef = useRef(location);
+  locationRef.current = location;
+
+  useEffect(() => {
+    useAuthStore.getState().verifySession();
+    return setUnauthorizedHandler(() => {
+      if (locationRef.current.pathname !== '/login') {
+        navigate('/login', { replace: true, state: { from: locationRef.current } });
+      }
+    });
+  }, [navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <SessionBootstrap />
       <ServerWakingNotice />
       <Routes>
 

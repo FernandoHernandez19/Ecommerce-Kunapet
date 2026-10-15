@@ -47,6 +47,20 @@ El backend vive en [`server/`](server/) y expone una API REST bajo `/api/v1`.
 *   Mascotas y pedidos del cliente, con autorización por propietario. El servidor calcula los totales (envío y comisión) y nunca confía en precios enviados por el cliente.
 *   Datos en memoria detrás de interfaces de repositorio, y datos de ejemplo opcionales para desarrollo.
 
+### Qué parte del frontend usa la API
+
+| Pantalla | Estado |
+|---|---|
+| Registro, login, sesión (`/auth/*`) | ✅ API real |
+| Marketplace y detalle de item (`/items`) | ✅ API real: filtros, búsqueda y «Cargar más» en el servidor |
+| Carrito y checkout (`POST /orders`) | ✅ API real: se envía solo `itemId`, `quantity` y `paymentMethod`; los importes de la pantalla de éxito son los del servidor (los del carrito son una *estimación*) |
+| Mis pedidos y detalle (`/orders`) | ✅ API real |
+| Mis mascotas y alta de mascota (`/pets`) | ✅ API real (sin vacunas ni historial: «Aún no hay vacunas registradas») |
+| Gestión de servicios del proveedor (`/items`) | ✅ API real: crear, editar, activar/desactivar y acciones masivas con `PATCH` secuenciales (máx. 20) |
+| Reservas, mensajes, notificaciones, reseñas, direcciones y métodos de pago, actividad reciente y métricas del panel del proveedor | 🟡 **Datos de ejemplo**: la API todavía no los ofrece y la interfaz lo rotula «Datos de ejemplo» (ver `src/data/mockData.js` y [`docs/api-contract.md`](docs/api-contract.md) §7.1) |
+
+Una capa de **adaptadores** (`src/api/adapters.js`, funciones puras con pruebas) traduce entre el contrato (céntimos, fechas ISO, enums en inglés) y la forma que esperan los componentes.
+
 **Cómo correrlo**
 ```bash
 cd server
@@ -70,11 +84,11 @@ npm ci && npm run dev    # http://localhost:5173
 **CI:** el workflow [`ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `main`, con dos jobs: *frontend* (`npm ci`, `npm test` y `npm run build`) y *server* (lint, typecheck, test y build).
 
 **Próximos pasos**
-*   Conectar el catálogo, las mascotas y los pedidos del frontend a la API (hoy solo registro, login y sesión usan la API real).
 *   Migrar el frontend a TypeScript.
 *   Base de datos real (reemplazando los repositorios en memoria).
-*   Pagos y estados de pedido.
-*   Reservas y reclamos.
+*   Pagos reales y transiciones de estado de los pedidos (hoy nacen `pending_payment`).
+*   Reservas con fecha, mensajes, notificaciones, reseñas, direcciones y reclamos.
+*   Cookies `httpOnly` en lugar de `localStorage` para el token.
 
 ## ⚙️ Variables de entorno
 

@@ -326,3 +326,45 @@ export function toUiOrder(order) {
     raw: order,
   };
 }
+
+// ─── Gestión de servicios del proveedor ──────────────────────────────────────
+export const SERVICE_CATEGORIES = ['Paseos', 'Grooming', 'Veterinaria'];
+export const BULK_LIMIT = 20;
+
+/**
+ * Valida el formulario de servicio con las mismas reglas del servidor (contrato §4).
+ * @returns {Record<string, string>} errores por campo (vacío si todo es válido)
+ */
+export function validateServiceForm(form) {
+  const errors = {};
+  const title = String(form.title ?? '').trim();
+  if (title.length < 2) errors.title = 'El título debe tener al menos 2 caracteres.';
+  else if (title.length > 120) errors.title = 'El título no puede superar 120 caracteres.';
+  const description = String(form.description ?? '').trim();
+  if (!description) errors.description = 'La descripción es obligatoria.';
+  else if (description.length > 2000) errors.description = 'La descripción no puede superar 2000 caracteres.';
+  if (!categoryToSlug(form.category)) errors.category = 'Selecciona una categoría.';
+  const raw = String(form.price ?? '').replace(',', '.').trim();
+  const cents = solesToCents(raw);
+  if (raw === '' || cents === null || cents < 1) errors.price = 'Ingresa un precio mayor que 0.';
+  else if (!/^\d+(\.\d{1,2})?$/.test(raw)) errors.price = 'Usa como máximo 2 decimales.';
+  else if (cents > 100_000_000) errors.price = 'El precio es demasiado alto.';
+  const minutes = Number(form.durationMinutes);
+  if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) {
+    errors.durationMinutes = 'La duración debe ser un entero entre 1 y 1440 minutos.';
+  }
+  return errors;
+}
+
+/**
+ * Nuevo precio (céntimos) para una actualización masiva.
+ * @param {number} priceCents precio actual
+ * @param {{ type: 'fixed'|'percentage', action: 'increase'|'decrease', amount: number }} config
+ * @returns {number|null} null si el resultado no es un precio válido (< 1 céntimo)
+ */
+export function bulkPriceCents(priceCents, config) {
+  const sign = config.action === 'increase' ? 1 : -1;
+  const delta = config.type === 'fixed' ? Math.round(config.amount * 100) : Math.round(priceCents * (config.amount / 100));
+  const next = priceCents + sign * delta;
+  return Number.isInteger(next) && next >= 1 ? next : null;
+}

@@ -8,13 +8,13 @@ export const PASSWORD_MAX = 72;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateEmail(email) {
+export function validateEmail(email: string | null | undefined): string | undefined {
   if (!email?.trim()) return 'El correo electrónico es obligatorio.';
   if (!EMAIL_RE.test(email.trim())) return 'Ingresa un correo válido (ej: nombre@ejemplo.com).';
   return undefined;
 }
 
-export function validatePassword(password) {
+export function validatePassword(password: string | null | undefined): string | undefined {
   if (!password) return 'La contraseña es obligatoria.';
   if (password.length < PASSWORD_MIN) return `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`;
   if (password.length > PASSWORD_MAX || new TextEncoder().encode(password).length > PASSWORD_MAX) {
@@ -24,8 +24,13 @@ export function validatePassword(password) {
 }
 
 /** @returns {{ email?: string, password?: string }} solo las claves con error */
-export function validateCredentials({ email, password }) {
-  const errors = {};
+export interface CredentialErrors {
+  email?: string;
+  password?: string;
+}
+
+export function validateCredentials({ email, password }: { email?: string; password?: string }): CredentialErrors {
+  const errors: CredentialErrors = {};
   const emailError = validateEmail(email);
   const passwordError = validatePassword(password);
   if (emailError) errors.email = emailError;

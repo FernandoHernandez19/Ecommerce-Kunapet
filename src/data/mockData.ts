@@ -1,4 +1,4 @@
-// ─── mockData.js — Datos de ejemplo que AÚN no tienen API ─────────────────────
+// ─── mockData.ts — Datos de ejemplo que AÚN no tienen API ─────────────────────
 // Mascotas, pedidos y catálogo ya vienen de la API real (src/api/*) y sus mocks se
 // retiraron. Lo que queda sigue aquí porque el contrato (docs/api-contract.md §6)
 // todavía no cubre estas secciones, y la interfaz las rotula «Datos de ejemplo»:
@@ -10,7 +10,101 @@
 //   mockMyReviews     → reseñas (MyReviewsView)
 // Cuando exista cada endpoint, se borra su bloque de este archivo.
 
-export const mockUser = {
+// ─── Tipos propios (la API no tiene estos datos, por eso no salen de src/types/api.ts) ──
+export interface MockAddress {
+  id: string;
+  label: string;
+  address: string;
+  isDefault: boolean;
+}
+
+export interface MockPaymentMethod {
+  id: string;
+  type: string;
+  lastFour: string;
+  expiry: string;
+  isDefault: boolean;
+}
+
+export interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  avatar: string | null;
+  role: 'client';
+  addresses: MockAddress[];
+  paymentMethods: MockPaymentMethod[];
+  notifications: { email: boolean; whatsapp: boolean };
+}
+
+export type ActivityStatus = 'in_progress' | 'scheduled' | 'completed' | 'delivered';
+
+export interface MockActivity {
+  id: string;
+  time: string;
+  title: string;
+  details: string;
+  status: ActivityStatus;
+  petId: string | null;
+}
+
+export type ReservationStatus = 'in_progress' | 'scheduled' | 'completed';
+
+export interface MockReservation {
+  id: string;
+  type: string;
+  petName: string;
+  petId: string;
+  provider: string;
+  providerAvatar: string | null;
+  date: string;
+  time: string;
+  status: ReservationStatus;
+  price: string;
+}
+
+export interface MockMessage {
+  id: string;
+  text: string;
+  sender: 'provider' | 'client';
+  time: string;
+}
+
+export interface MockChat {
+  id: string;
+  provider: string;
+  providerAvatar: string | null;
+  serviceType: string;
+  isUnread: boolean;
+  lastMessage: string;
+  lastTime: string;
+  messages: MockMessage[];
+}
+
+export type NotificationType = 'success' | 'warning' | 'info';
+
+export interface MockNotification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  isUnread: boolean;
+  type: NotificationType;
+}
+
+export interface MockReview {
+  id: number;
+  itemId: string;
+  itemTitle: string;
+  itemImage: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+export const mockUser: MockUser = {
   id: 'usr-001',
   name: 'Camila Rodríguez',
   email: 'camila@email.com',
@@ -29,7 +123,7 @@ export const mockUser = {
   notifications: { email: true, whatsapp: false },
 };
 
-export const mockActivity = [
+export const mockActivity: MockActivity[] = [
   {
     id: 'a1',
     time: 'Hoy, 14:00',
@@ -64,7 +158,7 @@ export const mockActivity = [
   },
 ];
 
-export const mockReservations = [
+export const mockReservations: MockReservation[] = [
   {
     id: 'r1',
     type: 'Paseo',
@@ -115,7 +209,7 @@ export const mockReservations = [
   },
 ];
 
-export const mockChats = [
+export const mockChats: MockChat[] = [
   {
     id: 'chat-1',
     provider: 'Carlos Medina',
@@ -146,7 +240,7 @@ export const mockChats = [
   },
 ];
 
-export const mockNotifications = [
+export const mockNotifications: MockNotification[] = [
   {
     id: 'notif-1',
     title: 'Reserva confirmada',
@@ -174,7 +268,7 @@ export const mockNotifications = [
 ];
 
 // ─── Mock para "Mis Reseñas" del Dashboard ────────────────────────────────
-export const mockMyReviews = [
+export const mockMyReviews: MockReview[] = [
   {
     id: 101,
     itemId: '1',

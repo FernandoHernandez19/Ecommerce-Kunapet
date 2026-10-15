@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { errorResponse, jsonResponse, routeFetch } from '../test/helpers';
+import { toUiPet } from '../api/adapters';
+import { apiPet, errorResponse, jsonResponse, routeFetch } from '../test/helpers';
 import usePetsStore from './usePetsStore';
-
-const apiPet = (o = {}) => ({
-  id: 'p1', ownerId: 'u1', name: 'Luna', species: 'dog', breed: 'Golden', gender: 'female', birthDate: '2022-03-15',
-  weightGrams: 28000, notes: null, photoUrl: null, createdAt: '2025-01-10T10:00:00.000Z', updatedAt: '2025-01-10T10:00:00.000Z', ...o,
-});
 
 describe('usePetsStore (API real)', () => {
   it('fetchPets carga la lista y no usa localStorage', async () => {
@@ -43,7 +39,7 @@ describe('usePetsStore (API real)', () => {
   });
 
   it('editar: PATCH /pets/:id y reemplaza la mascota', async () => {
-    usePetsStore.setState({ pets: [{ id: 'p1', name: 'Luna' }], status: 'ready' });
+    usePetsStore.setState({ pets: [toUiPet(apiPet())], status: 'ready' });
     const { calls } = routeFetch(({ method }) => (method === 'PATCH' ? { data: apiPet({ name: 'Luna II' }) } : undefined));
     await usePetsStore.getState().updatePet('p1', { name: 'Luna II', species: 'dog', breed: '', gender: 'female', birthdate: '2022-03-15', notes: '' });
     expect(calls[0]).toMatchObject({ method: 'PATCH', path: '/pets/p1' });
@@ -52,7 +48,7 @@ describe('usePetsStore (API real)', () => {
   });
 
   it('borrar: DELETE /pets/:id solo quita la mascota si la API respondió bien', async () => {
-    usePetsStore.setState({ pets: [{ id: 'p1' }, { id: 'p2' }], status: 'ready' });
+    usePetsStore.setState({ pets: [toUiPet(apiPet({ id: 'p1' })), toUiPet(apiPet({ id: 'p2' }))], status: 'ready' });
     const { calls } = routeFetch(({ path }) => (path === '/pets/p1' ? new Response(null, { status: 204 }) : errorResponse(404, 'not_found', 'Mascota no encontrada.')));
     await usePetsStore.getState().removePet('p1');
     expect(calls[0]).toMatchObject({ method: 'DELETE', path: '/pets/p1' });

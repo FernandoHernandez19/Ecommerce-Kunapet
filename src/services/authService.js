@@ -12,7 +12,7 @@ const NO_SESSION_REDIRECT = { handleUnauthorized: false };
 /**
  * POST /auth/login
  * @param {{ email: string, password: string }} credentials
- * @returns {Promise<{ user: object, token: string, expiresIn: number }>}
+ * @returns {Promise<import('../types/api').LoginResponse>}
  */
 export function login({ email, password }) {
   return api.post('/auth/login', { email: email.trim(), password }, { auth: false, ...NO_SESSION_REDIRECT });
@@ -21,7 +21,7 @@ export function login({ email, password }) {
 /**
  * POST /auth/register — el rol solo puede ser 'client' o 'provider'.
  * @param {{ name: string, email: string, password: string, role: 'client'|'provider', phone?: string }} data
- * @returns {Promise<{ user: object }>}
+ * @returns {Promise<{ user: import('../types/api').User }>}
  */
 export function register({ name, email, password, role, phone }) {
   const body = { name: name.trim(), email: email.trim(), password, role };
@@ -31,7 +31,7 @@ export function register({ name, email, password, role, phone }) {
 
 /**
  * GET /auth/me — perfil del usuario del token actual.
- * @returns {Promise<{ user: object }>}
+ * @returns {Promise<{ user: import('../types/api').User }>}
  */
 export function getProfile() {
   return api.get('/auth/me', NO_SESSION_REDIRECT);

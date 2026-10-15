@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute, { PublicOnlyRoute } from './components/ProtectedRoute';
 import { ROLES } from './store/useAuthStore';
+import ServerWakingNotice from './components/ServerWakingNotice';
 
 // ─── Páginas Públicas ──────────────────────────────────────────────────────────
 import Home from './pages/Home';
@@ -42,6 +43,7 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 function App() {
   return (
     <Router>
+      <ServerWakingNotice />
       <Routes>
 
         {/* ══════════════════════════════════════════════════════════════════════

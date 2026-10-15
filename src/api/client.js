@@ -5,6 +5,7 @@
  * Nunca se imprime ni se registra el token ni el cuerpo de las peticiones.
  */
 import useAuthStore from '../store/useAuthStore';
+import { trackRequest } from '../store/useServerStatusStore';
 import { ApiError } from './ApiError';
 
 export const DEFAULT_API_URL = 'http://localhost:3000/api/v1';
@@ -96,6 +97,7 @@ export async function request(path, options = {}) {
   const token = auth ? useAuthStore.getState().token : null;
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const doneTracking = trackRequest(); // avisa si el servidor tarda en despertar
   const controller = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {
@@ -120,6 +122,7 @@ export async function request(path, options = {}) {
       : new ApiError({ status: 0, code: 'network_error', message: MESSAGES.network_error });
   } finally {
     clearTimeout(timer);
+    doneTracking();
   }
 
   if (!response.ok) {

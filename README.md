@@ -35,6 +35,7 @@ npm ci
 cp .env.example .env.local   # opcional: define VITE_API_URL si la API no está en localhost:3000
 npm run dev
 npm test                     # pruebas del frontend (Vitest + Testing Library, sin red real)
+npm run typecheck            # verificación de tipos (tsc --noEmit)
 ```
 
 ## 🧩 Backend
@@ -81,14 +82,31 @@ DEMO_MODE=true npm run dev
 npm ci && npm run dev    # http://localhost:5173
 ```
 
-**CI:** el workflow [`ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `main`, con dos jobs: *frontend* (`npm ci`, `npm test` y `npm run build`) y *server* (lint, typecheck, test y build).
+**CI:** el workflow [`ci.yml`](.github/workflows/ci.yml) corre en cada pull request y en cada push a `main`, con dos jobs: *frontend* (`npm ci`, `npm run typecheck`, `npm test` y `npm run build`) y *server* (lint, typecheck, test y build).
 
 **Próximos pasos**
-*   Migrar el frontend a TypeScript.
+*   Terminar la migración a TypeScript: componentes, páginas y layouts (ver «TypeScript» abajo), `checkJs` y ESLint con typescript-eslint.
 *   Base de datos real (reemplazando los repositorios en memoria).
 *   Pagos reales y transiciones de estado de los pedidos (hoy nacen `pending_payment`).
 *   Reservas con fecha, mensajes, notificaciones, reseñas, direcciones y reclamos.
 *   Cookies `httpOnly` en lugar de `localStorage` para el token.
+
+## 🟦 TypeScript (migración incremental)
+
+El frontend se migra a TypeScript **por capas**, sin pausar el desarrollo: `tsconfig.json` activa `strict` desde el inicio pero también `allowJs` (con `checkJs: false`), así que los `.jsx` sin migrar siguen compilando y funcionando mientras los `.ts`/`.tsx` se verifican. El alias `@/*` → `src/*` está disponible (tsconfig y Vite), pero solo se usa en archivos ya migrados.
+
+```bash
+npm run typecheck   # tsc --noEmit (también corre en el CI antes del build)
+```
+
+| Estado | Qué |
+|---|---|
+| ✅ Migrado y tipado | `src/api/*` (cliente HTTP, `ApiError`, adaptadores, servicios `items`/`pets`/`orders`, esquemas), `src/types/api.ts`, `src/services/authService.ts`, todos los stores (`useAuthStore`, `useCartStore`, `usePetsStore`, `useServerStatusStore`), `ProtectedRoute` / `PublicOnlyRoute` y sus pruebas |
+| ⏳ Pendiente | componentes, páginas y layouts (`.jsx`), los hooks y utilidades (`src/hooks`, `src/utils`), `src/data/mockData.js` y el resto de las pruebas |
+
+**Validación en la frontera de red.** Lo que llega del servidor no se asume correcto: las respuestas de auth, items, mascotas y pedidos se parsean con esquemas **zod** (`src/api/schemas.ts`) y los tipos de datos se derivan con `z.infer`, de modo que validación y tipos tienen **una sola fuente**. Si la respuesta no cumple el contrato, el cliente lanza `ApiError` con `code: "invalid_response"` y un mensaje amigable (nunca se incluyen los datos recibidos). Lo mismo aplica a lo que se guarda en `localStorage` (sesión y carrito se validan al rehidratar).
+
+**Sesión al cargar.** `GET /auth/me` solo cierra la sesión guardada si responde **401**; ante un error de red, un timeout o un 5xx se conserva y la pantalla de verificación muestra «Reintentar» (y el aviso de servidor despertando si tarda).
 
 ## ⚙️ Variables de entorno
 

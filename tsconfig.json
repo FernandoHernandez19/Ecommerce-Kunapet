@@ -8,6 +8,8 @@
     "types": ["vite/client"],
     "strict": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
@@ -15,8 +17,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "allowJs": true,
-    "checkJs": false,
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]

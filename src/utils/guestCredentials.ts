@@ -18,7 +18,7 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function randomPassword(length = 24): string {
   const bytes = new Uint8Array(length);
   crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join('');
+  return Array.from(bytes, (b) => ALPHABET.charAt(b % ALPHABET.length)).join('');
 }
 
 export interface GuestCredentials {

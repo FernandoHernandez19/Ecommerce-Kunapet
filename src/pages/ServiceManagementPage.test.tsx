@@ -44,7 +44,7 @@ describe('Gestión de servicios del proveedor', () => {
     expect(screen.queryByText('Servicio ajeno')).not.toBeInTheDocument();
     expect(screen.queryByText('Producto propio')).not.toBeInTheDocument();
     expect(screen.getByText('2 servicios en tu catálogo')).toBeInTheDocument();
-    expect(calls[0].url.searchParams.get('limit')).toBe('100');
+    expect(calls[0]?.url.searchParams.get('limit')).toBe('100');
   });
 
   it('estado vacío y error con "Reintentar"', async () => {

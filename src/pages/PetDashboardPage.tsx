@@ -9,11 +9,18 @@ import usePetsStore from '../store/usePetsStore';
 import Sidebar from '../components/Sidebar/Sidebar';
 
 // Las alergias viven dentro de `notes` (línea «Alergias: …»), tal como las guarda el wizard.
+type PetTab = 'salud' | 'dieta';
+
+const PET_TABS: { id: PetTab; label: string }[] = [
+  { id: 'salud', label: '🏥 Historial Médico' },
+  { id: 'dieta', label: '🍖 Notas de cuidado' },
+];
+
 const allergiesFrom = (notes: string): string =>
   (notes || '').split('\n').find((l) => l.startsWith('Alergias:'))?.replace('Alergias:', '').trim() ?? '';
 
 export default function PetDashboardPage() {
-  const [activeTab, setActiveTab] = useState('salud');
+  const [activeTab, setActiveTab] = useState<PetTab>('salud');
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -59,7 +66,7 @@ export default function PetDashboardPage() {
           <PetHeroCard pet={pet} onEdit={() => navigate('/clientdashboard', { state: { tab: 'pets' } })} />
 
           <div className="flex border-b border-gray-100 mb-6" role="tablist">
-            {[['salud', '🏥 Historial Médico'], ['dieta', '🍖 Notas de cuidado']].map(([id, label]) => (
+            {PET_TABS.map(({ id, label }) => (
               <button
                 key={id}
                 role="tab"

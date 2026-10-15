@@ -29,14 +29,16 @@ function getInitialsColor(name = ''): string {
     'bg-teal-500', 'bg-blue-500',  'bg-violet-500', 'bg-pink-500',
   ];
   const index = (name.charCodeAt(0) || 0) % colors.length;
-  return colors[index];
+  return colors[index] ?? 'bg-gray-400';
 }
 
 function getInitials(name = ''): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  const first = parts[0] ?? '';
+  const last = parts[parts.length - 1] ?? first;
+  if (parts.length === 1) return first.charAt(0).toUpperCase();
+  return (first.charAt(0) + last.charAt(0)).toUpperCase();
 }
 
 export interface AvatarProps {

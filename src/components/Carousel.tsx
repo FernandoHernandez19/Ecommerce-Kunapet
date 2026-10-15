@@ -4,7 +4,18 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // ─── Datos de slides — movidos fuera del componente (son estáticos) ───────────
 // Al estar fuera, la referencia no cambia en re-renders → el useEffect es estable
-const SLIDES = [
+interface Slide {
+  id: number;
+  title: string;
+  subtitle: string;
+  color: string;
+  icon: string;
+  cta: string;
+  href: string;
+}
+
+// Tupla no vacía: así SLIDES[0] siempre existe aunque se active noUncheckedIndexedAccess.
+const SLIDES: [Slide, ...Slide[]] = [
   {
     id:       1,
     title:    'Veterinarias Confiables',
@@ -68,7 +79,7 @@ export default function CarouselBanner() {
     return () => clearInterval(interval);
   }, [isPaused, next]); // ✅ FIX M5: deps correctas y estables
 
-  const slide = SLIDES[activeIndex];
+  const slide = SLIDES[activeIndex] ?? SLIDES[0];
 
   return (
     <section

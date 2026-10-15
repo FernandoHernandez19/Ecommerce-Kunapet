@@ -154,7 +154,7 @@ export default function Marketplace() {
   const query = useMemo(() => buildQuery({ ...filters, q }), [filters, q]);
   const { items, total, loading, loadingMore, error, moreError, reload, loadMore } = useCatalog(query);
 
-  const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? SORT_OPTIONS[0].label;
+  const sortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? 'Más recientes';
 
   const sorted = useMemo(() => {
     const list = [...items];

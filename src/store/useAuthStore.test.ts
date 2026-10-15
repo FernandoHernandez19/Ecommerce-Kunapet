@@ -91,7 +91,7 @@ describe('useAuthStore', () => {
     const refreshed = { ...sampleUser, name: 'Camila R.' };
     const fetchMock = mockFetch(jsonResponse({ user: refreshed }));
     await useAuthStore.getState().verifySession();
-    expect(fetchMock.mock.calls[0][0]).toMatch(/\/auth\/me$/);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toMatch(/\/auth\/me$/);
     expect(useAuthStore.getState()).toMatchObject({ sessionStatus: 'ready', isAuthenticated: true, user: refreshed });
   });
 

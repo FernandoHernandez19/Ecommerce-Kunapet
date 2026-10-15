@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
-import { apiItem, apiService, errorResponse, page, routeFetch } from '../test/helpers';
+import { apiItem, apiService, errorResponse, first, page, routeFetch } from '../test/helpers';
 import Marketplace from './Marketplace';
 
 const renderMarketplace = (url = '/marketplace') =>
@@ -32,9 +32,9 @@ describe('Marketplace conectado a la API', () => {
     // Sin calificaciones ni reseñas en la API: no se muestran
     expect(screen.queryByText(/reseñas/)).not.toBeInTheDocument();
     expect(calls).toHaveLength(1);
-    expect(calls[0].path).toBe('/items');
-    expect(calls[0].url.searchParams.get('page')).toBe('1');
-    expect(calls[0].url.searchParams.get('limit')).toBe('12');
+    expect(calls[0]?.path).toBe('/items');
+    expect(calls[0]?.url.searchParams.get('page')).toBe('1');
+    expect(calls[0]?.url.searchParams.get('limit')).toBe('12');
   });
 
   it('estado vacío con mensaje útil y "Limpiar filtros" cuando hay filtros', async () => {
@@ -63,8 +63,8 @@ describe('Marketplace conectado a la API', () => {
     const { calls } = routeFetch(() => page([apiItem()], 1));
     renderMarketplace('/marketplace?q=bano&category=Grooming');
     await screen.findByText('Alimento NutriCan 15kg');
-    expect(calls[0].url.searchParams.get('q')).toBe('bano');
-    expect(calls[0].url.searchParams.get('category')).toBe('grooming');
+    expect(calls[0]?.url.searchParams.get('q')).toBe('bano');
+    expect(calls[0]?.url.searchParams.get('category')).toBe('grooming');
 
     fireEvent.click(screen.getByRole('button', { name: 'Servicios' }));
     fireEvent.change(screen.getByLabelText('Mín'), { target: { value: '10' } });
@@ -72,7 +72,7 @@ describe('Marketplace conectado a la API', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar Filtros' }));
 
     await waitFor(() => expect(calls.length).toBe(2));
-    const params = calls[1].url.searchParams;
+    const params = first(calls.slice(1)).url.searchParams;
     expect(params.get('type')).toBe('service');
     expect(params.get('minPriceCents')).toBe('1000');
     expect(params.get('maxPriceCents')).toBe('6050');

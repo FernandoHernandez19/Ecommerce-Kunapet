@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
-import { errorResponse, jsonResponse, routeFetch, sampleUser } from '../test/helpers';
+import { errorResponse, first, jsonResponse, routeFetch, sampleUser } from '../test/helpers';
 import CheckoutPage from './CheckoutPage';
 
 const PRODUCT_ID = '11111111-1111-4111-8111-111111111111';
@@ -33,10 +33,10 @@ const renderCheckout = () => render(<MemoryRouter><CheckoutPage /></MemoryRouter
 
 // Avanza por los pasos 1 → 2 → 3 (en jsdom los botones "móviles" y los del resumen existen a la vez).
 function goToPayment() {
-  fireEvent.click(screen.getAllByRole('button', { name: /Confirmar Carrito|Continuar al Despacho/ })[0]);
-  fireEvent.click(screen.getAllByRole('button', { name: /Confirmar Datos de Entrega|Continuar al Pago/ })[0]);
+  fireEvent.click(first(screen.getAllByRole('button', { name: /Confirmar Carrito|Continuar al Despacho/ })));
+  fireEvent.click(first(screen.getAllByRole('button', { name: /Confirmar Datos de Entrega|Continuar al Pago/ })));
 }
-const confirm = () => fireEvent.click(screen.getAllByRole('button', { name: /Confirmar pedido/ })[0]);
+const confirm = () => fireEvent.click(first(screen.getAllByRole('button', { name: /Confirmar pedido/ })));
 
 describe('Checkout con pedidos reales', () => {
   beforeEach(() => {
@@ -75,11 +75,11 @@ describe('Checkout con pedidos reales', () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0]).toMatchObject({ method: 'POST', path: '/orders' });
-    expect(calls[0].body).toEqual({
+    expect(calls[0]?.body).toEqual({
       items: [{ itemId: PRODUCT_ID, quantity: 2 }, { itemId: SERVICE_ID, quantity: 1 }],
       paymentMethod: 'yape',
     });
-    expect(JSON.stringify(calls[0].body)).not.toMatch(/price|total|shipping|fee|cents/i);
+    expect(JSON.stringify(calls[0]?.body)).not.toMatch(/price|total|shipping|fee|cents/i);
 
     // Totales del SERVIDOR (317.50), no la estimación del carrito (353.50)
     expect(screen.getByText('S/ 317.50')).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('Checkout con pedidos reales', () => {
     const { calls } = routeFetch(() => jsonResponse({ data: serverOrder }, 201));
     renderCheckout();
     goToPayment();
-    const btn = screen.getAllByRole('button', { name: /Confirmar pedido/ })[0];
+    const btn = first(screen.getAllByRole('button', { name: /Confirmar pedido/ }));
     fireEvent.click(btn);
     fireEvent.click(btn);
     await screen.findByText('Pedido registrado');

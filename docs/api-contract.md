@@ -174,6 +174,7 @@ Un recurso ajeno responde **404** (no 403), para no revelar que existe. Aplica a
 | `targetPets` | string[] | `dog`, `cat`, `bird`, `exotic` |
 | `isActive` | boolean | |
 | `createdAt`, `updatedAt` | string (ISO) | |
+| `provider` | `{ id, name, avatarUrl }` | **Solo en `GET /items` y `GET /items/:id`** (público). Nunca incluye email ni teléfono. |
 
 ```json
 { "id": "b7e1c8a2-1f3d-4c55-9a10-7d2e3f4a5b6c", "providerId": "5f0c3b1e-9a1d-4a53-8f1e-2c3d4e5f6a7b", "type": "service", "title": "Baño y Corte de Pelo Completo", "description": "Grooming integral.", "category": "grooming", "priceCents": 4500, "currency": "PEN", "stock": null, "durationMinutes": 90, "location": "San Borja, Lima", "imageUrl": null, "targetPets": ["dog", "cat"], "isActive": true, "createdAt": "2025-06-01T10:00:00.000Z", "updatedAt": "2025-06-01T10:00:00.000Z" }
@@ -264,3 +265,4 @@ Decisiones tomadas al implementar la fase de dominio (P3-B). Cada punto indica d
 | 8 | Nuevo código de error `service_unavailable` (503). | El registro público se cierra cuando se alcanza el tope de usuarios (`MAX_USERS`, 1000 por defecto). |
 | 9 | `POST /auth/register` responde 429 tras 10 registros por IP en una hora. | Proteger la memoria limitada de la demo pública. |
 | 10 | Se añade `DEMO_MODE`: siembra solo el catálogo bajo un proveedor demo sin contraseña conocida. | Demo pública sin cuentas con credenciales publicadas. |
+| 11 | `GET /items` y `GET /items/:id` incluyen `provider: { id, name, avatarUrl }`. | El catálogo necesita mostrar quién vende. Se expone solo lo público: nunca email ni teléfono. |

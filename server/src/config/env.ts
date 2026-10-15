@@ -21,6 +21,8 @@ const envSchema = z.object({
   NODE_ENV: z.preprocess(emptyToUndefined, z.string().default('development')),
   // Solo el texto exacto "true" activa los datos de ejemplo.
   SEED_DEMO_DATA: z.preprocess(emptyToUndefined, z.string().default('false')),
+  // Demo pública: siembra solo el catálogo; es válida también en producción.
+  DEMO_MODE: z.preprocess(emptyToUndefined, z.string().default('false')),
   TRUST_PROXY: z.preprocess(
     emptyToUndefined,
     z.coerce
@@ -46,6 +48,8 @@ export interface Config {
   nodeEnv: string;
   /** Pedido explícito de cargar datos de ejemplo (el seed además se bloquea en producción). */
   seedDemoData: boolean;
+  /** Demo pública (también en producción): solo se siembra el catálogo. */
+  demoMode: boolean;
 }
 
 export class ConfigError extends Error {
@@ -72,5 +76,6 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     port: data.PORT,
     nodeEnv: data.NODE_ENV,
     seedDemoData: data.SEED_DEMO_DATA.trim().toLowerCase() === 'true',
+    demoMode: data.DEMO_MODE.trim().toLowerCase() === 'true',
   };
 }

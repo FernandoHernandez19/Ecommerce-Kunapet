@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingCart, Menu, X,
@@ -8,11 +8,13 @@ import {
 import BrandImage from '../assets/Kunapet.png';
 import { Avatar, Badge } from './ui';
 import useAuthStore, { ROLES } from '../store/useAuthStore';
+import type { Role, User } from '@/types/api';
+import type { BadgeVariant } from './ui/Badge';
 import useCartStore from '../store/useCartStore';
 import CartDrawer from './CartDrawer';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const DASHBOARD_BY_ROLE = {
+const DASHBOARD_BY_ROLE: Record<Role, string> = {
   [ROLES.CLIENT]: '/clientdashboard',
   [ROLES.PROVIDER]: '/providerdashboard',
   [ROLES.ADMIN]: '/admindashboard',
@@ -25,11 +27,11 @@ const NAV_LINKS = [
 ];
 
 // ─── Sub-componente: SearchBar ────────────────────────────────────────────────
-function SearchBar({ className = '', inputClassName = '' }) {
+function SearchBar({ className = '', inputClassName = '' }: { className?: string; inputClassName?: string }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (query.trim()) navigate(`/marketplace?q=${encodeURIComponent(query.trim())}`);
   };
@@ -69,10 +71,7 @@ function SearchBar({ className = '', inputClassName = '' }) {
 
 // ─── Sub-componente: CartButton ────────────────────────────────────────────────
 function CartButton() {
-  const { totalItems, toggleCart } = useCartStore();
-  const count = typeof totalItems === 'function' ? totalItems() : 0;
-
-  // Zustand getters are computed, access via direct call when using vanilla getters
+  const toggleCart = useCartStore((s) => s.toggleCart);
   const items = useCartStore((s) => s.items);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
@@ -96,15 +95,15 @@ function CartButton() {
 }
 
 // ─── Sub-componente: UserMenu (dropdown del perfil) ────────────────────────────
-function UserMenu({ user, onLogout }) {
+function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Cerrar al hacer click fuera
   useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const handler = (e: MouseEvent) => {
+      if (ref.current && e.target instanceof Node && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -112,17 +111,18 @@ function UserMenu({ user, onLogout }) {
 
   // Cerrar con Escape
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  const dashboardPath = DASHBOARD_BY_ROLE[user?.role] ?? '/clientdashboard';
-  const roleBadge = {
+  const dashboardPath = DASHBOARD_BY_ROLE[user.role];
+  const roleBadge: Record<Role, { label: string; variant: BadgeVariant }> = {
     [ROLES.CLIENT]: { label: 'Cliente', variant: 'primary' },
     [ROLES.PROVIDER]: { label: 'Proveedor', variant: 'accent' },
     [ROLES.ADMIN]: { label: 'Admin', variant: 'danger' },
-  }[user?.role] ?? { label: 'Usuario', variant: 'gray' };
+  };
+  const badge = roleBadge[user.role];
 
   return (
     <div className="relative" ref={ref}>
@@ -133,9 +133,9 @@ function UserMenu({ user, onLogout }) {
         aria-label="Menú de usuario"
         className="flex items-center gap-2 p-1.5 rounded-2xl hover:bg-gray-100 transition-all"
       >
-        <Avatar src={user?.avatar} name={user?.name} size="sm" online />
+        <Avatar src={user.avatarUrl} name={user.name} size="sm" online />
         <span className="hidden xl:block text-sm font-bold text-gray-800 max-w-[120px] truncate">
-          {user?.name}
+          {user.name}
         </span>
         <ChevronDown
           size={14}
@@ -153,9 +153,9 @@ function UserMenu({ user, onLogout }) {
           {/* Header del dropdown */}
           <div className="px-4 py-3 border-b border-surface-border-light bg-surface-secondary">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Sesión activa</p>
-            <p className="text-sm font-bold text-gray-900 truncate">{user?.name}</p>
-            <p className="text-xs text-gray-500 truncate mb-1.5">{user?.email}</p>
-            <Badge variant={roleBadge.variant} size="sm">{roleBadge.label}</Badge>
+            <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
+            <p className="text-xs text-gray-500 truncate mb-1.5">{user.email}</p>
+            <Badge variant={badge.variant} size="sm">{badge.label}</Badge>
           </div>
 
           {/* Items del menú */}
@@ -304,14 +304,14 @@ export default function NavbarHeader() {
               {isAuthenticated && user ? (
                 <>
                   <div className="flex items-center gap-3 px-4 py-2">
-                    <Avatar src={user?.avatar} name={user?.name} size="sm" />
+                    <Avatar src={user.avatarUrl} name={user.name} size="sm" />
                     <div>
                       <p className="text-sm font-bold text-gray-900">{user?.name}</p>
                       <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                     </div>
                   </div>
                   <Link
-                    to={DASHBOARD_BY_ROLE[user?.role] ?? '/clientdashboard'}
+                    to={DASHBOARD_BY_ROLE[user.role]}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-xl no-underline"
                   >

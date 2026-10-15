@@ -1,8 +1,8 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import ChatButton from '../components/Support/ChatButton';
 
-export default function SupportLayout({ children }) {
+export default function SupportLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col relative">
       {/* Cabecera de Soporte (Solución de Idioma) */}

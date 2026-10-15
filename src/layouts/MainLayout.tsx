@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 /**
  * MainLayout — Layout base para páginas públicas de KunaPet.
  *
@@ -12,11 +13,10 @@
  *  esta versión centralizada permite migrarlas gradualmente)
  */
 
-import React from 'react';
 import NavbarHeader from '../components/NavbarHeader';
 import FooterBottom from '../components/Footer';
 
-export default function MainLayout({ children, hideFooter = false }) {
+export default function MainLayout({ children, hideFooter = false }: { children?: ReactNode; hideFooter?: boolean }) {
   return (
     <div className="flex flex-col min-h-screen bg-surface-secondary font-sans">
       {/* Navegación global sticky */}

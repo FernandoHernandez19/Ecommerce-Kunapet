@@ -1,8 +1,14 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import AdminSidebar from '../components/Admin/AdminSidebar';
 import AdminTopNav from '../components/Admin/AdminTopNav';
 
-export default function AdminLayout({ children, adminName, avatarUrl }) {
+interface AdminLayoutProps {
+  children?: ReactNode;
+  adminName?: string;
+  avatarUrl?: string;
+}
+
+export default function AdminLayout({ children, adminName, avatarUrl }: AdminLayoutProps) {
   return (
     <div className="flex min-h-screen bg-[#FAFAFA] font-sans text-gray-800">
       <AdminSidebar />

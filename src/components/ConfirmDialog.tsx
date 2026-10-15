@@ -19,13 +19,35 @@
  *   <ConfirmDialogRenderer />
  */
 
-import React, { useState, useCallback } from 'react';
-import { AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { useState, useCallback, type ReactNode } from 'react';
+import { AlertTriangle, Info, CheckCircle, type LucideIcon } from 'lucide-react';
 import Modal from './ui/Modal';
-import Button from './ui/Button';
+import Button, { type ButtonVariant } from './ui/Button';
+
+export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
+
+export interface ConfirmOptions {
+  title: string;
+  message?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: ConfirmVariant;
+}
+
+interface DialogState extends Required<Omit<ConfirmOptions, 'message'>> {
+  message: string | undefined;
+  resolve: (confirmed: boolean) => void;
+}
+
+interface VariantConfig {
+  icon: LucideIcon;
+  iconColor: string;
+  iconBg: string;
+  confirmVariant: ButtonVariant;
+}
 
 // ─── Icono y color según variante ─────────────────────────────────────────────
-const VARIANT_CONFIG = {
+const VARIANT_CONFIG: Record<ConfirmVariant, VariantConfig> = {
   danger: {
     icon:        AlertTriangle,
     iconColor:   'text-danger',
@@ -53,13 +75,15 @@ const VARIANT_CONFIG = {
 };
 
 // ─── Hook useConfirmDialog ─────────────────────────────────────────────────────
-export function useConfirmDialog() {
-  const [dialogState, setDialogState] = useState(null);
-  // dialogState: { title, message, confirmLabel, cancelLabel, variant, resolve }
+export function useConfirmDialog(): {
+  confirm: (options: ConfirmOptions) => Promise<boolean>;
+  ConfirmDialogRenderer: () => ReactNode;
+} {
+  const [dialogState, setDialogState] = useState<DialogState | null>(null);
 
   const confirm = useCallback(
-    ({ title, message, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', variant = 'danger' }) =>
-      new Promise((resolve) => {
+    ({ title, message, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', variant = 'danger' }: ConfirmOptions) =>
+      new Promise<boolean>((resolve) => {
         setDialogState({ title, message, confirmLabel, cancelLabel, variant, resolve });
       }),
     []
@@ -76,9 +100,9 @@ export function useConfirmDialog() {
   };
 
   // Renderer que se monta una sola vez en el componente padre
-  const ConfirmDialogRenderer = () => {
+  const ConfirmDialogRenderer = (): ReactNode => {
     if (!dialogState) return null;
-    const cfg = VARIANT_CONFIG[dialogState.variant] ?? VARIANT_CONFIG.danger;
+    const cfg = VARIANT_CONFIG[dialogState.variant];
     const Icon = cfg.icon;
 
     return (

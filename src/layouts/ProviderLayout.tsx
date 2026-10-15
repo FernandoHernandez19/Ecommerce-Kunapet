@@ -1,6 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export default function ProviderLayout({ children, businessName, avatar }) {
+interface ProviderLayoutProps {
+  children?: ReactNode;
+  businessName?: string;
+  avatar?: string;
+}
+
+export default function ProviderLayout({ children, businessName, avatar }: ProviderLayoutProps) {
   return (
     <div className="flex min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
       {/* Sidebar (Navegación Lateral) */}

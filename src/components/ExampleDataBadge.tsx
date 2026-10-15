@@ -1,4 +1,3 @@
-import React from 'react';
 
 /** Etiqueta visible para secciones que todavía muestran datos de ejemplo (la API aún no las ofrece). */
 export default function ExampleDataBadge({ className = '' }) {

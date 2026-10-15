@@ -1,6 +1,6 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export default function CheckoutLayout({ children }) {
+export default function CheckoutLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-gray-800 flex flex-col">
       {/* Cabecera Minimalista */}

@@ -11,7 +11,7 @@
  * Usado por: ServiceManagementPage y futuras páginas del área de proveedor.
  */
 
-import React, { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import useAuthStore from '../store/useAuthStore';
+import type { User } from '@/types/api';
 
 // ─── Items del menú de navegación ────────────────────────────────────────────
 const NAV_ITEMS = [
@@ -43,7 +44,7 @@ const NAV_ITEMS = [
 ];
 
 // ─── Componente Sidebar ───────────────────────────────────────────────────────
-function ProviderSidebar({ isOpen, onClose, user }) {
+function ProviderSidebar({ isOpen, onClose, user }: { isOpen: boolean; onClose: () => void; user: User | null }) {
   const location = useLocation();
 
   return (
@@ -91,7 +92,7 @@ function ProviderSidebar({ isOpen, onClose, user }) {
           {/* Mini perfil del proveedor */}
           {user && (
             <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-surface-border-light shadow-card">
-              <Avatar src={user.avatar} name={user.name} size="sm" online />
+              <Avatar src={user.avatarUrl} name={user.name} size="sm" online />
               <div className="min-w-0">
                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Proveedor</p>
                 <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
@@ -155,7 +156,7 @@ function ProviderSidebar({ isOpen, onClose, user }) {
 }
 
 // ─── Top Navigation Bar ───────────────────────────────────────────────────────
-function ProviderTopNav({ onMenuOpen, user }) {
+function ProviderTopNav({ onMenuOpen, user }: { onMenuOpen: () => void; user: User | null }) {
   return (
     <header className="h-16 bg-surface-secondary border-b border-surface-border flex items-center justify-between px-6 z-10 shrink-0">
       {/* Hamburger (mobile) */}
@@ -218,7 +219,7 @@ function ProviderTopNav({ onMenuOpen, user }) {
         {/* Perfil */}
         {user && (
           <div className="flex items-center gap-2.5 pl-4 border-l border-surface-border">
-            <Avatar src={user.avatar} name={user.name} size="sm" />
+            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
             <span className="text-sm font-bold text-gray-900 hidden xl:block">
               {user.name}
             </span>
@@ -230,7 +231,7 @@ function ProviderTopNav({ onMenuOpen, user }) {
 }
 
 // ─── Layout Principal ─────────────────────────────────────────────────────────
-export default function ProviderDashboardLayout({ children }) {
+export default function ProviderDashboardLayout({ children }: { children?: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
 

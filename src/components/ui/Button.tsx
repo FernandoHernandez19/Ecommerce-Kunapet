@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import Spinner from './Spinner';
 
 /**
@@ -12,7 +12,10 @@ import Spinner from './Spinner';
  * @param {React.ReactNode} rightIcon — Ícono a la derecha del texto
  */
 
-const VARIANTS = {
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+const VARIANTS: Record<ButtonVariant, string> = {
   primary: [
     'bg-brand-primary text-white',
     'hover:bg-brand-primary-hover',
@@ -52,11 +55,20 @@ const VARIANTS = {
   ].join(' '),
 };
 
-const SIZES = {
+const SIZES: Record<ButtonSize, string> = {
   sm: 'px-4 py-2 text-sm rounded-xl gap-1.5',
   md: 'px-6 py-2.5 text-sm rounded-xl gap-2',
   lg: 'px-8 py-3.5 text-base rounded-2xl gap-2.5',
 };
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  isLoading?: boolean;
+  fullWidth?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
 
 export default function Button({
   children,
@@ -70,7 +82,7 @@ export default function Button({
   disabled = false,
   type = 'button',
   ...rest
-}) {
+}: ButtonProps) {
   const isDisabled = disabled || isLoading;
 
   return (
@@ -84,9 +96,9 @@ export default function Button({
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:active:scale-100',
         // Variante
-        VARIANTS[variant] ?? VARIANTS.primary,
+        VARIANTS[variant],
         // Tamaño
-        SIZES[size] ?? SIZES.md,
+        SIZES[size],
         // Full width
         fullWidth ? 'w-full' : '',
         className,

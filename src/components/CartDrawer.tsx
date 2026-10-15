@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import useCartStore, { useCartTotals, unitCents } from '../store/useCartStore';
@@ -91,7 +91,7 @@ const CartDrawer = () => {
                     {item.title}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1 truncate">
-                    {typeof item.provider === 'string' ? item.provider : item.provider?.name || ''}
+                    {item.provider ?? ''}
                   </p>
                   
                   <div className="flex items-end justify-between mt-auto pt-2">

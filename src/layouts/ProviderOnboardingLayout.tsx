@@ -1,6 +1,6 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export default function ProviderOnboardingLayout({ children }) {
+export default function ProviderOnboardingLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col items-center">
       <header className="w-full bg-white border-b border-gray-100 flex items-center justify-between px-6 lg:px-12 h-20 sticky top-0 z-30">

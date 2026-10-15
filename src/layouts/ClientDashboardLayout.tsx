@@ -1,17 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PawPrint, CalendarCheck, ShoppingBag,
   MessageSquare, Settings, HelpCircle, LogOut, Search,
-  ChevronDown, Bell, User, X, CheckCircle, AlertTriangle, Info, Star
+  ChevronDown, Bell, User, X, CheckCircle, AlertTriangle, Info, Star, type LucideIcon,
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import { mockNotifications } from '../data/mockData';
 
 const ACCENT = '#2D6A4F';
 
+/** Vistas del panel del cliente (ClientDashboard decide cuál se muestra). */
+export type ClientView = 'home' | 'pets' | 'reservations' | 'orders' | 'messages' | 'reviews' | 'settings';
+
+/** Lo que el layout lee del usuario (sirve tanto el `User` de la API como el usuario de ejemplo). */
+export interface DashboardUser {
+  name?: string;
+  email?: string;
+}
+
+interface NavItem {
+  id: ClientView;
+  label: string;
+  Icon: LucideIcon;
+}
+
 // ─── Items de navegación principal ───────────────────────────────────────────
-const NAV_ITEMS = [
+const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'Panel Principal', Icon: LayoutDashboard },
   { id: 'pets', label: 'Mis Mascotas', Icon: PawPrint },
   { id: 'reservations', label: 'Mis Reservas', Icon: CalendarCheck },
@@ -22,7 +37,14 @@ const NAV_ITEMS = [
 ];
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
-function Sidebar({ activeView, setActiveView, user, unreadCount }) {
+interface SidebarProps {
+  activeView: ClientView;
+  setActiveView: (view: ClientView) => void;
+  user?: DashboardUser | null;
+  unreadCount: number;
+}
+
+function Sidebar({ activeView, setActiveView, user, unreadCount }: SidebarProps) {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -95,14 +117,14 @@ function Sidebar({ activeView, setActiveView, user, unreadCount }) {
 }
 
 // ─── Navbar Superior ──────────────────────────────────────────────────────────
-function TopNavbar({ user }) {
+function TopNavbar({ user }: { user?: DashboardUser | null }) {
   const { logout } = useAuthStore();
   const navigate = useNavigate();
   const [dropOpen, setDropOpen] = useState(false);
-  const dropRef = useRef();
+  const dropRef = useRef<HTMLDivElement>(null);
 
   const [notifOpen, setNotifOpen] = useState(false);
-  const notifRef = useRef();
+  const notifRef = useRef<HTMLDivElement>(null);
   const [notifications, setNotifications] = useState(mockNotifications);
 
   const handleMarkAllAsRead = () => {
@@ -110,13 +132,13 @@ function TopNavbar({ user }) {
   };
 
   useEffect(() => {
-    const handler = (e) => { if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false); };
+    const handler = (e: MouseEvent) => { if (dropRef.current && e.target instanceof Node && !dropRef.current.contains(e.target)) setDropOpen(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   useEffect(() => {
-    const handler = (e) => { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false); };
+    const handler = (e: MouseEvent) => { if (notifRef.current && e.target instanceof Node && !notifRef.current.contains(e.target)) setNotifOpen(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
@@ -230,7 +252,15 @@ function TopNavbar({ user }) {
 }
 
 // ─── Layout Principal ─────────────────────────────────────────────────────────
-export default function ClientDashboardLayout({ children, activeView, setActiveView, user, unreadCount = 0 }) {
+interface ClientDashboardLayoutProps {
+  children?: ReactNode;
+  activeView: ClientView;
+  setActiveView: (view: ClientView) => void;
+  user?: DashboardUser | null;
+  unreadCount?: number;
+}
+
+export default function ClientDashboardLayout({ children, activeView, setActiveView, user, unreadCount = 0 }: ClientDashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar

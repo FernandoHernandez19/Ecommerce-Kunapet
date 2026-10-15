@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
@@ -20,12 +20,25 @@ import { X } from 'lucide-react';
  * @param {boolean}          showClose   — Muestra botón X (default true)
  */
 
-const SIZES = {
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+
+const SIZES: Record<ModalSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-2xl',
 };
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children?: ReactNode;
+  footer?: ReactNode;
+  size?: ModalSize;
+  showClose?: boolean;
+  closeOnBackdrop?: boolean;
+}
 
 export default function Modal({
   isOpen,
@@ -36,10 +49,10 @@ export default function Modal({
   size = 'md',
   showClose = true,
   closeOnBackdrop = true,
-}) {
+}: ModalProps) {
   // Escape key listener
   const handleKeyDown = useCallback(
-    (e) => {
+    (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
     },
     [isOpen, onClose]
@@ -85,7 +98,7 @@ export default function Modal({
           'relative w-full bg-white rounded-3xl shadow-modal',
           'flex flex-col max-h-[90vh] overflow-hidden',
           'animate-fade-in-scale',
-          SIZES[size] ?? SIZES.md,
+          SIZES[size],
         ].join(' ')}
         onClick={(e) => e.stopPropagation()}
       >

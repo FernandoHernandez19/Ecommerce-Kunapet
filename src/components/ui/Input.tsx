@@ -1,4 +1,4 @@
-import React, { forwardRef, useId } from 'react';
+import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 
 /**
  * Input — Campo de texto del Design System KunaPet.
@@ -18,7 +18,15 @@ import React, { forwardRef, useId } from 'react';
  * @param {React.ReactNode}  rightElement — Elemento derecha (botón toggle, ícono)
  * @param {boolean}          required    — Agrega asterisco al label
  */
-const Input = forwardRef(function Input(
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string | undefined;
+  hint?: string;
+  leftIcon?: ReactNode;
+  rightElement?: ReactNode;
+}
+
+const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
     error,
@@ -31,7 +39,7 @@ const Input = forwardRef(function Input(
     id: externalId,
     ...rest
   },
-  ref
+  ref,
 ) {
   const generatedId = useId();
   const inputId = externalId ?? generatedId;

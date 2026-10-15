@@ -1,6 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
-export default function WizardLayout({ children, onBack, onClose }) {
+interface WizardLayoutProps {
+  children?: ReactNode;
+  onBack: () => void;
+  onClose: () => void;
+}
+
+export default function WizardLayout({ children, onBack, onClose }: WizardLayoutProps) {
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans flex flex-col items-center py-6 px-4">
       {/* Cabecera del Wizard */}

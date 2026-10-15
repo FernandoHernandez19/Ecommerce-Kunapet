@@ -1,4 +1,5 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+import type { SidebarUser } from '../components/Sidebar/Sidebar';
 // FIX: Corregido el nombre del archivo (era 'Sidebar/Sidebar' pero el archivo se llamaba 'Siderbar.jsx')
 import Sidebar from '../components/Sidebar/Sidebar';
 // FIX: Componente ahora existe en src/components/Dashboard/MobileNavigation.jsx
@@ -12,7 +13,7 @@ import MobileNavigation from '../components/Dashboard/MobileNavigation';
  *  - children  {ReactNode}  Contenido de la página
  *  - user      {object}     Datos del usuario para el Sidebar (avatar, clientName)
  */
-export default function DashboardLayout({ children, user }) {
+export default function DashboardLayout({ children, user }: { children?: ReactNode; user?: SidebarUser | null }) {
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800 pb-20 lg:pb-0">
       {/* Navegación Desktop (oculta en móvil) */}

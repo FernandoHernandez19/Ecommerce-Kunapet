@@ -1,7 +1,7 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import AdminSidebar from '../components/Claims/AdminSidebar';
 
-export default function ClaimsAdminLayout({ children }) {
+export default function ClaimsAdminLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-[#FDFDFD] font-sans">
       <AdminSidebar />

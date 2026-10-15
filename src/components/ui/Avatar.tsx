@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /**
  * Avatar — Imagen de perfil con fallback del Design System KunaPet.
@@ -12,7 +12,9 @@ import React, { useState } from 'react';
  * @param {boolean} online   — Muestra indicador de estado online
  */
 
-const SIZES = {
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+const SIZES: Record<AvatarSize, { container: string; text: string; dot: string }> = {
   xs: { container: 'w-6 h-6',   text: 'text-[9px]',  dot: 'w-1.5 h-1.5' },
   sm: { container: 'w-8 h-8',   text: 'text-xs',     dot: 'w-2 h-2' },
   md: { container: 'w-10 h-10', text: 'text-sm',     dot: 'w-2.5 h-2.5' },
@@ -21,7 +23,7 @@ const SIZES = {
 };
 
 // Genera un color de fondo determinístico a partir del nombre
-function getInitialsColor(name = '') {
+function getInitialsColor(name = ''): string {
   const colors = [
     'bg-red-400', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-500',
     'bg-teal-500', 'bg-blue-500',  'bg-violet-500', 'bg-pink-500',
@@ -30,11 +32,19 @@ function getInitialsColor(name = '') {
   return colors[index];
 }
 
-function getInitials(name = '') {
+function getInitials(name = ''): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 0) return '?';
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+export interface AvatarProps {
+  src?: string | null;
+  name?: string;
+  size?: AvatarSize;
+  online?: boolean;
+  className?: string;
 }
 
 export default function Avatar({
@@ -43,9 +53,9 @@ export default function Avatar({
   size = 'md',
   online = false,
   className = '',
-}) {
+}: AvatarProps) {
   const [imgError, setImgError] = useState(false);
-  const s = SIZES[size] ?? SIZES.md;
+  const s = SIZES[size];
   const showFallback = !src || imgError;
 
   return (

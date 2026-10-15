@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const menuItems = [
@@ -9,7 +8,15 @@ const menuItems = [
   { id: 'settings', label: 'Configuración', icon: '⚙️', href: '#' },
 ];
 
-export default function Sidebar({ user }) {
+/** Lo que el Sidebar lee del usuario (se acepta también el `User` de la API; ver PetDashboardPage). */
+export interface SidebarUser {
+  avatar?: string | null;
+  clientName?: string;
+  name?: string;
+  avatarUrl?: string | null;
+}
+
+export default function Sidebar({ user }: { user?: SidebarUser | null }) {
   const location = useLocation();
 
   return (
@@ -23,7 +30,7 @@ export default function Sidebar({ user }) {
         {/* Mini Perfil del Cliente */}
         <div className="flex items-center space-x-3 p-2 bg-gray-50 rounded-2xl border border-gray-100/50">
           <img
-            src={user?.avatar}
+            src={user?.avatar ?? undefined}
             alt={user?.clientName ?? 'Usuario'}
             className="w-10 h-10 rounded-full object-cover"
           />

@@ -105,20 +105,20 @@ describe('useAuthStore', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('logout limpia la sesión y los stores persistidos del carrito y de mascotas', async () => {
+  it('logout limpia la sesión, el carrito persistido y las mascotas', async () => {
     const { useAuthStore, useCartStore, usePetsStore } = await loadStores();
     mockFetch(jsonResponse({ user: sampleUser, token: 'jwt-1', expiresIn: 3600 }));
     await useAuthStore.getState().login({ email: 'camila@kunapet.com', password: 'UnaClaveLarga123' });
     useCartStore.getState().addItem({ id: '1', type: 'product', price: 10, title: 'X' });
-    usePetsStore.getState().addPet({ name: 'Rex', species: 'dog' });
+    usePetsStore.setState({ pets: [{ id: 'p-1', name: 'Rex' }], status: 'ready' });
     expect(localStorage.getItem('kunapet-cart')).toContain('"items"');
-    expect(usePetsStore.getState().pets.some((p) => p.name === 'Rex')).toBe(true);
+    expect(usePetsStore.getState().pets).toHaveLength(1);
 
     useAuthStore.getState().logout();
 
     expect(useAuthStore.getState()).toMatchObject({ user: null, token: null, isAuthenticated: false });
     expect(useCartStore.getState().items).toEqual([]);
-    expect(usePetsStore.getState().pets.some((p) => p.name === 'Rex')).toBe(false);
+    expect(usePetsStore.getState()).toMatchObject({ pets: [], status: 'idle' });
     expect(localStorage.getItem('kunapet-cart')).toBeNull();
     expect(localStorage.getItem('kunapet-pets')).toBeNull();
     expect(persistedAuth().state).toEqual({ user: null, token: null });

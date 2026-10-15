@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StepHealthCare({ formData, updateData, onNext, onPrev }) {
+export default function StepHealthCare({ formData, updateData, onNext, onPrev, isSubmitting = false }) {
   // Lógica de Mejora UX: Chips de alergias
   const handleAllergyChip = (tag) => {
     if (tag === 'Sin alergias') {
@@ -91,6 +91,7 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev })
           <label className="block text-xs font-bold text-gray-700 mb-2">Alergias conocidas (Opcional)</label>
           <textarea 
             rows="2"
+            maxLength={200}
             value={formData.allergies}
             onChange={(e) => updateData('allergies', e.target.value)}
             placeholder="Ej: Alergia al pollo, picaduras de pulga..."
@@ -111,6 +112,7 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev })
           <label className="block text-xs font-bold text-gray-700 mb-2">Notas adicionales para cuidadores (Opcional)</label>
           <textarea 
             rows="3"
+            maxLength={240}
             value={formData.specialNeeds}
             onChange={(e) => updateData('specialNeeds', e.target.value)}
             placeholder="Ej: Necesita tomar medicación a las 8pm, le dan miedo los truenos, problemas de movilidad..."
@@ -133,9 +135,10 @@ export default function StepHealthCare({ formData, updateData, onNext, onPrev })
         </button>
         <button 
           onClick={onNext}
-          className="bg-[#e23d28] hover:bg-[#c93623] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-md transition-colors flex items-center"
+          disabled={isSubmitting}
+          className="bg-[#e23d28] hover:bg-[#c93623] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-md transition-colors flex items-center"
         >
-          Siguiente <span className="ml-2">→</span>
+          {isSubmitting ? 'Guardando…' : 'Guardar mascota'} <span className="ml-2">→</span>
         </button>
       </div>
     </div>

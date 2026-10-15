@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import usePetsStore from '../store/usePetsStore';
 import { useLocation } from 'react-router-dom';
@@ -26,8 +26,18 @@ export default function ClientDashboard() {
   const { user: authUser } = useAuthStore();
   const [activeView, setActiveView] = useState('home');
   const location = useLocation();
-  // Mascotas desde el store global (reactivo: se actualiza al añadir una mascota)
+  // Mascotas desde la API (store global: se actualiza al crear, editar o borrar)
   const pets = usePetsStore((state) => state.pets);
+  const petsStatus = usePetsStore((state) => state.status);
+  const petsError = usePetsStore((state) => state.error);
+  const fetchPets = usePetsStore((state) => state.fetchPets);
+
+  const loadPets = useCallback((signal) => fetchPets(signal), [fetchPets]);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadPets(controller.signal);
+    return () => controller.abort();
+  }, [loadPets]);
 
   // Si el navbar navegó con { state: { tab } }, activar esa pestaña al montar
   useEffect(() => {
@@ -49,6 +59,9 @@ export default function ClientDashboard() {
           <DashboardHome
             user={user}
             pets={pets}
+            petsStatus={petsStatus}
+            petsError={petsError}
+            onRetryPets={() => loadPets()}
             activity={mockActivity}
             setActiveView={setActiveView}
           />
@@ -57,6 +70,9 @@ export default function ClientDashboard() {
         return (
           <PetsManager
             pets={pets}
+            status={petsStatus}
+            error={petsError}
+            onRetry={() => loadPets()}
             reservations={mockReservations}
           />
         );

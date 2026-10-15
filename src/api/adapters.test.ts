@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { apiItem, apiService } from '../test/helpers';
+import { apiItem, apiOrder as buildOrder, apiPet as buildPet, apiService } from '../test/helpers';
 import {
   ageLabel,
   bulkPriceCents,
@@ -23,6 +23,7 @@ import {
   validateServiceForm,
   wizardToApiPet,
 } from './adapters';
+import { ApiError } from './ApiError';
 import { findOffendingItemId } from './orders';
 import { runSequentially } from './bulk';
 
@@ -144,11 +145,7 @@ describe('items', () => {
 });
 
 describe('mascotas', () => {
-  const apiPet = {
-    id: 'p1', ownerId: 'u1', name: 'Luna', species: 'dog', breed: 'Golden Retriever', gender: 'female',
-    birthDate: '2022-03-15', weightGrams: 28000, notes: 'Alergias: trigo', photoUrl: null,
-    createdAt: '2025-01-10T10:00:00.000Z', updatedAt: '2025-01-10T10:00:00.000Z',
-  };
+  const apiPet = buildPet({ breed: 'Golden Retriever', notes: 'Alergias: trigo' });
 
   it('toUiPet: especie, género y edad calculada', () => {
     const ui = toUiPet(apiPet, new Date(2026, 5, 15));
@@ -181,7 +178,7 @@ describe('mascotas', () => {
     const minimal = wizardToApiPet({ name: 'Mia', species: 'gato', breed: '', dob: '', weight: '', allergies: 'Ninguna', specialNeeds: '' });
     expect(minimal).toEqual({ name: 'Mia', species: 'cat' });
     const long = wizardToApiPet({ name: 'X', species: 'otro', allergies: 'a'.repeat(400), specialNeeds: 'b'.repeat(400) });
-    expect(long.notes.length).toBeLessThanOrEqual(500);
+    expect(long.notes?.length).toBeLessThanOrEqual(500);
   });
 
   it('editFormToApiPet: vacíos → null', () => {
@@ -192,15 +189,13 @@ describe('mascotas', () => {
 });
 
 describe('pedidos', () => {
-  const apiOrder = {
-    id: '9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d', clientId: 'c1', status: 'pending_payment', paymentMethod: 'yape',
+  const apiOrder = buildOrder({
     items: [
       { itemId: 'i1', title: 'Alimento', type: 'product', unitPriceCents: 14550, quantity: 2, lineTotalCents: 29100 },
       { itemId: 'i2', title: 'Baño', type: 'service', unitPriceCents: 4500, quantity: 1, lineTotalCents: 4500 },
     ],
-    subtotalCents: 33600, shippingCents: 1500, platformFeeCents: 250, totalCents: 35350, currency: 'PEN',
-    createdAt: '2025-06-29T19:00:00.000Z', updatedAt: '2025-06-29T19:00:00.000Z',
-  };
+    subtotalCents: 33600, totalCents: 35350,
+  });
 
   it('estimateTotals replica las reglas del contrato', () => {
     expect(estimateTotals([{ type: 'service', priceCents: 4500, quantity: 2 }])).toEqual({ subtotalCents: 9000, shippingCents: 0, platformFeeCents: 250, totalCents: 9250 });
@@ -239,10 +234,10 @@ describe('pedidos', () => {
 
 describe('runSequentially', () => {
   it('procesa en orden, reporta errores parciales y sigue con el resto', async () => {
-    const order = [];
+    const order: string[] = [];
     const { ok, failed } = await runSequentially(['a', 'b', 'c'], async (id) => {
       order.push(id);
-      if (id === 'b') throw Object.assign(new Error('x'), { code: 'internal_error' });
+      if (id === 'b') throw new ApiError({ status: 500, code: 'internal_error', message: 'x' });
       return id.toUpperCase();
     });
     expect(order).toEqual(['a', 'b', 'c']);
@@ -263,7 +258,7 @@ describe('runSequentially', () => {
   });
 
   it('una sesión vencida (unauthorized) detiene el resto', async () => {
-    const worker = vi.fn(async () => { throw Object.assign(new Error('x'), { code: 'unauthorized' }); });
+    const worker = vi.fn(async (): Promise<string> => { throw new ApiError({ status: 401, code: 'unauthorized', message: 'x' }); });
     const { ok, failed } = await runSequentially(['a', 'b', 'c'], worker);
     expect(worker).toHaveBeenCalledTimes(1);
     expect(ok).toEqual([]);

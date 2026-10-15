@@ -30,17 +30,24 @@ export interface Pagination<T> {
 }
 
 /** §1.2 Códigos de error del contrato más los del cliente (red, timeout, cancelación, respuesta inválida). */
-export type ApiErrorCode =
-  | 'validation_error'
-  | 'unauthorized'
-  | 'forbidden'
-  | 'not_found'
-  | 'conflict'
-  | 'unprocessable_entity'
-  | 'rate_limited'
-  | 'service_unavailable'
-  | 'internal_error'
-  | 'network_error'
-  | 'timeout'
-  | 'aborted'
-  | 'invalid_response';
+export const API_ERROR_CODES = [
+  'validation_error',
+  'unauthorized',
+  'forbidden',
+  'not_found',
+  'conflict',
+  'unprocessable_entity',
+  'rate_limited',
+  'service_unavailable',
+  'internal_error',
+  'network_error',
+  'timeout',
+  'aborted',
+  'invalid_response',
+] as const;
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
+export function isApiErrorCode(value: string): value is ApiErrorCode {
+  return (API_ERROR_CODES as readonly string[]).includes(value);
+}

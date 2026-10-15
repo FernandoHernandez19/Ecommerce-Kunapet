@@ -1,18 +1,29 @@
 /**
  * Traduce un error de la API a un mensaje amigable en español.
- * @param {unknown} err   Normalmente un ApiError.
- * @param {'login'|'register'|'generic'} [context]
  */
 import { isApiError } from './ApiError';
 
 const GENERIC = 'Ocurrió un error inesperado. Inténtalo de nuevo.';
 
-export function friendlyMessage(err, context = 'generic') {
+export type ErrorContext = 'login' | 'register' | 'generic';
+
+/** Primer mensaje de `details` cuando el servidor lo envía como [{ path, message }]. */
+function firstDetailMessage(details: unknown): string | undefined {
+  if (!Array.isArray(details)) return undefined;
+  const first: unknown = details[0];
+  if (typeof first === 'object' && first !== null && 'message' in first && typeof first.message === 'string') {
+    return first.message;
+  }
+  return undefined;
+}
+
+export function friendlyMessage(err: unknown, context: ErrorContext = 'generic'): string {
   if (!isApiError(err)) return GENERIC;
 
   switch (err.code) {
     case 'network_error':
     case 'timeout':
+    case 'invalid_response':
       return err.message; // ya viene en español desde el cliente
     case 'rate_limited':
       return context === 'register'
@@ -26,18 +37,16 @@ export function friendlyMessage(err, context = 'generic') {
       return context === 'register'
         ? 'Ese correo ya está registrado. Inicia sesión o usa otro correo.'
         : 'El recurso ya existe.';
-    case 'validation_error': {
-      const first = Array.isArray(err.details) ? err.details[0] : undefined;
-      if (first && typeof first.message === 'string') return first.message;
-      return context === 'login' ? 'Revisa tu correo y contraseña.' : 'Revisa los datos ingresados.';
-    }
+    case 'validation_error':
+      return firstDetailMessage(err.details) ?? (context === 'login' ? 'Revisa tu correo y contraseña.' : 'Revisa los datos ingresados.');
     case 'not_found':
       return 'No encontramos lo que buscas.';
     case 'unprocessable_entity':
       return err.message || 'No se pudo procesar la solicitud.';
     case 'forbidden':
       return 'No tienes permiso para realizar esta acción.';
-    default:
+    case 'internal_error':
+    case 'aborted':
       return GENERIC;
   }
 }

@@ -7,28 +7,33 @@
  * así las pantallas no se reescriben y el contrato puede evolucionar en un solo sitio.
  */
 
+import type { Gender, Item, Order, OrderStatus, PaymentMethod, Pet, Species, TargetPet } from '@/types/api';
+
 // ─── Dinero ──────────────────────────────────────────────────────────────────
 const moneyFormat = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** 6200 → "S/ 62.00" (el contrato guarda céntimos enteros). */
-export function formatMoney(cents) {
-  if (!Number.isFinite(cents)) return 'S/ 0.00';
+export function formatMoney(cents: number | null | undefined): string {
+  if (typeof cents !== 'number' || !Number.isFinite(cents)) return 'S/ 0.00';
   return `S/ ${moneyFormat.format(cents / 100)}`;
 }
 
 /** Soles (número o texto del formulario) → céntimos enteros. NaN/negativos → null. */
-export function solesToCents(soles) {
+export function solesToCents(soles: string | number | null | undefined): number | null {
   if (typeof soles === 'string' && soles.trim() === '') return null; // Number('') === 0
   const n = typeof soles === 'string' ? Number(soles.replace(',', '.').trim()) : soles;
   if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) return null;
   return Math.round(n * 100 + Number.EPSILON);
 }
 
-export const centsToSoles = (cents) => (Number.isFinite(cents) ? cents / 100 : 0);
+export const centsToSoles = (cents: number | null | undefined): number =>
+  typeof cents === 'number' && Number.isFinite(cents) ? cents / 100 : 0;
 
 // ─── Fechas ──────────────────────────────────────────────────────────────────
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const LIMA_TZ = 'America/Lima';
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+const monthName = (month: string): string => MONTHS[Number(month) - 1] ?? '';
 
 const limaParts = new Intl.DateTimeFormat('es-PE', {
   timeZone: LIMA_TZ,
@@ -40,35 +45,44 @@ const limaParts = new Intl.DateTimeFormat('es-PE', {
   hourCycle: 'h23',
 });
 
-function partsOf(iso) {
+interface LimaParts {
+  day: string;
+  month: string;
+  year: string;
+  hour: string;
+  minute: string;
+}
+
+function partsOf(iso: string): LimaParts | null {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return null;
-  const map = {};
-  for (const p of limaParts.formatToParts(date)) map[p.type] = p.value;
-  return map;
+  const map = new Map<string, string>();
+  for (const p of limaParts.formatToParts(date)) map.set(p.type, p.value);
+  const get = (type: string): string => map.get(type) ?? '';
+  return { day: get('day'), month: get('month'), year: get('year'), hour: get('hour'), minute: get('minute') };
 }
 
 /** "2025-06-29T19:00:00.000Z" → "29 jun 2025" (hora de Lima). */
-export function formatDate(iso) {
+export function formatDate(iso: string): string {
   const p = partsOf(iso);
-  return p ? `${Number(p.day)} ${MONTHS[Number(p.month) - 1]} ${p.year}` : '';
+  return p ? `${Number(p.day)} ${monthName(p.month)} ${p.year}` : '';
 }
 
 /** "2025-06-29T19:00:00.000Z" → "29 jun 2025, 14:00" (hora de Lima). */
-export function formatDateTime(iso) {
+export function formatDateTime(iso: string): string {
   const p = partsOf(iso);
-  return p ? `${Number(p.day)} ${MONTHS[Number(p.month) - 1]} ${p.year}, ${p.hour}:${p.minute}` : '';
+  return p ? `${Number(p.day)} ${monthName(p.month)} ${p.year}, ${p.hour}:${p.minute}` : '';
 }
 
 /** "2022-03-15" (sin hora, sin zona) → "15 mar 2022". No usa Date para no correr el día. */
-export function formatDateOnly(value) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
-  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : '';
+export function formatDateOnly(value: string | null | undefined): string {
+  const m = DATE_ONLY.exec(value ?? '');
+  return m ? `${Number(m[3])} ${monthName(m[2] ?? '')} ${m[1]}` : '';
 }
 
 /** Años cumplidos desde "YYYY-MM-DD"; null si no hay fecha válida. */
-export function calcAge(birthDate, now = new Date()) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate ?? '');
+export function calcAge(birthDate: string | null | undefined, now: Date = new Date()): number | null {
+  const m = DATE_ONLY.exec(birthDate ?? '');
   if (!m) return null;
   const [year, month, day] = [Number(m[1]), Number(m[2]), Number(m[3])];
   let age = now.getFullYear() - year;
@@ -78,7 +92,7 @@ export function calcAge(birthDate, now = new Date()) {
 }
 
 /** Texto de edad: "2 años", "1 año", "Menos de 1 año" o "Edad no registrada". */
-export function ageLabel(birthDate, now = new Date()) {
+export function ageLabel(birthDate: string | null | undefined, now: Date = new Date()): string {
   const age = calcAge(birthDate, now);
   if (age === null) return 'Edad no registrada';
   if (age === 0) return 'Menos de 1 año';
@@ -86,7 +100,13 @@ export function ageLabel(birthDate, now = new Date()) {
 }
 
 // ─── Categorías de items ─────────────────────────────────────────────────────
-export const CATEGORY_META = {
+export interface CategoryMeta {
+  label?: string;
+  icon: string;
+  iconBg: string;
+}
+
+export const CATEGORY_META: Readonly<Record<string, CategoryMeta & { label: string }>> = {
   alimentos:   { label: 'Alimentos',   icon: '🍖', iconBg: 'bg-orange-100' },
   medicina:    { label: 'Medicina',    icon: '💊', iconBg: 'bg-purple-100' },
   accesorios:  { label: 'Accesorios',  icon: '🦴', iconBg: 'bg-pink-100' },
@@ -94,10 +114,14 @@ export const CATEGORY_META = {
   veterinaria: { label: 'Veterinaria', icon: '🏥', iconBg: 'bg-blue-100' },
   paseos:      { label: 'Paseos',      icon: '🚶‍♂️', iconBg: 'bg-emerald-100' },
 };
-const DEFAULT_CATEGORY_META = { icon: '🐾', iconBg: 'bg-gray-100' };
+const DEFAULT_CATEGORY_META: CategoryMeta = { icon: '🐾', iconBg: 'bg-gray-100' };
+
+/** Metadatos de una categoría conocida; `undefined` si el slug no está en la tabla (sin heredar de Object). */
+const knownCategory = (slug: string | null | undefined): (CategoryMeta & { label: string }) | undefined =>
+  slug && Object.hasOwn(CATEGORY_META, slug) ? CATEGORY_META[slug] : undefined;
 
 /** "Veterinaria", "Exótico" → slug del contrato ("veterinaria"). */
-export function categoryToSlug(label) {
+export function categoryToSlug(label: string | null | undefined): string {
   return String(label ?? '')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
@@ -107,29 +131,80 @@ export function categoryToSlug(label) {
     .replace(/^-+|-+$/g, '');
 }
 
-export function categoryLabel(slug) {
-  if (CATEGORY_META[slug]) return CATEGORY_META[slug].label;
+export function categoryLabel(slug: string | null | undefined): string {
+  const known = knownCategory(slug);
+  if (known) return known.label;
   const text = String(slug ?? '').replace(/-/g, ' ');
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-const TARGET_PET_LABEL = { dog: 'Perro', cat: 'Gato', bird: 'Ave', exotic: 'Exótico' };
+const TARGET_PET_LABEL: Readonly<Record<TargetPet, string>> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', exotic: 'Exótico' };
 
 // ─── Items (catálogo y gestión del proveedor) ────────────────────────────────
+export interface UiFeature {
+  id: number;
+  label: string;
+  type: 'duration' | 'activity';
+}
+
+export interface UiProvider {
+  id: string;
+  name: string;
+  avatar: string | null;
+}
+
+/** Item tal como lo consumen tarjetas, detalle y gestión del proveedor (modelo de vista). */
+export interface UiItem {
+  id: string;
+  type: Item['type'];
+  title: string;
+  description: string;
+  category: string;
+  categorySlug: string;
+  categoryLabel: string;
+  priceCents: number;
+  price: number;
+  basePrice: number;
+  priceLabel: string;
+  priceText: string;
+  image: string | null;
+  location: string;
+  targetPets: string[];
+  targetLabel: string;
+  stock: number | null;
+  durationMinutes: number | null;
+  duration: string;
+  features: UiFeature[];
+  extraInfo: null;
+  provider: UiProvider;
+  providerId: string;
+  isActive: boolean;
+  createdAt: string;
+  // La API no ofrece estos datos: siempre null para que la interfaz no los muestre.
+  rating: null;
+  reviewCount: null;
+  originalPrice: null;
+  badge: null;
+  distance: null;
+  icon: string;
+  iconBg: string;
+}
+
 /**
  * Item de la API → forma que usan las tarjetas, el detalle y la gestión del proveedor.
  * Lo que la API no tiene queda en null (calificaciones, reseñas, badge, distancia…): la UI
  * no debe inventarlo.
  */
-export function toUiItem(item) {
-  const meta = CATEGORY_META[item.category] ?? DEFAULT_CATEGORY_META;
+export function toUiItem(item: Item): UiItem {
+  const meta = knownCategory(item.category) ?? DEFAULT_CATEGORY_META;
   const label = categoryLabel(item.category);
   const isService = item.type === 'service';
-  const features = [];
+  const features: UiFeature[] = [];
   if (isService && item.durationMinutes) features.push({ id: 1, label: `${item.durationMinutes} min`, type: 'duration' });
-  if (!isService && Number.isInteger(item.stock)) {
+  if (!isService && item.stock !== null) {
     features.push({ id: 1, label: item.stock > 0 ? `${item.stock} en stock` : 'Sin stock', type: 'activity' });
   }
+  const targetPets = item.targetPets.map((p) => TARGET_PET_LABEL[p]);
   return {
     id: item.id,
     type: item.type,
@@ -143,45 +218,67 @@ export function toUiItem(item) {
     basePrice: centsToSoles(item.priceCents),
     priceLabel: 'S/',
     priceText: formatMoney(item.priceCents),
-    image: item.imageUrl ?? null,
+    image: item.imageUrl,
     location: item.location ?? '',
-    targetPets: (item.targetPets ?? []).map((p) => TARGET_PET_LABEL[p] ?? p),
-    targetLabel: (item.targetPets ?? []).map((p) => TARGET_PET_LABEL[p] ?? p).join(', '),
-    stock: item.stock ?? null,
-    durationMinutes: item.durationMinutes ?? null,
+    targetPets,
+    targetLabel: targetPets.join(', '),
+    stock: item.stock,
+    durationMinutes: item.durationMinutes,
     duration: item.durationMinutes ? `${item.durationMinutes} min` : '',
     features,
     extraInfo: null,
     provider: item.provider
-      ? { id: item.provider.id, name: item.provider.name, avatar: item.provider.avatarUrl ?? null }
+      ? { id: item.provider.id, name: item.provider.name, avatar: item.provider.avatarUrl }
       : { id: item.providerId, name: 'Proveedor KunaPet', avatar: null },
     providerId: item.providerId,
     isActive: item.isActive,
     createdAt: item.createdAt,
-    // La API no ofrece estos datos: se dejan vacíos para que la interfaz no los muestre.
     rating: null,
     reviewCount: null,
     originalPrice: null,
     badge: null,
     distance: null,
-    // Datos para la gestión del proveedor (icon/iconBg no existen en la API: se derivan de la categoría).
+    // icon/iconBg no existen en la API: se derivan de la categoría.
     icon: meta.icon,
     iconBg: meta.iconBg,
   };
 }
 
+/** Formulario de gestión del proveedor (valores tal como los escribe el usuario). */
+export interface ItemFormInput {
+  type?: Item['type'];
+  title?: string;
+  description?: string;
+  category?: string;
+  /** Soles, como texto del input (p. ej. "25.50"). */
+  price?: string | number;
+  durationMinutes?: string | number;
+  duration?: string | number;
+  stock?: string | number | null;
+}
+
+/** Body de POST /items (y base de PATCH). `priceCents` es null si el precio escrito no es válido. */
+export interface ItemBody {
+  type?: Item['type'];
+  title: string;
+  description: string;
+  category: string;
+  priceCents: number | null;
+  durationMinutes?: number;
+  stock?: number;
+}
+
 /** Formulario de gestión del proveedor → body de POST/PATCH /items. */
-export function toApiItemInput(form) {
-  const priceCents = solesToCents(form.price);
-  const body = {
+export function toApiItemInput(form: ItemFormInput): ItemBody {
+  const body: ItemBody = {
     title: String(form.title ?? '').trim(),
     description: String(form.description ?? '').trim(),
     category: categoryToSlug(form.category),
-    priceCents,
+    priceCents: solesToCents(form.price),
   };
   if (form.type) body.type = form.type;
   if (form.type === 'service' || form.durationMinutes !== undefined) {
-    const minutes = Number.parseInt(form.durationMinutes ?? form.duration, 10);
+    const minutes = Number.parseInt(String(form.durationMinutes ?? form.duration), 10);
     if (Number.isInteger(minutes)) body.durationMinutes = minutes;
   }
   if (form.stock !== undefined && form.stock !== '' && form.stock !== null) body.stock = Number(form.stock);
@@ -190,37 +287,68 @@ export function toApiItemInput(form) {
 
 // ─── Mascotas ────────────────────────────────────────────────────────────────
 /** species de la API → valor que entienden PetsManager/tarjetas ('dog' | 'cat' | 'other'). */
-export function speciesToUi(species) {
+export type UiSpecies = 'dog' | 'cat' | 'other';
+
+export function speciesToUi(species: Species): UiSpecies {
   return species === 'dog' || species === 'cat' ? species : 'other';
 }
 
-export const SPECIES_LABEL = { dog: 'Perro', cat: 'Gato', bird: 'Ave', exotic: 'Exótico', other: 'Otro' };
-export const GENDER_LABEL = { female: 'Hembra', male: 'Macho', unknown: 'Sin especificar' };
+export const SPECIES_LABEL: Readonly<Record<Species, string>> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', exotic: 'Exótico', other: 'Otro' };
+export const GENDER_LABEL: Readonly<Record<Gender | 'none', string>> = {
+  female: 'Hembra',
+  male: 'Macho',
+  unknown: 'Sin especificar',
+  none: 'Sin especificar',
+};
+
+const WIZARD_SPECIES: Readonly<Record<string, Species>> = { perro: 'dog', gato: 'cat', otro: 'other' };
 
 /** Valor del wizard ('perro' | 'gato' | 'otro') → species de la API. */
-export function wizardSpeciesToApi(value) {
-  return { perro: 'dog', gato: 'cat', otro: 'other' }[value] ?? 'other';
+export function wizardSpeciesToApi(value: string | undefined): Species {
+  return (value ? WIZARD_SPECIES[value] : undefined) ?? 'other';
+}
+
+/** Mascota como la consumen las pantallas (modelo de vista). */
+export interface UiPet {
+  id: string;
+  name: string;
+  species: UiSpecies;
+  speciesApi: Species;
+  speciesLabel: string;
+  breed: string;
+  gender: string;
+  genderApi: Gender;
+  birthdate: string;
+  birthdateLabel: string;
+  age: number | null;
+  ageLabel: string;
+  photo: string | null;
+  weightGrams: number | null;
+  notes: string;
+  // La API no tiene vacunas ni historial: la interfaz muestra un estado vacío.
+  vaccineStatus: null;
+  vaccines: never[];
+  createdAt: string;
 }
 
 /** Mascota de la API → forma que usan las pantallas. */
-export function toUiPet(pet, now = new Date()) {
+export function toUiPet(pet: Pet, now: Date = new Date()): UiPet {
   return {
     id: pet.id,
     name: pet.name,
     species: speciesToUi(pet.species),
     speciesApi: pet.species,
-    speciesLabel: SPECIES_LABEL[pet.species] ?? 'Otro',
+    speciesLabel: SPECIES_LABEL[pet.species],
     breed: pet.breed || 'Raza no especificada',
-    gender: GENDER_LABEL[pet.gender] ?? GENDER_LABEL.unknown,
+    gender: GENDER_LABEL[pet.gender ?? 'none'],
     genderApi: pet.gender ?? 'unknown',
     birthdate: pet.birthDate ?? '',
     birthdateLabel: formatDateOnly(pet.birthDate) || 'No registrada',
     age: calcAge(pet.birthDate, now),
     ageLabel: ageLabel(pet.birthDate, now),
-    photo: pet.photoUrl ?? null,
-    weightGrams: pet.weightGrams ?? null,
+    photo: pet.photoUrl,
+    weightGrams: pet.weightGrams,
     notes: pet.notes ?? '',
-    // La API no tiene vacunas ni historial: la interfaz muestra un estado vacío.
     vaccineStatus: null,
     vaccines: [],
     createdAt: pet.createdAt,
@@ -229,9 +357,32 @@ export function toUiPet(pet, now = new Date()) {
 
 export const PET_NOTES_MAX = 500;
 
-/** Datos del wizard (AddPetWizard) → body de POST /pets. Alergias y necesidades van dentro de notes. */
-export function wizardToApiPet(form) {
-  const lines = [];
+/** Datos del wizard de alta de mascota (AddPetWizard); todos opcionales para tolerar formularios parciales. */
+export interface WizardPetForm {
+  name?: string;
+  species?: string;
+  breed?: string;
+  dob?: string;
+  weight?: string;
+  isSterilized?: boolean;
+  vaccines?: string[];
+  allergies?: string;
+  specialNeeds?: string;
+}
+
+/** Body de POST /pets. */
+export interface PetCreateBody {
+  name: string;
+  species: Species;
+  breed?: string;
+  birthDate?: string;
+  weightGrams?: number;
+  notes?: string;
+}
+
+/** Datos del wizard → body de POST /pets. Alergias y necesidades van dentro de notes. */
+export function wizardToApiPet(form: WizardPetForm): PetCreateBody {
+  const lines: string[] = [];
   const allergies = String(form.allergies ?? '').trim();
   const needs = String(form.specialNeeds ?? '').trim();
   if (allergies && allergies.toLowerCase() !== 'ninguna') lines.push(`Alergias: ${allergies}`);
@@ -239,7 +390,7 @@ export function wizardToApiPet(form) {
   if (typeof form.isSterilized === 'boolean') lines.push(`Esterilizado: ${form.isSterilized ? 'Sí' : 'No'}`);
 
   const kg = Number(String(form.weight ?? '').replace(',', '.'));
-  const body = {
+  const body: PetCreateBody = {
     name: String(form.name ?? '').trim(),
     species: wizardSpeciesToApi(form.species),
   };
@@ -252,15 +403,35 @@ export function wizardToApiPet(form) {
   return body;
 }
 
+/** Formulario de edición de PetsManager (valores de la API en species y gender). */
+export interface PetEditForm {
+  name: string;
+  species: Species;
+  breed: string;
+  gender: Gender | '';
+  birthdate: string;
+  notes: string;
+}
+
+/** Body de PATCH /pets/:id. */
+export interface PetPatchBody {
+  name: string;
+  species: Species;
+  breed: string | null;
+  gender: Gender;
+  birthDate: string | null;
+  notes: string | null;
+}
+
 /** Formulario de edición (PetsManager) → body de PATCH /pets/:id. */
-export function editFormToApiPet(form) {
+export function editFormToApiPet(form: PetEditForm): PetPatchBody {
   return {
-    name: String(form.name ?? '').trim(),
+    name: form.name.trim(),
     species: form.species,
-    breed: String(form.breed ?? '').trim() || null,
+    breed: form.breed.trim() || null,
     gender: form.gender || 'unknown',
     birthDate: form.birthdate || null,
-    notes: String(form.notes ?? '').trim().slice(0, PET_NOTES_MAX) || null,
+    notes: form.notes.trim().slice(0, PET_NOTES_MAX) || null,
   };
 }
 
@@ -268,19 +439,36 @@ export function editFormToApiPet(form) {
 export const SHIPPING_CENTS = 1500;
 export const PLATFORM_FEE_CENTS = 250;
 
+export interface EstimateLine {
+  type: Item['type'];
+  priceCents: number;
+  quantity: number;
+}
+
+export interface Totals {
+  subtotalCents: number;
+  shippingCents: number;
+  platformFeeCents: number;
+  totalCents: number;
+}
+
 /**
  * ESTIMACIÓN para mostrar antes de confirmar. Replica las reglas del contrato, pero el
  * total válido es siempre el que devuelve el servidor al crear el pedido.
- * @param {{ type: string, priceCents: number, quantity: number }[]} lines
  */
-export function estimateTotals(lines) {
+export function estimateTotals(lines: readonly EstimateLine[]): Totals {
   const subtotalCents = lines.reduce((sum, l) => sum + l.priceCents * l.quantity, 0);
   const shippingCents = lines.some((l) => l.type === 'product') ? SHIPPING_CENTS : 0;
   const platformFeeCents = subtotalCents > 0 ? PLATFORM_FEE_CENTS : 0;
   return { subtotalCents, shippingCents, platformFeeCents, totalCents: subtotalCents + shippingCents + platformFeeCents };
 }
 
-export const ORDER_STATUS = {
+export interface OrderStatusMeta {
+  label: string;
+  trackingStep: number;
+}
+
+export const ORDER_STATUS: Readonly<Record<OrderStatus, OrderStatusMeta>> = {
   pending_payment: { label: 'Pago pendiente', trackingStep: 0 },
   confirmed:       { label: 'Confirmado',     trackingStep: 0 },
   preparing:       { label: 'Preparando',     trackingStep: 1 },
@@ -289,13 +477,42 @@ export const ORDER_STATUS = {
   cancelled:       { label: 'Cancelado',      trackingStep: -1 },
 };
 
-export const orderStatusLabel = (status) => ORDER_STATUS[status]?.label ?? status;
-export const orderTrackingStep = (status) => ORDER_STATUS[status]?.trackingStep ?? 0;
+const isOrderStatus = (value: string): value is OrderStatus => value in ORDER_STATUS;
 
-export const PAYMENT_LABEL = { card: 'Tarjeta', yape: 'Yape', transfer: 'Transferencia' };
+export const orderStatusLabel = (status: string): string => (isOrderStatus(status) ? ORDER_STATUS[status].label : status);
+export const orderTrackingStep = (status: string): number => (isOrderStatus(status) ? ORDER_STATUS[status].trackingStep : 0);
+
+export const PAYMENT_LABEL: Readonly<Record<PaymentMethod, string>> = { card: 'Tarjeta', yape: 'Yape', transfer: 'Transferencia' };
+
+export interface UiOrderLine {
+  itemId: string;
+  title: string;
+  type: Item['type'];
+  quantity: number;
+  unitPrice: string;
+  lineTotal: string;
+}
+
+/** Pedido como lo consumen OrdersView y las pantallas de éxito/detalle (modelo de vista). */
+export interface UiOrder {
+  id: string;
+  shortId: string;
+  product: string;
+  image: null;
+  date: string;
+  dateTime: string;
+  cost: string;
+  status: OrderStatus;
+  statusLabel: string;
+  trackingStep: number;
+  paymentLabel: string;
+  lines: UiOrderLine[];
+  totals: { subtotal: string; shipping: string; platformFee: string; total: string };
+  raw: Order;
+}
 
 /** Pedido de la API → forma que usa OrdersView (y la pantalla de éxito). */
-export function toUiOrder(order) {
+export function toUiOrder(order: Order): UiOrder {
   const first = order.items[0];
   const extra = order.items.length - 1;
   return {
@@ -309,7 +526,7 @@ export function toUiOrder(order) {
     status: order.status,
     statusLabel: orderStatusLabel(order.status),
     trackingStep: orderTrackingStep(order.status),
-    paymentLabel: PAYMENT_LABEL[order.paymentMethod] ?? order.paymentMethod,
+    paymentLabel: PAYMENT_LABEL[order.paymentMethod],
     lines: order.items.map((l) => ({
       itemId: l.itemId,
       title: l.title,
@@ -329,15 +546,15 @@ export function toUiOrder(order) {
 }
 
 // ─── Gestión de servicios del proveedor ──────────────────────────────────────
-export const SERVICE_CATEGORIES = ['Paseos', 'Grooming', 'Veterinaria'];
+export const SERVICE_CATEGORIES = ['Paseos', 'Grooming', 'Veterinaria'] as const;
 export const BULK_LIMIT = 20;
 
 /**
  * Valida el formulario de servicio con las mismas reglas del servidor (contrato §4).
- * @returns {Record<string, string>} errores por campo (vacío si todo es válido)
+ * @returns errores por campo (vacío si todo es válido)
  */
-export function validateServiceForm(form) {
-  const errors = {};
+export function validateServiceForm(form: ItemFormInput): Partial<Record<'title' | 'description' | 'category' | 'price' | 'durationMinutes', string>> {
+  const errors: ReturnType<typeof validateServiceForm> = {};
   const title = String(form.title ?? '').trim();
   if (title.length < 2) errors.title = 'El título debe tener al menos 2 caracteres.';
   else if (title.length > 120) errors.title = 'El título no puede superar 120 caracteres.';
@@ -357,13 +574,17 @@ export function validateServiceForm(form) {
   return errors;
 }
 
+export interface BulkPriceConfig {
+  type: 'fixed' | 'percentage';
+  action: 'increase' | 'decrease';
+  amount: number;
+}
+
 /**
  * Nuevo precio (céntimos) para una actualización masiva.
- * @param {number} priceCents precio actual
- * @param {{ type: 'fixed'|'percentage', action: 'increase'|'decrease', amount: number }} config
- * @returns {number|null} null si el resultado no es un precio válido (< 1 céntimo)
+ * @returns null si el resultado no es un precio válido (< 1 céntimo)
  */
-export function bulkPriceCents(priceCents, config) {
+export function bulkPriceCents(priceCents: number, config: BulkPriceConfig): number | null {
   const sign = config.action === 'increase' ? 1 : -1;
   const delta = config.type === 'fixed' ? Math.round(config.amount * 100) : Math.round(priceCents * (config.amount / 100));
   const next = priceCents + sign * delta;

@@ -138,4 +138,84 @@ describe('useAuthStore', () => {
     expect(localStorage.getItem('kunapet-pets')).toBeNull();
     expect(persistedAuth()?.state).toEqual({ user: null, token: null });
   });
+
+  describe('verifySession: solo el 401 cierra la sesión', () => {
+    const SAVED = JSON.stringify({ state: { user: sampleUser, token: 'jwt-guardado' }, version: 0 });
+
+    async function withSavedSession() {
+      localStorage.setItem('kunapet-auth', SAVED);
+      return loadStores();
+    }
+
+    it('401 → cierra la sesión y limpia lo guardado', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(errorResponse(401, 'unauthorized', 'No autenticado o token inválido.'));
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ token: null, user: null, isAuthenticated: false, sessionStatus: 'ready', verifyError: null });
+    });
+
+    it('error de red → conserva la sesión guardada y avisa para reintentar', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(() => Promise.reject(new TypeError('Failed to fetch')));
+      await useAuthStore.getState().verifySession();
+      const state = useAuthStore.getState();
+      expect(state).toMatchObject({ token: 'jwt-guardado', isAuthenticated: true, sessionStatus: 'verifying' });
+      expect(state.user).toEqual(sampleUser);
+      expect(state.verifyError).toMatch(/conectar con el servidor/);
+      expect(persistedAuth()?.state).toEqual({ user: sampleUser, token: 'jwt-guardado' }); // sigue guardada
+    });
+
+    it('timeout → conserva la sesión guardada', async () => {
+      vi.useFakeTimers();
+      const { useAuthStore } = await withSavedSession();
+      vi.stubGlobal(
+        'fetch',
+        vi.fn<typeof fetch>(
+          (_input, init) =>
+            new Promise<Response>((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+            }),
+        ),
+      );
+      const pending = useAuthStore.getState().verifySession();
+      await vi.advanceTimersByTimeAsync(45_001);
+      await pending;
+      expect(useAuthStore.getState()).toMatchObject({ token: 'jwt-guardado', isAuthenticated: true, sessionStatus: 'verifying' });
+      expect(useAuthStore.getState().verifyError).toMatch(/tardó demasiado/);
+    });
+
+    it('5xx → conserva la sesión guardada', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(errorResponse(503, 'service_unavailable', 'Servicio no disponible.'), errorResponse(500, 'internal_error', 'x'));
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ token: 'jwt-guardado', isAuthenticated: true });
+      expect(useAuthStore.getState().verifyError).not.toBeNull();
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ token: 'jwt-guardado', isAuthenticated: true });
+    });
+
+    it('una respuesta inválida (no cumple el contrato) tampoco cierra la sesión', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(jsonResponse({ user: { id: 'u1' } }));
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ token: 'jwt-guardado', isAuthenticated: true });
+    });
+
+    it('reintentar tras un fallo de red valida la sesión y limpia el aviso', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(() => Promise.reject(new TypeError('x')), jsonResponse({ user: sampleUser }));
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState().verifyError).not.toBeNull();
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ sessionStatus: 'ready', verifyError: null, isAuthenticated: true });
+    });
+
+    it('si el reintento responde 401, ahí sí se cierra la sesión', async () => {
+      const { useAuthStore } = await withSavedSession();
+      mockFetch(() => Promise.reject(new TypeError('x')), errorResponse(401, 'unauthorized', 'x'));
+      await useAuthStore.getState().verifySession();
+      await useAuthStore.getState().verifySession();
+      expect(useAuthStore.getState()).toMatchObject({ token: null, isAuthenticated: false, sessionStatus: 'ready' });
+    });
+  });
 });

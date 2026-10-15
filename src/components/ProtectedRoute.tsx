@@ -38,12 +38,35 @@ import useAuthStore, { ROLES } from '../store/useAuthStore';
 import type { Role } from '@/types/api';
 
 // Pantalla mínima mientras se valida la sesión guardada con GET /auth/me:
-// evita parpadeos y redirecciones prematuras a /login.
+// evita parpadeos y redirecciones prematuras a /login. Si la verificación falló por un
+// problema que no es de credenciales (red, timeout, 5xx) la sesión se conserva y aquí se
+// ofrece «Reintentar». Mientras la petición tarda, el aviso global de «servidor
+// despertando» (ServerWakingNotice) se muestra solo.
 export function SessionChecking(): ReactNode {
+  const verifyError = useAuthStore((s) => s.verifyError);
+  const verifySession = useAuthStore((s) => s.verifySession);
+
   return (
-    <div role="status" aria-live="polite" className="min-h-screen flex flex-col items-center justify-center gap-3 bg-surface-secondary">
-      <span className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-primary" aria-hidden="true" />
-      <p className="text-sm font-medium text-gray-500">Verificando tu sesión…</p>
+    <div role="status" aria-live="polite" className="min-h-screen flex flex-col items-center justify-center gap-3 bg-surface-secondary px-4 text-center">
+      {verifyError ? (
+        <>
+          <p role="alert" className="text-sm font-medium text-gray-700 max-w-sm">
+            No pudimos verificar tu sesión. {verifyError}
+          </p>
+          <button
+            type="button"
+            onClick={() => void verifySession()}
+            className="px-5 py-2.5 bg-brand-primary hover:bg-brand-primary-hover text-white text-sm font-bold rounded-xl transition-colors"
+          >
+            Reintentar
+          </button>
+        </>
+      ) : (
+        <>
+          <span className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-brand-primary" aria-hidden="true" />
+          <p className="text-sm font-medium text-gray-500">Verificando tu sesión…</p>
+        </>
+      )}
     </div>
   );
 }

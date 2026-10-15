@@ -1,10 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { Role } from '@/types/api';
 import type { AuthStore } from '../store/useAuthStore';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import useAuthStore from '../store/useAuthStore';
-import { sampleUser } from '../test/helpers';
+import { errorResponse, jsonResponse, mockFetch, sampleUser } from '../test/helpers';
+import ServerWakingNotice from './ServerWakingNotice';
+import { SLOW_AFTER_MS } from '../store/useServerStatusStore';
 import ProtectedRoute, { PublicOnlyRoute } from './ProtectedRoute';
 
 const setSession = (patch: Partial<Pick<AuthStore, 'user' | 'token' | 'isAuthenticated' | 'sessionStatus'>>): void => {
@@ -78,5 +80,56 @@ describe('PublicOnlyRoute', () => {
   it('un visitante ve la pantalla pública', () => {
     renderAt('/login', []);
     expect(screen.getByText('Pantalla de login')).toBeInTheDocument();
+  });
+});
+
+describe('verificación de sesión con fallos de red', () => {
+  beforeEach(() => setSession({}));
+
+  it('tras un fallo de red conserva la sesión y muestra «Reintentar»; al reintentar entra', async () => {
+    setSession({ user: sampleUser, token: 'jwt-guardado', isAuthenticated: true, sessionStatus: 'verifying' });
+    mockFetch(() => Promise.reject(new TypeError('x')), jsonResponse({ user: sampleUser }));
+    renderAt('/secreto', ['client']);
+
+    await act(async () => {
+      await useAuthStore.getState().verifySession();
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('No pudimos verificar tu sesión');
+    expect(screen.queryByText('Pantalla de login')).not.toBeInTheDocument(); // no la mandó a /login
+    expect(useAuthStore.getState().token).toBe('jwt-guardado');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+    expect(await screen.findByText('Contenido protegido')).toBeInTheDocument();
+  });
+
+  it('con 401 en la verificación sí redirige a /login', async () => {
+    setSession({ user: sampleUser, token: 'jwt-vencido', isAuthenticated: true, sessionStatus: 'verifying' });
+    mockFetch(errorResponse(401, 'unauthorized', 'x'));
+    renderAt('/secreto', ['client']);
+    await act(async () => {
+      await useAuthStore.getState().verifySession();
+    });
+    expect(screen.getByText('Pantalla de login')).toBeInTheDocument();
+  });
+
+  it('si el servidor tarda más de 5 s se muestra el aviso de servidor despertando', async () => {
+    vi.useFakeTimers();
+    setSession({ user: sampleUser, token: 'jwt-guardado', isAuthenticated: true, sessionStatus: 'verifying' });
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => new Promise<Response>(() => undefined))); // nunca responde
+    render(
+      <MemoryRouter initialEntries={['/secreto']}>
+        <ServerWakingNotice />
+        <Routes>
+          <Route path="/secreto" element={<ProtectedRoute allowedRoles={['client']}><p>Contenido protegido</p></ProtectedRoute>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    void useAuthStore.getState().verifySession();
+    expect(screen.queryByText(/servidor gratuito se está despertando/)).not.toBeInTheDocument();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SLOW_AFTER_MS + 100);
+    });
+    expect(screen.getByText(/servidor gratuito se está despertando/)).toBeInTheDocument();
+    expect(screen.getByText('Verificando tu sesión…')).toBeInTheDocument();
   });
 });
